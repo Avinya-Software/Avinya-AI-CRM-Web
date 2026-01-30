@@ -26,6 +26,7 @@ import Users from "./pages/Users";
 
 /* -------- RBAC -------- */
 import { ProtectedRoute as RBACProtectedRoute } from "./components/ProtectedRoute";
+import Tasks from "./pages/Tasks";
 
 function App() {
   return (
@@ -83,6 +84,16 @@ function App() {
               element={
                 <RBACProtectedRoute module="followup" action="view">
                   <Customers />
+                </RBACProtectedRoute>
+              }
+            />
+
+            // src/App.tsx - Add this route
+            <Route
+              path="/tasks"
+              element={
+                <RBACProtectedRoute module="task" action="view">
+                  <Tasks />
                 </RBACProtectedRoute>
               }
             />

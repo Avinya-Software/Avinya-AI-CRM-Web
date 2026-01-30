@@ -62,8 +62,7 @@ const Sidebar = () => {
   const { hasPermission, isLoading: permissionLoading } = usePermissions();
 
   const menuItems: MenuItem[] = menuResponse?.data ?? [];
-  console.log({ menuItems });
-
+  
   /* ================= LOGOUT ================= */
   const handleLogout = () => {
     localStorage.removeItem("token");
