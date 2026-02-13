@@ -9,7 +9,7 @@ import type {
 /*   GET USERS (PAGINATED)   */
 
 export const getUsersApi = async (filters: UserFilters) => {
-  const res = await api.get<UserListResponse>("/User", {
+  const res = await api.get<UserListResponse>("/superadmin/users-list", {
     params: filters,
   });
   return res.data;
@@ -32,7 +32,31 @@ export const getTenantsApi = async () => {
 /*   CREATE / UPDATE USER   */
 
 export const upsertUserApi = async (data: UserUpsertRequest) => {
-  const res = await api.post("/User", data);
+  const payload = {
+    fullName: data.fullName,
+    email: data.email,
+    role: data.role,
+    tenantId: data.tenantId,
+    isActive: data.isActive,
+    password: data.password || "Default@123",
+    permissionIds: data.permissionIds || [],
+  }
+  const res = await api.post("/users/create", payload);
+  return res.data;
+};
+
+export const updateUserApi = async (data: UserUpsertRequest) => {
+  const payload = {
+    userId: data.userId,
+    fullName: data.fullName,
+    email: data.email,
+    role: data.role,
+    tenantId: data.tenantId,
+    isActive: data.isActive,
+    password: data.password,
+    permissionIds: data.permissionIds || [],
+  }
+  const res = await api.put("/users/update", payload);
   return res.data;
 };
 
@@ -51,4 +75,11 @@ export const updateUserStatusApi = async (
 ) => {
   const res = await api.patch(`/User/${userId}/status`, { isActive });
   return res.data;
+};
+
+/*   GET COMPANY LIST   */
+
+export const getCompaniesApi = async () => {
+  const res = await api.get("/users/companies");
+  return res.data.data; 
 };

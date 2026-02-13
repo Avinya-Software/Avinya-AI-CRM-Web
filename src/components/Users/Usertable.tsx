@@ -78,8 +78,8 @@ const UserTable = ({ data, loading, onEdit, onDelete }: UserTableProps) => {
                             <td className="px-4 py-3 text-sm">
                                 <span
                                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-red-100 text-red-800"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
                                         }`}
                                 >
                                     {user.isActive ? "Active" : "Inactive"}
@@ -94,10 +94,10 @@ const UserTable = ({ data, loading, onEdit, onDelete }: UserTableProps) => {
                                 <div className="flex items-center justify-end gap-2">
                                     <button
                                         onClick={() => onEdit(user)}
-                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                        title="Edit user"
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
                                     >
-                                        <Edit2 size={16} />
+                                        <Edit2 size={14} />
+                                        Edit
                                     </button>
                                     {onDelete && (
                                         <button

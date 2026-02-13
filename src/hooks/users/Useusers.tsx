@@ -1,7 +1,7 @@
 // src/hooks/user/useUsers.ts
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { getUsersApi } from "../../api/user.api";
-import type { UserFilters, UserListData } from "../../interfaces/user.interface";
+import { getCompaniesApi, getUsersApi } from "../../api/user.api";
+import type { CompanyDropdownOption, UserFilters, UserListData } from "../../interfaces/user.interface";
 
 export const useUsers = (filters: UserFilters) => {
   return useQuery<UserListData>({
@@ -9,6 +9,17 @@ export const useUsers = (filters: UserFilters) => {
     queryFn: async () => {
       const response = await getUsersApi(filters);
       return response.data; // Extract the nested data object
+    },
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useCompanies = () => {
+  return useQuery<CompanyDropdownOption[]>({
+    queryKey: ["companies"],
+    queryFn: async () => {
+      const response = await getCompaniesApi();
+      return response; // Extract the nested data object
     },
     placeholderData: keepPreviousData,
   });

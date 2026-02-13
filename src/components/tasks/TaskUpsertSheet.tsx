@@ -59,7 +59,7 @@ const TaskUpsertSheet = ({ open, onClose, task }: TaskUpsertSheetProps) => {
         title: task.title,
         description: task.description || "",
         notes: task.notes || "",
-        dueDateTime: task.dueDateTime.substring(0, 16),
+        dueDateTime: task.dueDateTime != null ? task.dueDateTime.substring(0, 16) : "",
         status: task.status,
       });
     } else {

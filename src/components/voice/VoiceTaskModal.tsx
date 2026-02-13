@@ -22,12 +22,12 @@ const VoiceTaskModal = ({ open, onClose, onSendText }: Props) => {
 
     useEffect(() => {
         if (!open) return;
-
         const SpeechRecognition =
             (window as any).webkitSpeechRecognition ||
             (window as any).SpeechRecognition;
 
         if (!SpeechRecognition) {
+            console.error("Speech recognition not supported");
             setStatus("error");
             setMessage("Speech recognition not supported");
             return;
