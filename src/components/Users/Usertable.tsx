@@ -8,9 +8,10 @@ interface UserTableProps {
     onAdd: () => void;
     onEdit: (user: User) => void;
     onDelete?: (userId: string) => void;
+    onApprove?: (tenantId: string) => void;
 }
 
-const UserTable = ({ data, loading, onEdit, onDelete }: UserTableProps) => {
+const UserTable = ({ data, loading, onEdit, onDelete, onApprove }: UserTableProps) => {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -106,6 +107,14 @@ const UserTable = ({ data, loading, onEdit, onDelete }: UserTableProps) => {
                                             title="Delete user"
                                         >
                                             <Trash2 size={16} />
+                                        </button>
+                                    )}
+                                    {user.role === "Admin" && !user.isActive && onApprove && (
+                                        <button
+                                            onClick={() => onApprove(user.tenantId)}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-md transition-colors"
+                                        >
+                                            Approve
                                         </button>
                                     )}
                                 </div>

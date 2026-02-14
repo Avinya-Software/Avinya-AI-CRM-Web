@@ -15,6 +15,7 @@ import { useRegisterAdvisor } from "../hooks/advisor/useRegisterAdvisor";
 
 type RegisterErrors = {
   fullName?: string;
+  companyName?: string;
   mobileNumber?: string;
   email?: string;
   password?: string;
@@ -23,6 +24,7 @@ type RegisterErrors = {
 const Register = () => {
   const [form, setForm] = useState({
     fullName: "",
+    companyName: "",
     mobileNumber: "",
     email: "",
     password: "",
@@ -48,6 +50,13 @@ const Register = () => {
       newErrors.fullName = "Full name is required";
     } else if (form.fullName.trim().length < 2) {
       newErrors.fullName = "Name must be at least 2 characters";
+    }
+
+    // Company Name
+    if (!form.companyName.trim()) {
+      newErrors.companyName = "Company name is required";
+    } else if (form.companyName.trim().length < 2) {
+      newErrors.companyName = "Company name must be at least 2 characters";
     }
 
     // Mobile
@@ -82,25 +91,25 @@ const Register = () => {
 
   /* ---------------- REGISTER ---------------- */
 
-const handleRegister = () => {
-  if (!validate()) return;
+  const handleRegister = () => {
+    if (!validate()) return;
 
-  registerAdvisor(form, {
-    onSuccess: () => {
-      toast.success(
-        "Registration successful! Once the admin approves your request, you will be able to access the software."
-      );
+    registerAdvisor(form, {
+      onSuccess: () => {
+        toast.success(
+          "Registration successful! Once the admin approves your request, you will be able to access the software."
+        );
 
-      navigate("/login");
-    },
-    onError: (err: any) => {
-      toast.error(
-        err?.response?.data?.message ||
+        navigate("/login");
+      },
+      onError: (err: any) => {
+        toast.error(
+          err?.response?.data?.message ||
           "Registration failed. Please try again."
-      );
-    }
-  });
-};
+        );
+      }
+    });
+  };
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,154 +138,174 @@ const handleRegister = () => {
           <div className="p-8 space-y-5">
             {/* Full Name */}
             <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleRegister();
-            }}
-            className="space-y-6">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700 block">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  className={`w-full pl-11 pr-4 py-3 rounded-lg outline-none
-                    ${
-                      errors.fullName
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleRegister();
+              }}
+              className="space-y-6">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700 block">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="fullName"
+                    value={form.fullName}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    className={`w-full pl-11 pr-4 py-3 rounded-lg outline-none
+                    ${errors.fullName
                         ? "border border-red-500 focus:ring-2 focus:ring-red-500"
                         : "border border-gray-300 focus:ring-2 focus:ring-slate-500"
-                    }`}
-                />
+                      }`}
+                  />
+                </div>
+                {errors.fullName && (
+                  <p className="text-xs text-red-600">{errors.fullName}</p>
+                )}
               </div>
-              {errors.fullName && (
-                <p className="text-xs text-red-600">{errors.fullName}</p>
-              )}
-            </div>
 
-            {/* Mobile */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700 block">
-                Mobile Number
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="tel"
-                  name="mobileNumber"
-                  value={form.mobileNumber}
-                  onChange={handleChange}
-                  placeholder="+91 9876543210"
-                  className={`w-full pl-11 pr-4 py-3 rounded-lg outline-none
-                    ${
-                      errors.mobileNumber
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700 block">
+                  Company Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="companyName"
+                    value={form.companyName}
+                    onChange={handleChange}
+                    placeholder="Avinya AI"
+                    className={`w-full pl-11 pr-4 py-3 rounded-lg outline-none
+                    ${errors.companyName
                         ? "border border-red-500 focus:ring-2 focus:ring-red-500"
                         : "border border-gray-300 focus:ring-2 focus:ring-slate-500"
-                    }`}
-                />
+                      }`}
+                  />
+                </div>
+                {errors.companyName && (
+                  <p className="text-xs text-red-600">{errors.companyName}</p>
+                )}
               </div>
-              {errors.mobileNumber && (
-                <p className="text-xs text-red-600">
-                  {errors.mobileNumber}
+
+              {/* Mobile */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700 block">
+                  Mobile Number
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="tel"
+                    name="mobileNumber"
+                    value={form.mobileNumber}
+                    onChange={handleChange}
+                    placeholder="+91 9876543210"
+                    className={`w-full pl-11 pr-4 py-3 rounded-lg outline-none
+                    ${errors.mobileNumber
+                        ? "border border-red-500 focus:ring-2 focus:ring-red-500"
+                        : "border border-gray-300 focus:ring-2 focus:ring-slate-500"
+                      }`}
+                  />
+                </div>
+                {errors.mobileNumber && (
+                  <p className="text-xs text-red-600">
+                    {errors.mobileNumber}
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700 block">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="you@company.com"
+                    className={`w-full pl-11 pr-4 py-3 rounded-lg outline-none
+                    ${errors.email
+                        ? "border border-red-500 focus:ring-2 focus:ring-red-500"
+                        : "border border-gray-300 focus:ring-2 focus:ring-slate-500"
+                      }`}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-xs text-red-600">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700 block">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    className={`w-full pl-11 pr-11 py-3 rounded-lg outline-none
+                    ${errors.password
+                        ? "border border-red-500 focus:ring-2 focus:ring-red-500"
+                        : "border border-gray-300 focus:ring-2 focus:ring-slate-500"
+                      }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-800"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-xs text-red-600">{errors.password}</p>
+                )}
+              </div>
+
+              {/* API Error */}
+              {isError && (
+                <p className="text-sm text-red-600 text-center">
+                  {(error as any)?.response?.data?.message ||
+                    "Registration failed"}
                 </p>
               )}
-            </div>
 
-            {/* Email */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700 block">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="you@company.com"
-                  className={`w-full pl-11 pr-4 py-3 rounded-lg outline-none
-                    ${
-                      errors.email
-                        ? "border border-red-500 focus:ring-2 focus:ring-red-500"
-                        : "border border-gray-300 focus:ring-2 focus:ring-slate-500"
-                    }`}
-                />
-              </div>
-              {errors.email && (
-                <p className="text-xs text-red-600">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700 block">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  className={`w-full pl-11 pr-11 py-3 rounded-lg outline-none
-                    ${
-                      errors.password
-                        ? "border border-red-500 focus:ring-2 focus:ring-red-500"
-                        : "border border-gray-300 focus:ring-2 focus:ring-slate-500"
-                    }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-800"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-xs text-red-600">{errors.password}</p>
-              )}
-            </div>
-
-            {/* API Error */}
-            {isError && (
-              <p className="text-sm text-red-600 text-center">
-                {(error as any)?.response?.data?.message ||
-                  "Registration failed"}
-              </p>
-            )}
-
-            {/* Button */}
-            <button
-              type="submit"
-              onClick={handleRegister}
-              disabled={isPending}
-              className="w-full bg-slate-800 text-white py-3 rounded-lg font-medium hover:bg-slate-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                <>
-                  Create Account
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
+              {/* Button */}
+              <button
+                type="submit"
+                onClick={handleRegister}
+                disabled={isPending}
+                className="w-full bg-slate-800 text-white py-3 rounded-lg font-medium hover:bg-slate-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  <>
+                    Create Account
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </button>
             </form>
           </div>
 

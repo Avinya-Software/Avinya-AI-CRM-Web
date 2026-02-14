@@ -14,6 +14,7 @@ import * as Icons from "lucide-react";
 import { useGetUserMenu } from "../hooks/admin/useLoginAdmin";
 import { usePermissions } from "../context/PermissionContext";
 import { MenuItem } from "../interfaces/admin.interface";
+import { clearToken } from "../utils/token";
 
 /* ================= JWT HELPER ================= */
 const getUserFromToken = () => {
@@ -62,10 +63,10 @@ const Sidebar = () => {
   const { hasPermission, isLoading: permissionLoading } = usePermissions();
 
   const menuItems: MenuItem[] = menuResponse?.data ?? [];
-  
+
   /* ================= LOGOUT ================= */
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    clearToken();
     navigate("/login", { replace: true });
   };
 

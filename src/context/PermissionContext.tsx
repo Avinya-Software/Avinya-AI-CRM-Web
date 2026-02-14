@@ -29,11 +29,8 @@ const PermissionContext = createContext<PermissionContextType | undefined>(
 export const PermissionProvider = ({ children }: { children: ReactNode }) => {
     const { data: permissionResponse, isLoading } = useGetUserPermissions();
 
-    // ✅ Now permissionResponse is PermissionResponse, not PermissionResponse[]
-    // Extract the string array from response.data
     const rawPermissions: string[] = permissionResponse?.data ?? [];
 
-    // ✅ Parse "module:action" strings into Permission objects
     const permissions: Permission[] = rawPermissions.map((p) => {
         const [module, action] = p.split(":");
         return {

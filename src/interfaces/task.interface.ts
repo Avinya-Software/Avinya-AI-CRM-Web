@@ -28,7 +28,7 @@ export interface CreateTaskDto {
   isRecurring: boolean;
   recurrenceRule?: string;
   parentTaskSeriesId?: number;
-  recurrenceStartDate: string;
+  recurrenceStartDate: string | null | undefined;
   recurrenceEndDate: string | null | undefined;
   reminderAt: string | undefined;
   reminderChannel: string;

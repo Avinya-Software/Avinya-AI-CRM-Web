@@ -27,6 +27,16 @@ export const getPendingAdvisorsApi = async () => {
   return res.data;
 };
 
+//   APPROVE USER   
+export const approveUserApi = async (
+  tenantId: string
+) => {
+  const res = await api.post<ApiWrapper<string>>(
+    `/superadmin/approve-admin?tenantId=${tenantId}`
+  );
+  return res.data;
+};
+
 //   APPROVE ADVISOR  
 export const approveAdvisorApi = async (
   userId: string

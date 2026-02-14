@@ -186,10 +186,10 @@ const TaskUpsertSheet = ({ open, onClose, task }: TaskUpsertSheetProps) => {
           title: formData.title,
           description: formData.description,
           notes: formData.notes,
-          dueDateTime: formData.dueDateTime,
+          dueDateTime: recurring ? recurring.startsOn : formData.dueDateTime,
           isRecurring: !!recurring,
           recurrenceRule: recurrenceRule || undefined,
-          recurrenceStartDate: recurring ? recurring.startsOn : "",
+          recurrenceStartDate: recurring ? recurring.startsOn : null,
           recurrenceEndDate: recurring && !recurring.neverEnds ? recurring.endsOn : null,
           reminderAt: reminder
             ? new Date(`${reminder.date}T${reminder.time}`).toISOString()

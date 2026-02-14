@@ -7,6 +7,7 @@ import UserTable from "../components/Users/Usertable";
 import Pagination from "../components/Users/Pagination";
 import UserFilterSheet from "../components/Users/Userfiltersheet ";
 import UserUpsertSheet from "../components/Users/Userupsertsheet";
+import { useApproveUser } from "../hooks/admin/useApproveAdmin";
 
 const DEFAULT_FILTERS = {
     pageNumber: 1,
@@ -56,6 +57,13 @@ const Users = () => {
         setSelectedUser(user);
         setOpenUserSheet(true);
     };
+
+    const approveAdmin = useApproveUser();
+
+    const handleApprove = (tenantId: string) => {
+        approveAdmin.mutate(tenantId);
+    };
+
 
     return (
         <>
@@ -130,12 +138,20 @@ const Users = () => {
                 </div>
 
                 {/*   USERS TABLE   */}
+                {/* <UserTable
+                    data={data?.data ?? []}
+                    loading={isLoading || isFetching}
+                    onAdd={handleAddUser}
+                    onEdit={handleEditUser}
+                /> */}
                 <UserTable
                     data={data?.data ?? []}
                     loading={isLoading || isFetching}
                     onAdd={handleAddUser}
                     onEdit={handleEditUser}
+                    onApprove={handleApprove}
                 />
+
 
                 {/*   PAGINATION   */}
                 <div className="border-t px-4 py-3">

@@ -1,7 +1,8 @@
 //   REQUESTS  
 
 export interface AdvisorRegisterRequest {
-  fullName: string;
+  fullName: string; 
+  companyName: string;
   mobileNumber: string;
   email: string;
   password: string;

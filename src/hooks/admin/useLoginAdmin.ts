@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { loginAdminApi, getUserPermissions, getUserMenu } from "../../api/admin.api";
 import type { AdminLoginRequest } from "../../interfaces/admin.interface";
-import { saveToken } from "../../utils/token";
+import { getToken, saveToken } from "../../utils/token";
 
 export const useLoginAdmin = () => {
   return useMutation({
@@ -19,11 +19,13 @@ export const useLoginAdmin = () => {
 };
 
 export const useGetUserPermissions = () => {
+  const token = getToken();
   return useQuery({
     queryKey: ["user-permissions"],
     queryFn: getUserPermissions,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
+    enabled: !!token, 
   });
 };
 

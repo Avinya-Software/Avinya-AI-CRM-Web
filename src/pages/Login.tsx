@@ -13,6 +13,7 @@ import { useLoginAdvisor } from "../hooks/advisor/useLoginAdvisor";
 import { useLoginAdmin } from "../hooks/admin/useLoginAdmin";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../store/authSlice";
+import { useGetUserPermissions } from "../hooks/admin/useLoginAdmin";
 
 type LoginErrors = {
   email?: string;
@@ -27,6 +28,8 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+   const { data: permissionResponse } = useGetUserPermissions();
+   
   const {
     mutate: loginAdvisor,
     isPending: advisorLoading,
@@ -40,6 +43,8 @@ const Login = () => {
     isError: adminError,
     error: adminErr
   } = useLoginAdmin();
+
+
 
   /*   VALIDATION   */
   const validate = () => {
