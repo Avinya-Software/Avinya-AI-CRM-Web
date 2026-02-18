@@ -80,7 +80,7 @@ const Sidebar = () => {
         {!isCollapsed && (
           <div>
             <p className="text-xl font-bold">Avinya</p>
-            <p className="text-xs text-slate-400">INSURANCE CRM</p>
+            <p className="text-xs text-slate-400">AI CRM</p>
           </div>
         )}
 

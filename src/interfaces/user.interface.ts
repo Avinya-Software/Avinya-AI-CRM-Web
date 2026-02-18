@@ -20,6 +20,8 @@ export interface UserFilters {
   role?: string;
   tenantId?: string | null;
   isActive?: boolean | null;
+  email?: string;
+  fullName?: string;
 }
 
 export interface UserListResponse {
