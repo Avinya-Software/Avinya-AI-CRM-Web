@@ -56,6 +56,12 @@ export interface CompanyDropdownOption {
   companyEmail: string;
 }
 
+export interface UserDropdownOption {
+  id: string;
+  fullName: string;
+  email: string;
+}
+
 export interface PermissionAction {
   permissionId: number;
   actionKey: string;

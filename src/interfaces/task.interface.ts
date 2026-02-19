@@ -8,8 +8,18 @@ export interface Task {
   taskSeriesId?: number;
   description?: string;
   notes?: string;
+  teamId?: string;
   listId?: number;
   tags?: string[];
+  assignToId?: string;
+}
+
+export type TaskScope = "Personal" | "Team";
+export interface TaskUpsertSheetProps {
+  open: boolean;
+  onClose: () => void;
+  task: Task | null;
+  scope?: TaskScope;
 }
 
 export enum TaskStatus {
@@ -32,11 +42,16 @@ export interface CreateTaskDto {
   recurrenceEndDate: string | null | undefined;
   reminderAt: string | undefined;
   reminderChannel: string;
+  scope: string;
+  teamId?: string;
+  assignToId?: string;
 }
 
 export interface UpdateTaskDto {
   dueDateTime: string;
   status?: TaskStatus;
+  teamId?: string;
+  assignToId?: string;
 }
 
 export interface CreateReminderDto {

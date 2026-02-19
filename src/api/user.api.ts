@@ -83,3 +83,10 @@ export const getCompaniesApi = async () => {
   const res = await api.get("/users/companies");
   return res.data.data; 
 };
+
+/*   GET USERS LIST   */
+
+export const getUsersDropdownApi = async () => {
+  const res = await api.get("/users/users-dropdown");
+  return res.data.data; 
+};

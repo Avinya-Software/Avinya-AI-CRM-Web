@@ -2,10 +2,11 @@ import { ApiWrapper } from "../interfaces/admin.interface";
 import { CreateReminderDto, CreateTaskDto, Task, UpdateRecurringDto, UpdateTaskDto } from "../interfaces/task.interface";
 import api from "./axios";
 
-export const getTasks = async (from?: string, to?: string): Promise<ApiWrapper<Task[]>> => {
+export const getTasks = async (from?: string, to?: string, scope?: string): Promise<ApiWrapper<Task[]>> => {
   const params = new URLSearchParams();
   if (from) params.append("from", from);
   if (to) params.append("to", to);
+  if (scope) params.append("scope", scope);
   
   const response = await api.get<ApiWrapper<Task[]>>(`/tasks/get?${params.toString()}`);
   return response.data;

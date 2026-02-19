@@ -2,10 +2,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { getTasks } from "../../api/task.api";
 
-export const useTasks = (from?: string, to?: string) => {
+export const useTasks = (from?: string, to?: string, scope?: string) => {
   return useQuery({
-    queryKey: ["tasks", from, to],
-    queryFn: () => getTasks(from, to),
+    queryKey: ["tasks", from, to, scope],
+    queryFn: () => getTasks(from, to, scope),
     staleTime: 30000,
   });
 };

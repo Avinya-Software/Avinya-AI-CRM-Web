@@ -1,6 +1,6 @@
 // src/pages/Tasks.tsx
 import { useState } from "react";
-import { Filter, X, Calendar, Plus } from "lucide-react";
+import { Filter, X, Plus, Mic, User, Users } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { useTasks } from "../hooks/task/useTasks";
 import { useAddTaskUsingVoice } from "../hooks/task/useTaskMutations";
@@ -8,9 +8,11 @@ import TaskList from "../components/tasks/TaskList";
 import TaskUpsertSheet from "../components/tasks/TaskUpsertSheet";
 import TaskFilterSheet from "../components/tasks/TaskFilterSheet";
 import { Task, TaskFilters, TaskStatus } from "../interfaces/task.interface";
-import { format, startOfWeek, endOfWeek, addDays } from "date-fns";
-import { Mic } from "lucide-react";
+import { format, startOfWeek, endOfWeek } from "date-fns";
 import VoiceTaskModal from "../components/voice/VoiceTaskModal";
+
+// ─── TaskScope type ───────────────────────────────────────────────
+type TaskScope = "Personal" | "Team";
 
 const Tasks = () => {
   const [filters, setFilters] = useState<TaskFilters>({});
@@ -20,20 +22,16 @@ const Tasks = () => {
   const [view, setView] = useState<"today" | "week" | "all">("today");
   const [openVoice, setOpenVoice] = useState(false);
 
+  const [scope, setScope] = useState<TaskScope>("Personal");
 
-  const { mutate: createVoiceTask, isPending: isVoiceLoading } = useAddTaskUsingVoice();
-
-
+  const { mutate: createVoiceTask, isPending: isVoiceLoading } =
+    useAddTaskUsingVoice();
 
   const handleVoiceSend = async (text: string) => {
-    if (text.trim()) {
-      createVoiceTask({ text });
-    }
+    if (text.trim()) createVoiceTask({ text });
     setOpenVoice(false);
-
   };
 
-  // Calculate date range based on view
   const getDateRange = () => {
     const today = new Date();
     switch (view) {
@@ -53,49 +51,35 @@ const Tasks = () => {
   };
 
   const { from, to } = getDateRange();
-  const { data, isLoading, isFetching } = useTasks(from, to);
+  const { data, isLoading, isFetching } = useTasks(from, to, scope);
 
-  // Filter tasks based on filters
   const filteredTasks = (data?.data || []).filter((task) => {
-    // Status filter
     if (filters.status && task.status !== filters.status) return false;
-
-    // Search filter
     if (
       filters.search &&
       !task.title.toLowerCase().includes(filters.search.toLowerCase())
-    ) {
+    )
       return false;
-    }
 
-    // Date filter (FROM / TO)
     if (filters.from || filters.to) {
       const taskDate = new Date(task.dueDateTime);
-
       if (filters.from) {
         const fromDate = new Date(filters.from);
         fromDate.setHours(0, 0, 0, 0);
-
         if (taskDate < fromDate) return false;
       }
-
       if (filters.to) {
         const toDate = new Date(filters.to);
         toDate.setHours(23, 59, 59, 999);
-
         if (taskDate > toDate) return false;
       }
     }
-
     return true;
   });
 
-
   const hasActiveFilters = filters.search || filters.status;
 
-  const clearAllFilters = () => {
-    setFilters({});
-  };
+  const clearAllFilters = () => setFilters({});
 
   const handleAddTask = () => {
     setSelectedTask(null);
@@ -107,10 +91,11 @@ const Tasks = () => {
     setOpenTaskSheet(true);
   };
 
-  // Group tasks by status
   const groupedTasks = {
     pending: filteredTasks.filter((t) => t.status === TaskStatus.Pending),
-    inProgress: filteredTasks.filter((t) => t.status === TaskStatus.InProgress),
+    inProgress: filteredTasks.filter(
+      (t) => t.status === TaskStatus.InProgress
+    ),
     completed: filteredTasks.filter((t) => t.status === TaskStatus.Completed),
   };
 
@@ -119,26 +104,64 @@ const Tasks = () => {
       <Toaster position="top-right" reverseOrder={false} />
 
       <div className="bg-white rounded-lg border">
-        {/* HEADER */}
+        {/* ── HEADER ──────────────────────────────────────────────── */}
         <div className="px-4 py-5 border-b bg-gray-100">
           <div className="grid grid-cols-2 gap-y-4 items-start">
+
             <div>
               <h1 className="text-4xl font-serif font-semibold text-slate-900">
                 Tasks
               </h1>
-              <p className="mt-1 text-sm text-slate-600">
-                {filteredTasks.length} tasks
-              </p>
+
+              <div className="mt-3 inline-flex bg-white border border-slate-200 rounded-lg p-0.5 gap-0.5">
+                <button
+                  onClick={() => setScope("Personal")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${scope === "Personal"
+                    ? "bg-blue-900 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    }`}
+                >
+                  <User size={14} />
+                  My Tasks
+                  <span
+                    className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Personal"
+                      ? "bg-blue-700 text-white"
+                      : "bg-slate-100 text-slate-500"
+                      }`}
+                  >
+                    {scope === "Personal" ? filteredTasks.length : "—"}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setScope("Team")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${scope === "Team"
+                    ? "bg-blue-900 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    }`}
+                >
+                  <Users size={14} />
+                  Team Tasks
+                  <span
+                    className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Team"
+                      ? "bg-blue-700 text-white"
+                      : "bg-slate-100 text-slate-500"
+                      }`}
+                  >
+                    {scope === "Team" ? filteredTasks.length : "—"}
+                  </span>
+                </button>
+              </div>
             </div>
 
+            {/* Right: Voice + Add Task */}
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setOpenVoice(true)}
                 disabled={isVoiceLoading}
-                className={`inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium transition
-    ${isVoiceLoading
-                    ? "opacity-50 cursor-not-allowed bg-slate-100"
-                    : "hover:bg-slate-50"
+                className={`inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium transition ${isVoiceLoading
+                  ? "opacity-50 cursor-not-allowed bg-slate-100"
+                  : "hover:bg-slate-50"
                   }`}
               >
                 <Mic size={16} />
@@ -150,48 +173,32 @@ const Tasks = () => {
                 onClick={handleAddTask}
               >
                 <Plus size={18} />
-                Add Task
+                {scope === "Team" ? "Add Team Task" : "Add Task"}
               </button>
             </div>
 
-
-            {/* VIEW SELECTOR */}
+            {/* View selector */}
             <div className="flex gap-2">
-              <button
-                onClick={() => setView("today")}
-                className={`px-4 py-2 rounded text-sm font-medium transition ${view === "today"
-                  ? "bg-blue-900 text-white"
-                  : "bg-white border hover:bg-slate-50"
-                  }`}
-              >
-                Today
-              </button>
-              <button
-                onClick={() => setView("week")}
-                className={`px-4 py-2 rounded text-sm font-medium transition ${view === "week"
-                  ? "bg-blue-900 text-white"
-                  : "bg-white border hover:bg-slate-50"
-                  }`}
-              >
-                This Week
-              </button>
-              <button
-                onClick={() => setView("all")}
-                className={`px-4 py-2 rounded text-sm font-medium transition ${view === "all"
-                  ? "bg-blue-900 text-white"
-                  : "bg-white border hover:bg-slate-50"
-                  }`}
-              >
-                All Tasks
-              </button>
+              {(["today", "week", "all"] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`px-4 py-2 rounded text-sm font-medium transition capitalize ${view === v
+                    ? "bg-blue-900 text-white"
+                    : "bg-white border hover:bg-slate-50"
+                    }`}
+                >
+                  {v === "today" ? "Today" : v === "week" ? "This Week" : "All Tasks"}
+                </button>
+              ))}
             </div>
 
-            {/* FILTER + SEARCH */}
+            {/* Filter + Search */}
             <div className="flex justify-end gap-2">
               <div className="relative w-64">
                 <input
                   type="text"
-                  placeholder="Search tasks..."
+                  placeholder={`Search ${scope === "Team" ? "team " : ""}tasks...`}
                   value={filters.search || ""}
                   onChange={(e) =>
                     setFilters({ ...filters, search: e.target.value })
@@ -224,7 +231,18 @@ const Tasks = () => {
           </div>
         </div>
 
-        {/* TASK LISTS - KANBAN STYLE */}
+        {/* ── SCOPE CONTEXT BANNER ─────────────────────────────────── */}
+        {scope === "Team" && (
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 border-b border-blue-100 text-sm text-blue-700">
+            <Users size={14} className="flex-shrink-0" />
+            <span>
+              Showing tasks visible to your entire team. Everyone on the team
+              can see and update these tasks.
+            </span>
+          </div>
+        )}
+
+        {/* ── KANBAN BOARD ────────────────────────────────────────── */}
         <div className="grid grid-cols-3 gap-4 p-4">
           {/* PENDING */}
           <div className="bg-slate-50 rounded-lg p-4">
@@ -273,7 +291,7 @@ const Tasks = () => {
         </div>
       </div>
 
-      {/* FILTER SHEET */}
+      {/* ── MODALS / SHEETS ──────────────────────────────────────── */}
       <TaskFilterSheet
         open={openFilterSheet}
         onClose={() => setOpenFilterSheet(false)}
@@ -282,7 +300,6 @@ const Tasks = () => {
         onClear={clearAllFilters}
       />
 
-      {/* TASK UPSERT SHEET */}
       <TaskUpsertSheet
         open={openTaskSheet}
         onClose={() => {
@@ -290,6 +307,7 @@ const Tasks = () => {
           setSelectedTask(null);
         }}
         task={selectedTask}
+        scope={scope}
       />
 
       <VoiceTaskModal
@@ -297,8 +315,6 @@ const Tasks = () => {
         onClose={() => setOpenVoice(false)}
         onSendText={handleVoiceSend}
       />
-
-
     </>
   );
 };

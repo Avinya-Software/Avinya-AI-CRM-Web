@@ -27,6 +27,7 @@ import Users from "./pages/Users";
 /* -------- RBAC -------- */
 import { ProtectedRoute as RBACProtectedRoute } from "./components/ProtectedRoute";
 import Tasks from "./pages/Tasks";
+import Teams from "./pages/Teams";
 
 function App() {
   return (
@@ -48,7 +49,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            {/* ✅ dashboard:view */}
+            {/* dashboard:view */}
             <Route
               path="/"
               element={
@@ -58,7 +59,7 @@ function App() {
               }
             />
 
-            {/* ✅ lead:view */}
+            {/* lead:view */}
             <Route
               path="/leads"
               element={
@@ -68,7 +69,7 @@ function App() {
               }
             />
 
-            {/* ✅ lead:view */}
+            {/* lead:view */}
             <Route
               path="/users"
               element={
@@ -78,7 +79,7 @@ function App() {
               }
             />
 
-            {/* ✅ followup:view (mapped to Customers) */}
+            {/* followup:view (mapped to Customers) */}
             <Route
               path="/customers"
               element={
@@ -88,7 +89,7 @@ function App() {
               }
             />
 
-            // src/App.tsx - Add this route
+            {/* task:view (mapped to Customers) */}
             <Route
               path="/tasks"
               element={
@@ -98,7 +99,17 @@ function App() {
               }
             />
 
-            {/* ✅ order:view (mapped to Policies) */}
+            {/* team:view (mapped to Customers) */}
+            <Route
+              path="/teams"
+              element={
+                <RBACProtectedRoute module="team" action="view">
+                  <Teams />
+                </RBACProtectedRoute>
+              }
+            />
+
+            {/* order:view (mapped to Policies) */}
             <Route
               path="/policies"
               element={
@@ -117,7 +128,7 @@ function App() {
             {/* TODO: Add claims module to backend */}
             <Route path="/claims" element={<Claims />} />
 
-            {/* ✅ settings:view */}
+            {/* settings:view */}
             <Route
               path="/settings"
               element={
@@ -127,7 +138,7 @@ function App() {
               }
             />
 
-            {/* ✅ campaign:view */}
+            {/* campaign:view */}
             <Route
               path="/campaign"
               element={
@@ -140,7 +151,7 @@ function App() {
             {/* TODO: Add products module to backend */}
             <Route path="/products" element={<Product />} />
 
-            {/* ✅ task:view */}
+            {/* task:view */}
             <Route
               path="/tasks"
               element={
