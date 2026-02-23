@@ -10,6 +10,7 @@ import TaskFilterSheet from "../components/tasks/TaskFilterSheet";
 import { Task, TaskFilters, TaskStatus } from "../interfaces/task.interface";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import VoiceTaskModal from "../components/voice/VoiceTaskModal";
+import { useIsMutating } from "@tanstack/react-query";
 
 // ─── TaskScope type ───────────────────────────────────────────────
 type TaskScope = "Personal" | "Team";
@@ -23,7 +24,7 @@ const Tasks = () => {
   const [openVoice, setOpenVoice] = useState(false);
 
   const [scope, setScope] = useState<TaskScope>("Personal");
-
+  const isMutating = useIsMutating();
   const { mutate: createVoiceTask, isPending: isVoiceLoading } =
     useAddTaskUsingVoice();
 
@@ -254,7 +255,7 @@ const Tasks = () => {
             </div>
             <TaskList
               tasks={groupedTasks.pending}
-              loading={isLoading || isFetching}
+              loading={isLoading || isFetching || isMutating > 0}
               onEdit={handleEditTask}
             />
           </div>
@@ -269,7 +270,7 @@ const Tasks = () => {
             </div>
             <TaskList
               tasks={groupedTasks.inProgress}
-              loading={isLoading || isFetching}
+              loading={isLoading || isFetching || isMutating > 0}
               onEdit={handleEditTask}
             />
           </div>
@@ -284,7 +285,7 @@ const Tasks = () => {
             </div>
             <TaskList
               tasks={groupedTasks.completed}
-              loading={isLoading || isFetching}
+              loading={isLoading || isFetching || isMutating > 0}
               onEdit={handleEditTask}
             />
           </div>
