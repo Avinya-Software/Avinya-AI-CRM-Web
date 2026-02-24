@@ -1,6 +1,8 @@
 import api from "./axios";
 import type {
   CreateCustomerRequest,
+  Customer,
+  CustomerDropdown,
   CustomerResponse,
 } from "../interfaces/customer.interface";
 
@@ -49,10 +51,21 @@ export const getCustomersApi = async (params: {
 
 /*   CUSTOMER DROPDOWN   */
 
-export const getCustomerDropdownApi = async () => {
-  const res = await api.get("/Customer/dropdown");
-  return res.data;
+interface ApiResponse<T> {
+  statusCode: number;
+  statusMessage: string;
+  data: T;
+}
+
+export const getCustomerDropdownApi = async (): Promise<CustomerDropdown[]> => {
+  const res = await api.get<ApiResponse<CustomerDropdown[]>>(
+    "/Client/get-user-dropdown-list"
+  );
+
+  return res.data.data; // ⭐ ONLY ARRAY
 };
+
+
 
 /*   KYC PREVIEW   */
 

@@ -1,14 +1,12 @@
+// src/components/leads/LeadTable.tsx
 import { useState, useRef } from "react";
-import { MoreVertical, X, Check } from "lucide-react";
+import { MoreVertical, X } from "lucide-react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import type { Lead } from "../../interfaces/lead.interface";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { useDeleteLead } from "../../hooks/lead/useDeleteLead";
-import { useUpdateLeadStatus } from "../../hooks/lead/useUpdateLeadStatus";
-import { useQuery } from "@tanstack/react-query";
-import { getLeadStatusesApi } from "../../api/lead.api";
 import TableSkeleton from "../common/TableSkeleton";
-
-/*   STATUS BADGE STYLES   */
 
 const leadStatusStyles: Record<string, string> = {
   New: "bg-slate-100 text-slate-700 border-slate-200",
@@ -19,9 +17,7 @@ const leadStatusStyles: Record<string, string> = {
   Lost: "bg-red-100 text-red-700 border-red-200",
 };
 
-/*   TYPES   */
-
-const DROPDOWN_HEIGHT = 280;
+const DROPDOWN_HEIGHT = 350;
 const DROPDOWN_WIDTH = 230;
 
 interface LeadTableProps {
@@ -32,23 +28,25 @@ interface LeadTableProps {
   onCreateFollowUp?: (lead: Lead) => void;
   onViewFollowUps?: (lead: Lead) => void;
   onRowClick?: (lead: Lead) => void;
-  onAddCustomer?: (lead: Lead) => void;
+  onViewDetails?: (lead: Lead) => void;
+  onCreateQuotation?: (lead: Lead) => void;
+  canEdit?: (lead: Lead) => boolean;
 }
-
-/*   COMPONENT   */
 
 const LeadTable = ({
   data = [],
   loading = false,
   onEdit,
-  onAdd,
   onCreateFollowUp,
   onViewFollowUps,
   onRowClick,
+  onViewDetails,
+  onCreateQuotation,
+  canEdit = () => true,
 }: LeadTableProps) => {
   const [openLead, setOpenLead] = useState<Lead | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Lead | null>(null);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const navigate = useNavigate();
 
   const [style, setStyle] = useState<{ top: number; left: number }>({
     top: 0,
@@ -58,18 +56,9 @@ const LeadTable = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   useOutsideClick(dropdownRef, () => {
     setOpenLead(null);
-    setShowStatusMenu(false);
   });
 
   const { mutate: deleteLead, isPending } = useDeleteLead();
-  const { mutate: updateStatus, isPending: updatingStatus } =
-    useUpdateLeadStatus();
-
-  /* 🔥 Fetch statuses */
-  const { data: statuses = [] } = useQuery({
-    queryKey: ["lead-statuses"],
-    queryFn: getLeadStatusesApi,
-  });
 
   const openDropdown = (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -83,26 +72,21 @@ const LeadTable = ({
     const openUpwards = spaceBelow < DROPDOWN_HEIGHT;
 
     setStyle({
-      top: openUpwards
-        ? rect.top - DROPDOWN_HEIGHT - 6
-        : rect.bottom + 6,
+      top: openUpwards ? rect.top - DROPDOWN_HEIGHT - 6 : rect.bottom + 6,
       left: rect.right - DROPDOWN_WIDTH,
     });
 
     setOpenLead(lead);
-    setShowStatusMenu(false);
   };
 
   const handleAction = (cb: () => void) => {
     setOpenLead(null);
-    setShowStatusMenu(false);
     setTimeout(cb, 0);
   };
 
   const handleDelete = () => {
     if (!confirmDelete) return;
-
-    deleteLead(confirmDelete.leadId, {
+    deleteLead(confirmDelete.leadID, {
       onSuccess: () => {
         setConfirmDelete(null);
         setOpenLead(null);
@@ -110,21 +94,14 @@ const LeadTable = ({
     });
   };
 
-  const handleStatusChange = (statusId: number) => {
-    if (!openLead) return;
-
-    updateStatus(
-      {
-        leadId: openLead.leadId,
-        statusId,
-      },
-      {
-        onSuccess: () => {
-          setOpenLead(null);
-          setShowStatusMenu(false);
-        },
-      }
-    );
+  const handleAddFollowUp = (lead: Lead) => {
+    // Check if previous follow-up is completed
+    if (!(lead as any).createFollowup) {
+      toast.error("Please complete the previous follow-up first.");
+      navigate(`/LeadFollowup/${lead.leadID}`);
+      return;
+    }
+    onCreateFollowUp?.(lead);
   };
 
   return (
@@ -156,12 +133,8 @@ const LeadTable = ({
             ) : (
               data.map((lead) => (
                 <tr
-                  key={lead.leadId}
-                  onClick={() =>
-                    onRowClick
-                      ? onRowClick(lead)
-                      : onViewFollowUps?.(lead)
-                  }
+                  key={lead.leadID}
+                  onClick={() => onRowClick?.(lead)}
                   className="border-t h-[52px] hover:bg-slate-50 cursor-pointer"
                 >
                   <Td>{lead.leadNo}</Td>
@@ -171,9 +144,8 @@ const LeadTable = ({
 
                   <Td>
                     <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-                        leadStatusStyles[lead.leadStatus]
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${leadStatusStyles[lead.leadStatus]
+                        }`}
                     >
                       {lead.leadStatus}
                     </span>
@@ -182,7 +154,9 @@ const LeadTable = ({
                   <Td>{lead.leadSource}</Td>
 
                   <Td>
-                    {new Date(lead.createdAt).toLocaleDateString()}
+                    {lead.createdAt
+                      ? new Date(lead.createdAt).toLocaleDateString()
+                      : "-"}
                   </Td>
 
                   <Td className="text-left">
@@ -200,7 +174,7 @@ const LeadTable = ({
         )}
       </table>
 
-      {/*   ACTION DROPDOWN   */}
+      {/* ACTION DROPDOWN */}
       {openLead && (
         <div
           ref={dropdownRef}
@@ -208,74 +182,60 @@ const LeadTable = ({
           className="fixed z-50 w-[230px] bg-white border rounded-lg shadow-lg overflow-hidden"
           style={{ top: style.top, left: style.left }}
         >
-          {openLead.leadStatus !== "Lost" &&
-            openLead.leadStatus !== "Converted" && (
-              <>
-                <MenuItem
-                  label="Edit Lead"
-                  onClick={() => handleAction(() => onEdit(openLead))}
-                />
+          {/* Edit - Only if canEdit and not Lost */}
+          {canEdit(openLead) && openLead.leadStatus !== "Lost" && (
+            <MenuItem
+              label="Edit"
+              onClick={() => handleAction(() => onEdit(openLead))}
+            />
+          )}
 
-                <MenuItem
-                  label="Create Follow Up"
-                  onClick={() =>
-                    handleAction(() =>
-                      onCreateFollowUp?.(openLead)
-                    )
-                  }
-                />
-
-                <MenuItem
-                  label="Change Status"
-                  onClick={() => setShowStatusMenu((p) => !p)}
-                />
-              </>
-            )}
-
+          {/* View Details - Always show */}
           <MenuItem
-            label="View Follow Ups"
-            onClick={() =>
-              handleAction(() => onViewFollowUps?.(openLead))
-            }
+            label="View Details"
+            onClick={() => handleAction(() => onViewDetails?.(openLead))}
           />
 
+          {/* Add Follow-Up - Only if not Lost */}
+          {openLead.leadStatus !== "Lost" && (
+            <MenuItem
+              label="Add Follow-Up"
+              onClick={() => handleAction(() => handleAddFollowUp(openLead))}
+            />
+          )}
+
+          {/* View Follow-Up History - Always show */}
+          <MenuItem
+            label="View Follow-Up History"
+            onClick={() => handleAction(() => onViewFollowUps?.(openLead))}
+          />
+
+          {/* Create Quotation - Only if New or Lost */}
+          {(openLead.leadStatus === "New" || openLead.leadStatus === "Lost") && (
+            <MenuItem
+              label="Create Quotation"
+              onClick={() => handleAction(() => onCreateQuotation?.(openLead))}
+            />
+          )}
+
+          {/* Separator before delete */}
+          <div className="border-t my-1" />
+
+          {/* Delete Lead - Always show */}
           <MenuItem
             label="Delete Lead"
             danger
             onClick={() => setConfirmDelete(openLead)}
           />
-
-          {/* 🔥 STATUS SUBMENU */}
-          {showStatusMenu && (
-            <div className="border-t mt-1">
-              {statuses
-                .filter((s) => s.name !== openLead.leadStatus)
-                .map((status) => (
-                  <button
-                    key={status.id}
-                    onClick={() =>
-                      handleStatusChange(status.id)
-                    }
-                    disabled={updatingStatus}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100 flex items-center gap-2"
-                  >
-                    <Check size={14} />
-                    {status.name}
-                  </button>
-                ))}
-            </div>
-          )}
         </div>
       )}
 
-      {/*   CONFIRM DELETE   */}
+      {/* CONFIRM DELETE */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg w-[420px] p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">
-                Delete Lead
-              </h3>
+              <h3 className="text-lg font-semibold">Delete Lead</h3>
               <button onClick={() => setConfirmDelete(null)}>
                 <X size={18} />
               </button>
@@ -314,8 +274,6 @@ const LeadTable = ({
 
 export default LeadTable;
 
-/*   HELPERS   */
-
 const Th = ({ children, className = "" }: any) => (
   <th className={`px-4 py-3 text-left font-semibold ${className}`}>
     {children}
@@ -323,9 +281,7 @@ const Th = ({ children, className = "" }: any) => (
 );
 
 const Td = ({ children, className = "" }: any) => (
-  <td className={`px-4 py-3 ${className}`}>
-    {children}
-  </td>
+  <td className={`px-4 py-3 ${className}`}>{children}</td>
 );
 
 const MenuItem = ({
@@ -342,9 +298,8 @@ const MenuItem = ({
       e.stopPropagation();
       onClick();
     }}
-    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${
-      danger ? "text-red-600 hover:bg-red-50" : ""
-    }`}
+    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50 font-medium" : ""
+      }`}
   >
     {danger && <X size={14} />}
     {label}

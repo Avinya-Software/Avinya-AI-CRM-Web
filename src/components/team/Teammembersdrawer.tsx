@@ -50,8 +50,7 @@ const TeamMembersDrawer = ({
     addNext(0);
   };
 
-  const handleRemove = (memberId: string) => {
-    debugger;
+  const handleRemove = (memberId: string) => {    
     if (!team) return;
     removeMember.mutate(
       { teamId: team.id, memberId },

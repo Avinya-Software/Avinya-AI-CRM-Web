@@ -28,6 +28,8 @@ import Users from "./pages/Users";
 import { ProtectedRoute as RBACProtectedRoute } from "./components/ProtectedRoute";
 import Tasks from "./pages/Tasks";
 import Teams from "./pages/Teams";
+import Quotations from "./pages/Quotations";
+import LeadFollowup from "./pages/LeadFollowup";
 
 function App() {
   return (
@@ -69,6 +71,27 @@ function App() {
               }
             />
 
+            <Route
+              path="/LeadFollowup/:leadId"
+              element={
+                <RBACProtectedRoute module="lead" action="view">
+                  <LeadFollowup />
+                </RBACProtectedRoute>
+
+              }
+            />
+
+            {/* team:view (mapped to Customers) */}
+            <Route
+              path="/quotations"
+              element={
+                <RBACProtectedRoute module="quotation" action="view">
+                  <Quotations />
+                </RBACProtectedRoute>
+              }
+            />
+
+
             {/* lead:view */}
             <Route
               path="/users"
@@ -108,6 +131,7 @@ function App() {
                 </RBACProtectedRoute>
               }
             />
+
 
             {/* order:view (mapped to Policies) */}
             <Route

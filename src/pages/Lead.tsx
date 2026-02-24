@@ -1,3 +1,4 @@
+// src/pages/Leads.tsx
 import { useState } from "react";
 import { Filter, X } from "lucide-react";
 import { useSelector } from "react-redux";
@@ -18,21 +19,15 @@ const DEFAULT_FILTERS = {
   pageNumber: 1,
   pageSize: 10,
   search: "",
-  fullName: "",
-  email: "",
-  mobile: "",
-  leadStatusId: undefined as number | undefined,
-  leadSourceId: undefined as number | undefined,
+  status: "",
+  startDate: "",
+  endDate: "",
 };
 
 const Leads = () => {
-  /*   STATE   */
-
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
-
   const [openLeadSheet, setOpenLeadSheet] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
-
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
 
   const [viewFollowUpLead, setViewFollowUpLead] = useState<{
@@ -45,27 +40,15 @@ const Leads = () => {
     leadName?: string;
   } | null>(null);
 
-  // 🔥 ADD CUSTOMER FROM LEAD
   const [openCustomerSheet, setOpenCustomerSheet] = useState(false);
   const [leadForCustomer, setLeadForCustomer] = useState<any>(null);
 
-  const advisorId = useSelector(
-    (state: RootState) => state.auth.advisorId
-  );
-
-  /*   API   */
+  const advisorId = useSelector((state: RootState) => state.auth.advisorId);
 
   const { data, isLoading, isFetching } = useLeads(filters);
 
-  /*   HELPERS   */
-
   const hasActiveFilters =
-    filters.search ||
-    filters.fullName ||
-    filters.email ||
-    filters.mobile ||
-    filters.leadStatusId ||
-    filters.leadSourceId;
+    filters.search || filters.status || filters.startDate || filters.endDate;
 
   const clearAllFilters = () => {
     setFilters(DEFAULT_FILTERS);
@@ -79,7 +62,7 @@ const Leads = () => {
   const openViewFollowUps = (lead: any) => {
     closeAllSheets();
     setViewFollowUpLead({
-      leadId: lead.leadId,
+      leadId: lead.leadID,
       leadName: lead.fullName,
     });
   };
@@ -106,105 +89,119 @@ const Leads = () => {
     <>
       <Toaster position="top-right" reverseOrder={false} />
 
-      <div className="bg-white rounded-lg border">
-        {/*  HEADER  */}
-        <div className="px-4 py-5 border-b bg-gray-100">
-          <div className="grid grid-cols-2 gap-y-4 items-start">
-            <div>
-              <h1 className="text-4xl font-serif font-semibold text-slate-900">
-                Leads
-              </h1>
-              <p className="mt-1 text-sm text-slate-600">
-                {data?.totalRecords ?? 0} total leads
-              </p>
-            </div>
+      <div className="relative min-h-screen">
+        {/* LEADS LIST VIEW */}
+        <div
+          className={`${viewFollowUpLead ? "hidden" : "block"
+            } bg-white rounded-lg border`}
+        >
+          {/* HEADER */}
+          <div className="px-4 py-5 border-b bg-gray-100">
+            <div className="grid grid-cols-2 gap-y-4 items-start">
+              <div>
+                <h1 className="text-4xl font-serif font-semibold text-slate-900">
+                  Leads
+                </h1>
+                <p className="mt-1 text-sm text-slate-600">
+                  {data?.totalRecords ?? 0} total leads
+                </p>
+              </div>
 
-            <div className="text-right">
-              <button
-                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium"
-                onClick={handleAddLead}
-              >
-                <span className="text-lg leading-none">+</span>
-                Add Lead
-              </button>
-            </div>
+              <div className="text-right">
+                <button
+                  className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium"
+                  onClick={handleAddLead}
+                >
+                  <span className="text-lg leading-none">+</span>
+                  Add Lead
+                </button>
+              </div>
 
-            {/* 🔍 SEARCH */}
-            <div>
-              <div className="relative w-[360px]">
-                <input
-                  type="text"
-                  placeholder="Search leads by name, email, or phone..."
-                  value={filters.search}
-                  onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      search: e.target.value,
-                      pageNumber: 1,
-                    })
-                  }
-                  className="w-full h-10 pl-10 pr-3 border rounded text-sm"
-                />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  🔍
-                </span>
+              {/* SEARCH */}
+              <div>
+                <div className="relative w-[360px]">
+                  <input
+                    type="text"
+                    placeholder="Search leads by name, email, or phone..."
+                    value={filters.search}
+                    onChange={(e) =>
+                      setFilters({
+                        ...filters,
+                        search: e.target.value,
+                        pageNumber: 1,
+                      })
+                    }
+                    className="w-full h-10 pl-10 pr-3 border rounded text-sm"
+                  />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    🔍
+                  </span>
+                </div>
+              </div>
+
+              {/* FILTER + CLEAR */}
+              <div className="flex justify-end gap-2">
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="inline-flex items-center gap-2 border border-red-300 text-red-600 px-3 py-2 rounded-lg text-sm hover:bg-red-50"
+                  >
+                    <X size={14} />
+                    Clear Filters
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setOpenFilterSheet(true)}
+                  className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  <Filter size={16} />
+                  Filters
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* 🎯 FILTER + CLEAR */}
-            <div className="flex justify-end gap-2">
-              {hasActiveFilters && (
-                <button
-                  onClick={clearAllFilters}
-                  className="inline-flex items-center gap-2 border border-red-300 text-red-600 px-3 py-2 rounded-lg text-sm hover:bg-red-50"
-                >
-                  <X size={14} />
-                  Clear Filters
-                </button>
-              )}
+          {/* LEADS TABLE */}
+          <LeadTable
+            data={data?.data ?? []}
+            loading={isLoading || isFetching}
+            onAdd={handleAddLead}
+            onEdit={handleEditLead}
+            onRowClick={openViewFollowUps}
+            onViewFollowUps={openViewFollowUps}
+            onCreateFollowUp={(lead) => {
+              closeAllSheets();
+              setCreateFollowUpLead({
+                leadId: lead.leadID,
+                leadName: lead.fullName,
+              });
+            }}
+            onAddCustomer={handleAddCustomerFromLead}
+          />
 
-              <button
-                onClick={() => setOpenFilterSheet(true)}
-                className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium"
-              >
-                <Filter size={16} />
-                Filters
-              </button>
-            </div>
+          {/* PAGINATION */}
+          <div className="border-t px-4 py-3">
+            <Pagination
+              page={filters.pageNumber}
+              totalPages={data?.totalPages || 1}
+              onChange={(page) => setFilters({ ...filters, pageNumber: page })}
+            />
           </div>
         </div>
 
-        {/*   LEADS TABLE   */}
-        <LeadTable
-          data={data?.data ?? []}
-          loading={isLoading || isFetching}
-          onAdd={handleAddLead}
-          onEdit={handleEditLead}
-          onRowClick={openViewFollowUps}
-          onViewFollowUps={openViewFollowUps}
-          onCreateFollowUp={(lead) => {
-            closeAllSheets();
-            setCreateFollowUpLead({
-              leadId: lead.leadId,
-              leadName: lead.fullName,
-            });
-          }}
-          onAddCustomer={handleAddCustomerFromLead}
-        />
-
-        {/*   PAGINATION   */}
-        <div className="border-t px-4 py-3">
-          <Pagination
-            page={filters.pageNumber}
-            totalPages={data?.totalPages || 1}
-            onChange={(page) =>
-              setFilters({ ...filters, pageNumber: page })
-            }
+        {/* FOLLOW-UP VIEW (SHOWN WHEN viewFollowUpLead IS SET) */}
+        {viewFollowUpLead && (
+          <LeadFollowUpBottomSheet
+            open={true}
+            leadId={viewFollowUpLead.leadId}
+            leadName={viewFollowUpLead.leadName}
+            onClose={() => setViewFollowUpLead(null)}
           />
-        </div>
+        )}
       </div>
 
-      {/*   FILTER SHEET   */}
+      {/* FILTER SHEET */}
       <LeadFilterSheet
         open={openFilterSheet}
         onClose={() => setOpenFilterSheet(false)}
@@ -213,7 +210,7 @@ const Leads = () => {
         onClear={clearAllFilters}
       />
 
-      {/*   OTHER SHEETS   */}
+      {/* OTHER SHEETS */}
       <LeadUpsertSheet
         open={openLeadSheet}
         onClose={() => {
@@ -235,13 +232,6 @@ const Leads = () => {
           setOpenCustomerSheet(false);
           setLeadForCustomer(null);
         }}
-      />
-
-      <LeadFollowUpBottomSheet
-        open={!!viewFollowUpLead}
-        leadId={viewFollowUpLead?.leadId || null}
-        leadName={viewFollowUpLead?.leadName}
-        onClose={() => setViewFollowUpLead(null)}
       />
 
       <LeadFollowUpCreateSheet

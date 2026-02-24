@@ -1,166 +1,149 @@
-import { useRef, useEffect } from "react";
-import { X } from "lucide-react";
-import { useOutsideClick } from "../../hooks/useOutsideClick";
-import { useLeadFollowUps } from "../../hooks/leadFollowUp/useLeadFollowUps";
+// src/components/followups/LeadFollowUpBottomSheet.tsx
+import { useState } from "react";
+import { ArrowLeft, Plus } from "lucide-react";
+import { useLeadFollowUps } from "../../hooks/followup/useFollowUps";
+import { useDeleteFollowUp, useUpdateFollowUpStatus } from "../../hooks/followup/useFollowUpMutations";
+import LeadFollowUpCreateSheet from "./LeadFollowUpCreateSheet";
+import LeadFollowUpTable from "./Leadfollowuptable";
 
-interface Props {
+interface LeadFollowUpBottomSheetProps {
   open: boolean;
-  onClose: () => void;
   leadId: string | null;
   leadName?: string;
+  onClose: () => void;
 }
 
 const LeadFollowUpBottomSheet = ({
   open,
-  onClose,
   leadId,
   leadName,
-}: Props) => {
-  const sheetRef = useRef<HTMLDivElement>(null);
+  onClose,
+}: LeadFollowUpBottomSheetProps) => {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [openCreateSheet, setOpenCreateSheet] = useState(false);
 
-  const {
-    data,
-    isLoading,
-    refetch,
-  } = useLeadFollowUps(leadId || "");
+  const { data, isLoading, refetch } = useLeadFollowUps(leadId);
+  const { mutate: deleteFollowUp } = useDeleteFollowUp();
+  const { mutate: updateStatus } = useUpdateFollowUpStatus();
 
-  /*   CLOSE ON OUTSIDE CLICK   */
-  useOutsideClick(sheetRef, () => {
-    if (open) onClose();
+  if (!open) return null;
+
+  const followUps = data?.data || [];
+
+  // Filter follow-ups
+  const filteredFollowUps = followUps.filter((f: any) => {
+    const matchesSearch =
+      !search ||
+      f.notes?.toLowerCase().includes(search.toLowerCase()) ||
+      f.followUpByName?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus = statusFilter === "All" || f.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
   });
 
-  /*   LOCK BODY SCROLL   */
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "unset";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [open]);
-
-  /*   🔥 FORCE REFETCH WHEN OPENED   */
-  useEffect(() => {
-    if (open && leadId) {
-      refetch();
+  const handleDelete = (followUpId: string) => {
+    if (confirm("Are you sure you want to delete this follow-up?")) {
+      deleteFollowUp(followUpId);
     }
-  }, [open, leadId, refetch]);
+  };
 
-  if (!open || !leadId) return null;
+  const handleMarkComplete = (followUpId: string) => {
+    updateStatus({ followUpId, status: "Completed" });
+  };
 
+
+  const handleEdit = (id: string) => {
+    setOpenCreateSheet(true);
+  };
+
+  const handleView = (id: string) => {
+    console.log("View followup:", id);
+  };
   return (
     <>
-      {/*   BACKDROP   */}
-      <div
-        className="fixed inset-0 bg-black/40 z-40"
-        onClick={onClose}
-      />
-
-      {/*   BOTTOM SHEET   */}
-      <div
-        ref={sheetRef}
-        className="
-          fixed bottom-0 left-0 right-0
-          bg-white
-          rounded-t-2xl
-          shadow-2xl
-          z-50
-          h-[55vh]
-          flex flex-col
-          animate-slideUp
-        "
-      >
-        {/*   HEADER   */}
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <div>
-            <h2 className="text-xl font-semibold">
-              Lead Follow Ups
-            </h2>
-            {leadName && (
-              <p className="text-sm text-gray-600">
-                {leadName}
-              </p>
-            )}
+      {/* Follow-up content replaces leads content */}
+      <div className="bg-white rounded-lg border">
+        {/* HEADER */}
+        <div className="px-4 py-5 border-b bg-gray-100">
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-slate-200 rounded-lg transition"
+            >
+              <ArrowLeft size={20} className="text-slate-600" />
+            </button>
+            <div className="flex-1">
+              <h1 className="text-4xl font-serif font-semibold text-slate-900">
+                Follow-up History for Lead: {leadName}
+              </h1>
+            </div>
+            {/* <button
+              onClick={() => setOpenCreateSheet(true)}
+              className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+            >
+              <Plus size={18} />
+              Add Follow-Up
+            </button> */}
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full"
-          >
-            <X size={20} />
-          </button>
+          {/* SEARCH & FILTER */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <input
+                type="text"
+                placeholder="Search follow-ups..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-10 pl-10 pr-3 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                🔍
+              </span>
+            </div>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-10 px-3 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="All">All</option>
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+
+            <button
+              onClick={() => refetch()}
+              className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
-        {/*   CONTENT   */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <p className="text-gray-500">
-                Loading follow ups...
-              </p>
-            </div>
-          ) : !data || data.length === 0 ? (
-            <div className="flex justify-center py-8">
-              <p className="text-gray-500">
-                No follow ups found
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {data.map((followUp) => (
-                <div
-                  key={followUp.followUpId}
-                  className="border rounded-lg p-4 hover:shadow-md"
-                >
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-gray-600 font-medium">
-                        Follow Up Date
-                      </p>
-                      <p className="mt-1">
-                        {new Date(
-                          followUp.followUpDate
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-gray-600 font-medium">
-                        Next Follow Up
-                      </p>
-                      <p className="mt-1">
-                        {followUp.nextFollowUpDate
-                          ? new Date(
-                              followUp.nextFollowUpDate
-                            ).toLocaleString()
-                          : "-"}
-                      </p>
-                    </div>
-
-                    {followUp.remark && (
-                      <div className="col-span-2">
-                        <p className="text-gray-600 font-medium">
-                          Remark
-                        </p>
-                        <p className="mt-1">
-                          {followUp.remark}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="col-span-2 pt-2 border-t">
-                      <p className="text-xs text-gray-500">
-                        Created:{" "}
-                        {new Date(
-                          followUp.createdAt
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* TABLE */}
+        <LeadFollowUpTable
+          data={filteredFollowUps}
+          loading={isLoading}
+          onEdit={handleEdit}
+          onView={handleView}
+          onDelete={handleDelete}
+        />
       </div>
+
+      {/* Add Follow-Up Sheet */}
+      <LeadFollowUpCreateSheet
+        open={openCreateSheet}
+        leadId={leadId}
+        leadName={leadName}
+        onClose={() => setOpenCreateSheet(false)}
+        onSuccess={() => {
+          setOpenCreateSheet(false);
+          refetch();
+        }}
+      />
     </>
   );
 };

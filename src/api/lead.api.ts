@@ -4,32 +4,40 @@ import type {
   LeadFilters,
   LeadListResponse,
 } from "../interfaces/lead.interface";
+import { ApiResponse } from "../interfaces/common.interface";
 
 /*   GET LEADS (PAGINATED)   */
 
-export const getLeadsApi = async (filters: LeadFilters) => {
-  const res = await api.get<LeadListResponse>("/Lead", {
-    params: filters,
-  });
-  return res.data;
+export const getLeadsApi = async (
+  filters: LeadFilters
+): Promise<LeadListResponse> => {
+
+  const res = await api.get<ApiResponse<LeadListResponse>>(
+    "/Lead/filter",
+    { params: filters }
+  );
+
+  return res.data.data; // ⭐ unwrap here
 };
 
 /*   LEAD STATUSES   */
 
-export const getLeadStatusesApi = async () => {
-  const res = await api.get<{ id: number; name: string }[]>(
-    "/Lead/lead-statuses"
+export const getLeadStatusesApi = async (): Promise<any[]> => {
+  const res = await api.get<ApiResponse<any[]>>(
+    "/lead/status-dropdown"
   );
-  return res.data;
+
+  return res.data.data; // ⭐ unwrap
 };
 
 /*   LEAD SOURCES   */
 
-export const getLeadSourcesApi = async () => {
-  const res = await api.get<{ id: number; name: string }[]>(
-    "/Lead/lead-sources"
+export const getLeadSourcesApi = async (): Promise<any[]> => {
+  const res = await api.get<ApiResponse<any[]>>(
+    "/lead/source-dropdown"
   );
-  return res.data;
+
+  return res.data.data;
 };
 
 /*   CREATE / UPDATE LEAD   */

@@ -23,7 +23,7 @@ export interface LeadResponse {
 // src/interfaces/lead.interface.ts
 
 export interface Lead {
-  leadId: string;
+  leadID: string;
   leadNo: string;
   fullName: string;
   email: string;
@@ -38,11 +38,9 @@ export interface LeadFilters {
   pageNumber: number;
   pageSize: number;
   search?: string;
-  fullName?: string;
-  email?: string;
-  mobile?: string;
-  leadStatusId?: number;
-  leadSourceId?: number;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface LeadListResponse {
