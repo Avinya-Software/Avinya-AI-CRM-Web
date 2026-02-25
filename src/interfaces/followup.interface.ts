@@ -11,6 +11,7 @@ export interface FollowUp {
   status: "Pending" | "Completed" | "Cancelled";
   createdAt?: string;
   updatedAt?: string;
+  statusName: string;
 }
 
 export interface CreateFollowUpDto {
@@ -26,5 +27,5 @@ export interface UpdateFollowUpDto {
   notes?: string;
   nextFollowUpDate?: string;
   followUpBy?: string;
-  status?: string;
+  status?: number;
 }

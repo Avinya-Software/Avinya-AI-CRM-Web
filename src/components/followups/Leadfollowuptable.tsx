@@ -9,8 +9,9 @@ interface FollowUp {
     followUpID: string;
     notes: string;
     status: string;
-    nextFollowUpDate?: string;
+    nextFollowupDate?: string;
     followUpByName?: string;
+    statusName: string;
 }
 
 interface LeadFollowUpTableProps {
@@ -45,7 +46,6 @@ const LeadFollowUpTable = ({
     const [style, setStyle] = useState({ top: 0, left: 0 });
 
     const dropdownRef = useRef<HTMLDivElement>(null);
-    console.log(data);
     useOutsideClick(dropdownRef, () => setOpenActionId(null));
 
     const openDropdown = (
@@ -65,7 +65,7 @@ const LeadFollowUpTable = ({
                 ? rect.top - DROPDOWN_HEIGHT - 6
                 : rect.bottom + 6,
             left: rect.right - DROPDOWN_WIDTH,
-        });        
+        });
 
         setOpenActionId(followUpId);
     };
@@ -108,18 +108,18 @@ const LeadFollowUpTable = ({
 
                                     <Td>
                                         <span
-                                            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${statusStyles[followUp.status] ??
+                                            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${statusStyles[followUp.statusName] ??
                                                 "bg-slate-100 text-slate-700 border-slate-200"
                                                 }`}
                                         >
-                                            {followUp.status}
+                                            {followUp.statusName}
                                         </span>
                                     </Td>
 
                                     <Td>
-                                        {followUp.nextFollowUpDate
+                                        {followUp.nextFollowupDate
                                             ? new Date(
-                                                followUp.nextFollowUpDate
+                                                followUp.nextFollowupDate
                                             ).toLocaleString("en-GB", {
                                                 day: "2-digit",
                                                 month: "2-digit",

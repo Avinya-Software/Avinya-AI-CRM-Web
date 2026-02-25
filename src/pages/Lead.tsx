@@ -9,11 +9,13 @@ import LeadTable from "../components/leads/LeadTable";
 import Pagination from "../components/leads/Pagination";
 import LeadFilterSheet from "../components/leads/LeadFilterSheet";
 import LeadUpsertSheet from "../components/leads/LeadUpsertSheet";
-import LeadFollowUpBottomSheet from "../components/followups/LeadFollowUpBottomSheet";
 import LeadFollowUpCreateSheet from "../components/followups/LeadFollowUpCreateSheet";
 import CustomerUpsertSheet from "../components/customer/CustomerUpsertSheet";
 
+
 import type { RootState } from "../store";
+import LeadDetailsModal from "../components/leads/Leaddetailsmodal";
+import QuotationUpsertSheet from "../components/quotation/Quotationupsertsheet ";
 
 const DEFAULT_FILTERS = {
   pageNumber: 1,
@@ -29,6 +31,8 @@ const Leads = () => {
   const [openLeadSheet, setOpenLeadSheet] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
+  const [openQuotationSheet, setOpenQuotationSheet] = useState(false);
+  const [leadForQuotation, setLeadForQuotation] = useState<any>(null);
 
   const [viewFollowUpLead, setViewFollowUpLead] = useState<{
     leadId: string;
@@ -39,6 +43,9 @@ const Leads = () => {
     leadId: string;
     leadName?: string;
   } | null>(null);
+
+  // ← NEW: lead details modal state
+  const [viewLeadDetails, setViewLeadDetails] = useState<any | null>(null);
 
   const [openCustomerSheet, setOpenCustomerSheet] = useState(false);
   const [leadForCustomer, setLeadForCustomer] = useState<any>(null);
@@ -85,6 +92,17 @@ const Leads = () => {
     setOpenCustomerSheet(true);
   };
 
+  // ← NEW: open lead details modal
+  const handleViewLeadDetails = (lead: any) => {
+    setViewLeadDetails(lead);
+  };
+
+  const handleCreateQuotation = (lead: any) => {
+    closeAllSheets();
+    setLeadForQuotation(lead);
+    setOpenQuotationSheet(true);
+  };
+
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
@@ -92,8 +110,7 @@ const Leads = () => {
       <div className="relative min-h-screen">
         {/* LEADS LIST VIEW */}
         <div
-          className={`${viewFollowUpLead ? "hidden" : "block"
-            } bg-white rounded-lg border`}
+          className={`${viewFollowUpLead ? "hidden" : "block"} bg-white rounded-lg border`}
         >
           {/* HEADER */}
           <div className="px-4 py-5 border-b bg-gray-100">
@@ -170,14 +187,15 @@ const Leads = () => {
             onEdit={handleEditLead}
             onRowClick={openViewFollowUps}
             onViewFollowUps={openViewFollowUps}
+            onViewDetails={handleViewLeadDetails}
+            onCreateQuotation={handleCreateQuotation}  // ← NEW prop
             onCreateFollowUp={(lead) => {
               closeAllSheets();
               setCreateFollowUpLead({
                 leadId: lead.leadID,
-                leadName: lead.fullName,
+                leadName: lead.contactPerson,
               });
             }}
-            onAddCustomer={handleAddCustomerFromLead}
           />
 
           {/* PAGINATION */}
@@ -189,16 +207,6 @@ const Leads = () => {
             />
           </div>
         </div>
-
-        {/* FOLLOW-UP VIEW (SHOWN WHEN viewFollowUpLead IS SET) */}
-        {viewFollowUpLead && (
-          <LeadFollowUpBottomSheet
-            open={true}
-            leadId={viewFollowUpLead.leadId}
-            leadName={viewFollowUpLead.leadName}
-            onClose={() => setViewFollowUpLead(null)}
-          />
-        )}
       </div>
 
       {/* FILTER SHEET */}
@@ -242,6 +250,27 @@ const Leads = () => {
         onSuccess={() => {
           setCreateFollowUpLead(null);
           setViewFollowUpLead(createFollowUpLead);
+        }}
+      />
+
+      {/* ← NEW: Lead Details Modal */}
+      {viewLeadDetails && (
+        <LeadDetailsModal
+          lead={viewLeadDetails}
+          onClose={() => setViewLeadDetails(null)}
+        />
+      )}
+
+      <QuotationUpsertSheet
+        open={openQuotationSheet}
+        quotation={null}
+        onClose={() => {
+          setOpenQuotationSheet(false);
+          setLeadForQuotation(null);
+        }}
+        onSuccess={() => {
+          setOpenQuotationSheet(false);
+          setLeadForQuotation(null);
         }}
       />
     </>

@@ -1,6 +1,5 @@
 // src/components/quotations/QuotationViewSheet.tsx
 import { X, Edit2, Calendar, Building2, FileText, DollarSign } from "lucide-react";
-
 import { format } from "date-fns";
 import { Quotation, QuotationStatus } from "../../interfaces/quotation.interface";
 
@@ -13,33 +12,39 @@ interface QuotationViewSheetProps {
 
 const statusConfig: Record<
   QuotationStatus,
-  { label: string; color: string; bg: string; dot: string }
+  { label: string; color: string; bg: string; dot: string; bar: string }
 > = {
   Draft: {
     label: "Draft",
     color: "text-slate-700",
     bg: "bg-slate-50 border-slate-200",
     dot: "bg-slate-400",
+    bar: "bg-slate-400",
   },
   Sent: {
     label: "Sent",
     color: "text-yellow-700",
     bg: "bg-yellow-50 border-yellow-200",
     dot: "bg-yellow-400",
+    bar: "bg-yellow-400",
   },
   Accepted: {
     label: "Accepted",
     color: "text-green-700",
     bg: "bg-green-50 border-green-200",
     dot: "bg-green-400",
+    bar: "bg-green-400",
   },
   Rejected: {
     label: "Rejected",
     color: "text-red-700",
     bg: "bg-red-50 border-red-200",
     dot: "bg-red-400",
+    bar: "bg-red-400",
   },
 };
+
+const DEFAULT_STATUS = statusConfig["Draft"];
 
 const QuotationViewSheet = ({
   open,
@@ -49,7 +54,9 @@ const QuotationViewSheet = ({
 }: QuotationViewSheetProps) => {
   if (!open || !quotation) return null;
 
-  const status = statusConfig[quotation.status];
+  // statusName is the human-readable value; status is the UUID from backend
+  const statusKey = quotation.statusName as QuotationStatus;
+  const status = statusConfig[statusKey] ?? DEFAULT_STATUS;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -62,17 +69,7 @@ const QuotationViewSheet = ({
       {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         {/* Colored top bar */}
-        <div
-          className={`h-1.5 w-full ${
-            quotation.status === "Accepted"
-              ? "bg-green-400"
-              : quotation.status === "Sent"
-              ? "bg-yellow-400"
-              : quotation.status === "Rejected"
-              ? "bg-red-400"
-              : "bg-slate-400"
-          }`}
-        />
+        <div className={`h-1.5 w-full ${status.bar}`} />
 
         {/* Header */}
         <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-slate-200">
@@ -84,7 +81,7 @@ const QuotationViewSheet = ({
               </span>
             </div>
             <h2 className="text-2xl font-bold text-slate-900">
-              {quotation.quotationNo}
+              {quotation.quotationNo || "—"}
             </h2>
             <p className="text-sm text-slate-500 mt-0.5">{quotation.firmName}</p>
           </div>
@@ -106,7 +103,7 @@ const QuotationViewSheet = ({
                 Company
               </div>
               <p className="text-base font-semibold text-slate-900">
-                {quotation.companyName}
+                {quotation.companyName || "—"}
               </p>
             </div>
 
@@ -131,7 +128,9 @@ const QuotationViewSheet = ({
                 Quotation Date
               </div>
               <p className="text-base font-semibold text-slate-900">
-                {format(new Date(quotation.quotationDate), "MMM dd, yyyy")}
+                {quotation.quotationDate
+                  ? format(new Date(quotation.quotationDate), "MMM dd, yyyy")
+                  : "—"}
               </p>
             </div>
 
@@ -141,7 +140,9 @@ const QuotationViewSheet = ({
                 Valid Till
               </div>
               <p className="text-base font-semibold text-slate-900">
-                {format(new Date(quotation.validTill), "MMM dd, yyyy")}
+                {quotation.validTill
+                  ? format(new Date(quotation.validTill), "MMM dd, yyyy")
+                  : "—"}
               </p>
             </div>
           </div>
@@ -159,7 +160,7 @@ const QuotationViewSheet = ({
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-700">Subtotal</span>
                 <span className="font-semibold text-slate-900">
-                  ₹{quotation.subTotal.toLocaleString()}
+                  ₹{(quotation.subTotal ?? 0).toLocaleString()}
                 </span>
               </div>
 
@@ -167,7 +168,7 @@ const QuotationViewSheet = ({
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-700">Tax</span>
                   <span className="font-semibold text-slate-900">
-                    ₹{quotation.totalTax.toLocaleString()}
+                    ₹{(quotation.totalTax ?? 0).toLocaleString()}
                   </span>
                 </div>
               )}
@@ -175,11 +176,44 @@ const QuotationViewSheet = ({
               <div className="flex items-center justify-between text-lg font-bold border-t border-blue-200 pt-3 mt-2">
                 <span className="text-blue-900">Grand Total</span>
                 <span className="text-blue-900">
-                  ₹{quotation.grandTotal.toLocaleString()}
+                  ₹{(quotation.grandTotal ?? 0).toLocaleString()}
                 </span>
               </div>
             </div>
           </div>
+
+          {/* Items Table */}
+          {quotation.items && quotation.items.length > 0 && (
+            <div>
+              <div className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                Items
+              </div>
+              <div className="border border-slate-200 rounded-xl overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-slate-600">Description</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-slate-600">Qty</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-slate-600">Unit Price</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-slate-600">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {quotation.items.map((item, idx) => (
+                      <tr key={item.quotationItemID ?? idx}>
+                        <td className="px-4 py-2 text-slate-700">{item.description || "—"}</td>
+                        <td className="px-4 py-2 text-right text-slate-700">{item.quantity}</td>
+                        <td className="px-4 py-2 text-right text-slate-700">₹{item.unitPrice.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-right font-medium text-slate-900">
+                          ₹{(item.quantity * item.unitPrice).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {/* Terms and Conditions */}
           {quotation.termsAndConditions && (

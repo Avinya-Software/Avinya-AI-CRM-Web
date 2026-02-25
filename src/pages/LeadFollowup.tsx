@@ -7,6 +7,7 @@ import { useDeleteFollowUp } from "../hooks/followup/useFollowUpMutations";
 
 import LeadFollowUpCreateSheet from "../components/followups/LeadFollowUpCreateSheet";
 import LeadFollowUpTable from "../components/followups/Leadfollowuptable";
+import LeadFollowUpViewModal from "../components/followups/Leadfollowupviewmodal";
 
 
 const LeadFollowup = () => {
@@ -17,15 +18,18 @@ const LeadFollowup = () => {
     const [statusFilter, setStatusFilter] = useState("All");
     const [openCreateSheet, setOpenCreateSheet] = useState(false);
 
-    const { data, isLoading, refetch } =
-        useLeadFollowUps(leadId || null);
+    // For view modal
+    const [viewFollowUp, setViewFollowUp] = useState<any | null>(null);
 
+    // For edit — store the follow-up being edited
+    const [editFollowUp, setEditFollowUp] = useState<any | null>(null);
+
+    const { data, isLoading, refetch } = useLeadFollowUps(leadId || null);
     const { mutate: deleteFollowUp } = useDeleteFollowUp();
 
     const followUps = data?.data || [];
 
     /* ================= FILTER ================= */
-
     const filteredFollowUps = followUps.filter((f: any) => {
         const matchesSearch =
             !search ||
@@ -39,14 +43,21 @@ const LeadFollowup = () => {
     });
 
     /* ================= ACTIONS ================= */
-
     const handleEdit = (id: string) => {
-        console.log("Edit followup:", id);
-        setOpenCreateSheet(true);
+        const found = followUps.find((f: any) => f.followUpID === id);
+        if (found) {
+            setEditFollowUp(found);
+        }
     };
 
     const handleView = (id: string) => {
-        console.log("View followup:", id);
+        console.log(id);
+        console.log(followUps);
+        const found = followUps.find((f: any) => f.followUpID === id);
+        console.log("Viewing follow-up:", found);
+        if (found) {
+            setViewFollowUp(found);
+        }
     };
 
     const handleDelete = (id: string) => {
@@ -77,12 +88,15 @@ const LeadFollowup = () => {
                             </h1>
                         </div>
 
-                        <button
-                            onClick={() => setOpenCreateSheet(true)}
+                        {/* <button
+                            onClick={() => {
+                                setEditFollowUp(null);
+                                setOpenCreateSheet(true);
+                            }}
                             className="bg-blue-900 text-white px-4 py-2 rounded text-sm"
                         >
                             + Add Follow-Up
-                        </button>
+                        </button> */}
                     </div>
 
                     {/* FILTERS */}
@@ -126,15 +140,29 @@ const LeadFollowup = () => {
                 </div>
             </div>
 
+            {/* CREATE / EDIT SHEET */}
             <LeadFollowUpCreateSheet
-                open={openCreateSheet}
+                open={openCreateSheet || !!editFollowUp}
                 leadId={leadId || null}
-                onClose={() => setOpenCreateSheet(false)}
+                followUpData={editFollowUp}   // pass existing data for edit mode
+                onClose={() => {
+                    setOpenCreateSheet(false);
+                    setEditFollowUp(null);
+                }}
                 onSuccess={() => {
                     setOpenCreateSheet(false);
+                    setEditFollowUp(null);
                     refetch();
                 }}
             />
+
+            {/* VIEW MODAL */}
+            {viewFollowUp && (
+                <LeadFollowUpViewModal
+                    followUp={viewFollowUp}
+                    onClose={() => setViewFollowUp(null)}
+                />
+            )}
         </div>
     );
 };

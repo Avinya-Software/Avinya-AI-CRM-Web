@@ -10,3 +10,10 @@ export interface Product {
   commissionRules: string;
   isActive: boolean;
 }
+
+export interface ProductDropdown {
+  productID: string;
+  productName: string;
+  description?: string;
+  unitName: number;
+}

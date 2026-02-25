@@ -1,3 +1,5 @@
+import { ApiResponse } from "../interfaces/common.interface";
+import { ProductDropdown } from "../interfaces/product.interface";
 import api from "./axios";
 
 /*  ADD / UPDATE PRODUCT  */
@@ -39,16 +41,12 @@ export const getProductsApi = async (params: {
 
 /*  PRODUCT DROPDOWN  */
 
-export const getProductDropdownApi = async (
-  insurerId?: string
-) => {
-  const res = await api.get<
-    { productId: string; productName: string }[]
-  >("/products/dropdown", {
-    params: insurerId ? { insurerId } : {},
-  });
+export const getProductDropdownApi = async (): Promise<ProductDropdown[]> => {
+  const res = await api.get<ApiResponse<ProductDropdown[]>>(
+    "/Product/get-Product-dropdown"
+  );
 
-  return res.data;
+  return res.data.data; // ⭐ ONLY ARRAY
 };
 
 /*  DELETE PRODUCT (BY ID)  */

@@ -7,24 +7,27 @@ import {
   UpdateQuotationDto,
   QuotationFilters,
   QuotationDropdownItem,
+  PaginatedResponse,
 } from "../interfaces/quotation.interface";
 import { ApiWrapper } from "../interfaces/admin.interface";
 
 // ── GET: Fetch quotations with filters ─────────────────────────────
 export const getQuotations = async (
   filters: QuotationFilters
-): Promise<ApiWrapper<Quotation[]>> => {
+): Promise<PaginatedResponse<Quotation>> => {
   const params = new URLSearchParams();
-  
-  if (filters.search) params.append("search", filters.search);
-  if (filters.status) params.append("status", filters.status);
+  if (filters.search)    params.append("search", filters.search);
+  if (filters.status)    params.append("status", filters.status);
   if (filters.startDate) params.append("startDate", filters.startDate);
-  if (filters.endDate) params.append("endDate", filters.endDate);
-  params.append("page", filters.page.toString());
+  if (filters.endDate)   params.append("endDate", filters.endDate);
+  params.append("page",     filters.page.toString());
   params.append("pageSize", filters.pageSize.toString());
 
   const response = await api.get(`/Quotation/filter?${params.toString()}`);
-  return response.data.data;
+
+  // API shape: { statusCode, data: { pageNumber, pageSize, totalRecords, totalPages, data: Quotation[] } }
+  //                                 ↑ this whole object is PaginatedResponse
+  return response.data.data;  // ← NOT response.data.data.data
 };
 
 // ── GET: Fetch single quotation by ID ──────────────────────────────

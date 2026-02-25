@@ -2,7 +2,6 @@
 import { useState, useRef } from "react";
 import { MoreVertical, X } from "lucide-react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
-
 import TableSkeleton from "../common/TableSkeleton";
 import type { Quotation } from "../../interfaces/quotation.interface";
 import { useDeleteQuotation } from "../../hooks/quotation/Usequotationmutations ";
@@ -33,36 +32,22 @@ const QuotationTable = ({
 }: QuotationTableProps) => {
   const [openQuotation, setOpenQuotation] = useState<Quotation | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Quotation | null>(null);
-
-  const [style, setStyle] = useState<{ top: number; left: number }>({
-    top: 0,
-    left: 0,
-  });
+  const [style, setStyle] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  useOutsideClick(dropdownRef, () => {
-    setOpenQuotation(null);
-  });
+  useOutsideClick(dropdownRef, () => setOpenQuotation(null));
 
-  const { mutate: deleteQuotation, isPending: isDeleting } =
-    useDeleteQuotation();
+  const { mutate: deleteQuotation, isPending: isDeleting } = useDeleteQuotation();
 
-  const openDropdown = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    quotation: Quotation
-  ) => {
+  const openDropdown = (e: React.MouseEvent<HTMLButtonElement>, quotation: Quotation) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-
-    const spaceBelow = viewportHeight - rect.bottom;
+    const spaceBelow = window.innerHeight - rect.bottom;
     const openUpwards = spaceBelow < DROPDOWN_HEIGHT;
-
     setStyle({
       top: openUpwards ? rect.top - DROPDOWN_HEIGHT - 6 : rect.bottom + 6,
       left: rect.right - DROPDOWN_WIDTH,
     });
-
     setOpenQuotation(quotation);
   };
 
@@ -90,19 +75,20 @@ const QuotationTable = ({
             <Th>Company Name</Th>
             <Th>Quotation Date</Th>
             <Th>Valid Till</Th>
-            <Th>Sub Total</Th>
+            <Th>Amount</Th>
+            <Th>Grand Total</Th>
             <Th>Status</Th>
             <Th className="text-left">Actions</Th>
           </tr>
         </thead>
 
         {loading ? (
-          <TableSkeleton rows={6} columns={7} />
+          <TableSkeleton rows={6} columns={8} />
         ) : (
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-slate-500">
+                <td colSpan={8} className="text-center py-12 text-slate-500">
                   No quotations found
                 </td>
               </tr>
@@ -115,24 +101,24 @@ const QuotationTable = ({
                 >
                   <Td>{quotation.quotationNo || "-"}</Td>
                   <Td>{quotation.companyName || "-"}</Td>
-                  <Td>
-                    {new Date(quotation.quotationDate).toLocaleDateString(
-                      "en-GB"
-                    )}
-                  </Td>
-                  <Td>
-                    {new Date(quotation.validTill).toLocaleDateString("en-GB")}
-                  </Td>
-                  <Td>₹ {quotation.subTotal?.toLocaleString() || 0}</Td>
+                  <Td>{new Date(quotation.quotationDate).toLocaleDateString("en-GB")}</Td>
+                  <Td>{new Date(quotation.validTill).toLocaleDateString("en-GB")}</Td>
+
+                  {/* totalAmount = subtotal from API */}
+                  <Td>₹{(quotation.totalAmount ?? 0).toLocaleString()}</Td>
+
+                  {/* grandTotal includes tax */}
+                  <Td className="font-medium">₹{(quotation.grandTotal ?? 0).toLocaleString()}</Td>
+
                   <Td>
                     <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-                        quotationStatusStyles[quotation.statusName || "Draft"]
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${quotationStatusStyles[quotation.statusName ?? "Draft"]
+                        }`}
                     >
-                      {quotation.statusName || "Draft"}
+                      {quotation.statusName ?? "Draft"}
                     </span>
                   </Td>
+
                   <Td className="text-left">
                     <button
                       onClick={(e) => openDropdown(e, quotation)}
@@ -148,7 +134,7 @@ const QuotationTable = ({
         )}
       </table>
 
-      {/* ── ACTION DROPDOWN ──────────────────────────────────────── */}
+      {/* ACTION DROPDOWN */}
       {openQuotation && (
         <div
           ref={dropdownRef}
@@ -156,58 +142,30 @@ const QuotationTable = ({
           className="fixed z-50 w-[230px] bg-white border rounded-lg shadow-lg overflow-hidden"
           style={{ top: style.top, left: style.left }}
         >
-          <MenuItem
-            label="View Details"
-            onClick={() => handleAction(() => onView(openQuotation))}
-          />
-
-          <MenuItem
-            label="Edit"
-            onClick={() => handleAction(() => onEdit(openQuotation))}
-          />
-
-          <MenuItem
-            label="Add Order"
-            onClick={() => handleAction(() => console.log("Add Order"))}
-          />
-
-          <MenuItem
-            label="Reject"
-            onClick={() => handleAction(() => console.log("Reject"))}
-          />
-
-          <MenuItem
-            label="Generate PDF"
-            onClick={() => handleAction(() => console.log("Generate PDF"))}
-          />
-
-          <MenuItem
-            label="Delete Quotation"
-            danger
-            onClick={() => setConfirmDelete(openQuotation)}
-          />
+          <MenuItem label="View Details" onClick={() => handleAction(() => onView(openQuotation))} />
+          <MenuItem label="Edit" onClick={() => handleAction(() => onEdit(openQuotation))} />
+          <MenuItem label="Add Order" onClick={() => handleAction(() => console.log("Add Order"))} />
+          <MenuItem label="Reject" onClick={() => handleAction(() => console.log("Reject"))} />
+          <MenuItem label="Generate PDF" onClick={() => handleAction(() => console.log("Generate PDF"))} />
+          <div className="border-t my-1" />
+          <MenuItem label="Delete Quotation" danger onClick={() => setConfirmDelete(openQuotation)} />
         </div>
       )}
 
-      {/* ── CONFIRM DELETE ──────────────────────────────────────── */}
+      {/* CONFIRM DELETE */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg w-[420px] p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Delete Quotation</h3>
-              <button onClick={() => setConfirmDelete(null)}>
-                <X size={18} />
-              </button>
+              <button onClick={() => setConfirmDelete(null)}><X size={18} /></button>
             </div>
-
             <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to delete this quotation?
+              Are you sure you want to delete{" "}
+              <span className="font-medium">{confirmDelete.quotationNo}</span>?
               <br />
-              <span className="text-red-600 font-medium">
-                This action cannot be undone.
-              </span>
+              <span className="text-red-600 font-medium">This action cannot be undone.</span>
             </p>
-
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
@@ -215,7 +173,6 @@ const QuotationTable = ({
               >
                 Cancel
               </button>
-
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
@@ -233,12 +190,8 @@ const QuotationTable = ({
 
 export default QuotationTable;
 
-// ── HELPERS ────────────────────────────────────────────────────────
-
 const Th = ({ children, className = "" }: any) => (
-  <th className={`px-4 py-3 text-left font-semibold ${className}`}>
-    {children}
-  </th>
+  <th className={`px-4 py-3 text-left font-semibold ${className}`}>{children}</th>
 );
 
 const Td = ({ children, className = "" }: any) => (
@@ -255,13 +208,9 @@ const MenuItem = ({
   danger?: boolean;
 }) => (
   <button
-    onClick={(e) => {
-      e.stopPropagation();
-      onClick();
-    }}
-    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${
-      danger ? "text-red-600 hover:bg-red-50" : ""
-    }`}
+    onClick={(e) => { e.stopPropagation(); onClick(); }}
+    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50 font-medium" : ""
+      }`}
   >
     {danger && <X size={14} />}
     {label}

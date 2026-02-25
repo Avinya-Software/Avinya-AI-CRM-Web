@@ -1,7 +1,7 @@
 // src/components/quotations/QuotationFilterSheet.tsx
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { QuotationFilters, QuotationStatus } from "../../interfaces/quotation.interface";
-
 
 interface QuotationFilterSheetProps {
     open: boolean;
@@ -18,17 +18,41 @@ const QuotationFilterSheet = ({
     onApply,
     onClear,
 }: QuotationFilterSheetProps) => {
-    if (!open) return null;
+    // Local state — changes don't hit API until "Apply" is clicked
+    const [localFilters, setLocalFilters] = useState<QuotationFilters>(filters);
 
-    const handleStatusChange = (status: QuotationStatus | "") => {
-        onApply({ ...filters, status: status || undefined });
+    // Sync local state when filters change externally (e.g. clear all)
+    useEffect(() => {
+        setLocalFilters(filters);
+    }, [filters, open]);
+
+    const handleApply = () => {
+        onApply(localFilters);
+        onClose();
+    };
+
+    const handleClear = () => {
+        setLocalFilters(prev => ({ ...prev, status: "", startDate: "", endDate: "" }));
+        onClear();
+        onClose();
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+        <>
+            {/* Backdrop */}
+            {open && (
+                <div
+                    className="fixed inset-0 bg-black/40 z-40"
+                    onClick={onClose}
+                />
+            )}
 
-            <div className="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm mx-4 max-h-[80vh] overflow-y-auto">
+            {/* Side sheet — slides in from right */}
+            <div
+                className={`fixed top-0 right-0 h-full w-96 bg-white shadow-2xl z-50 flex flex-col
+                    transform transition-transform duration-300 ease-in-out
+                    ${open ? "translate-x-0" : "translate-x-full"}`}
+            >
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
                     <h2 className="text-xl font-semibold text-slate-900">
@@ -42,20 +66,25 @@ const QuotationFilterSheet = ({
                     </button>
                 </div>
 
-                <div className="p-6 space-y-4">
-                    {/* Status Filter */}
+                {/* Body — local changes only, no API calls */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-5">
+
+                    {/* Status */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Status
                         </label>
                         <select
-                            value={filters.status || ""}
+                            value={localFilters.status || ""}
                             onChange={(e) =>
-                                handleStatusChange(e.target.value as QuotationStatus | "")
+                                setLocalFilters(prev => ({
+                                    ...prev,
+                                    status: e.target.value as QuotationStatus | "",
+                                }))
                             }
                             className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         >
-                            <option value="">All</option>
+                            <option value="">All Statuses</option>
                             <option value="Draft">Draft</option>
                             <option value="Sent">Sent</option>
                             <option value="Accepted">Accepted</option>
@@ -63,56 +92,73 @@ const QuotationFilterSheet = ({
                         </select>
                     </div>
 
-                    {/* Date Range */}
+                    {/* Start Date */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Start Date
                         </label>
                         <input
                             type="date"
-                            value={filters.startDate || ""}
+                            value={localFilters.startDate || ""}
                             onChange={(e) =>
-                                onApply({ ...filters, startDate: e.target.value })
+                                setLocalFilters(prev => ({ ...prev, startDate: e.target.value }))
                             }
                             className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         />
                     </div>
 
+                    {/* End Date */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             End Date
                         </label>
                         <input
                             type="date"
-                            value={filters.endDate || ""}
+                            value={localFilters.endDate || ""}
                             onChange={(e) =>
-                                onApply({ ...filters, endDate: e.target.value })
+                                setLocalFilters(prev => ({ ...prev, endDate: e.target.value }))
                             }
                             className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         />
                     </div>
+
+                    {/* Page Size */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                            Records per page
+                        </label>
+                        <select
+                            value={localFilters.pageSize}
+                            onChange={(e) =>
+                                setLocalFilters(prev => ({ ...prev, pageSize: Number(e.target.value) }))
+                            }
+                            className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        >
+                            <option value={10}>10 per page</option>
+                            <option value={25}>25 per page</option>
+                            <option value={50}>50 per page</option>
+                            <option value={100}>100 per page</option>
+                        </select>
+                    </div>
                 </div>
 
-                {/* Footer */}
+                {/* Footer — API called ONLY here */}
                 <div className="flex gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50">
                     <button
-                        onClick={() => {
-                            onClear();
-                            onClose();
-                        }}
+                        onClick={handleClear}
                         className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg hover:bg-white transition text-sm font-medium text-slate-700"
                     >
                         Clear All
                     </button>
                     <button
-                        onClick={onClose}
+                        onClick={handleApply}
                         className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
                     >
-                        Apply
+                        Apply Filters
                     </button>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

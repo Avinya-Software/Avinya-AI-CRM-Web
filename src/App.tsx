@@ -30,6 +30,7 @@ import Tasks from "./pages/Tasks";
 import Teams from "./pages/Teams";
 import Quotations from "./pages/Quotations";
 import LeadFollowup from "./pages/LeadFollowup";
+import Orders from "./pages/Orders";
 
 function App() {
   return (
@@ -133,7 +134,17 @@ function App() {
             />
 
 
-            {/* order:view (mapped to Policies) */}
+            {/* order:view */}
+
+            <Route
+              path="/orders"
+              element={
+                <RBACProtectedRoute module="order" action="view">
+                  <Orders />
+                </RBACProtectedRoute>
+              }
+            />
+
             <Route
               path="/policies"
               element={

@@ -95,13 +95,20 @@ const LeadTable = ({
   };
 
   const handleAddFollowUp = (lead: Lead) => {
-    // Check if previous follow-up is completed
     if (!(lead as any).createFollowup) {
       toast.error("Please complete the previous follow-up first.");
       navigate(`/LeadFollowup/${lead.leadID}`);
       return;
     }
     onCreateFollowUp?.(lead);
+  };
+
+  const handleViewFollowUp = (lead: Lead) => {
+    if (!(lead as any).onViewFollowUps) {
+      navigate(`/LeadFollowup/${lead.leadID}`);
+      return;
+    }
+    onViewFollowUps?.(lead);
   };
 
   return (
@@ -134,28 +141,27 @@ const LeadTable = ({
               data.map((lead) => (
                 <tr
                   key={lead.leadID}
-                  onClick={() => onRowClick?.(lead)}
                   className="border-t h-[52px] hover:bg-slate-50 cursor-pointer"
                 >
                   <Td>{lead.leadNo}</Td>
-                  <Td>{lead.fullName}</Td>
+                  <Td>{lead.contactPerson}</Td>
                   <Td>{lead.email}</Td>
                   <Td>{lead.mobile}</Td>
 
                   <Td>
                     <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${leadStatusStyles[lead.leadStatus]
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${leadStatusStyles[lead.statusName]
                         }`}
                     >
-                      {lead.leadStatus}
+                      {lead.statusName}
                     </span>
                   </Td>
 
-                  <Td>{lead.leadSource}</Td>
+                  <Td>{lead.leadSourceName}</Td>
 
                   <Td>
-                    {lead.createdAt
-                      ? new Date(lead.createdAt).toLocaleDateString()
+                    {lead.createdDate
+                      ? new Date(lead.createdDate).toLocaleDateString()
                       : "-"}
                   </Td>
 
@@ -183,7 +189,7 @@ const LeadTable = ({
           style={{ top: style.top, left: style.left }}
         >
           {/* Edit - Only if canEdit and not Lost */}
-          {canEdit(openLead) && openLead.leadStatus !== "Lost" && (
+          {canEdit(openLead) && openLead.statusName !== "Lost" && (
             <MenuItem
               label="Edit"
               onClick={() => handleAction(() => onEdit(openLead))}
@@ -197,7 +203,7 @@ const LeadTable = ({
           />
 
           {/* Add Follow-Up - Only if not Lost */}
-          {openLead.leadStatus !== "Lost" && (
+          {openLead.statusName !== "Lost" && (
             <MenuItem
               label="Add Follow-Up"
               onClick={() => handleAction(() => handleAddFollowUp(openLead))}
@@ -207,11 +213,11 @@ const LeadTable = ({
           {/* View Follow-Up History - Always show */}
           <MenuItem
             label="View Follow-Up History"
-            onClick={() => handleAction(() => onViewFollowUps?.(openLead))}
+            onClick={() => handleAction(() => handleViewFollowUp(openLead))}
           />
 
           {/* Create Quotation - Only if New or Lost */}
-          {(openLead.leadStatus === "New" || openLead.leadStatus === "Lost") && (
+          {(openLead.statusName === "New" || openLead.statusName === "Lost") && (
             <MenuItem
               label="Create Quotation"
               onClick={() => handleAction(() => onCreateQuotation?.(openLead))}

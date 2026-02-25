@@ -7,6 +7,8 @@ import { getCustomerDropdownApi } from "../../api/customer.api";
 import SearchableComboBox from "../common/SearchableComboBox";
 import Spinner from "../common/Spinner";
 import { toast } from "react-hot-toast";
+import { useUsersDropdown } from "../../hooks/users/Useusers";
+import { Combobox, ComboboxOption } from "../ui/combobox";
 
 interface Props {
   open: boolean;
@@ -66,6 +68,12 @@ const LeadUpsertSheet = ({
   useEffect(() => {
     getCustomerDropdownApi().then((setCustomers))
   }, []);
+
+  const { data: usersResponse } = useUsersDropdown();
+
+  const userOptions: ComboboxOption[] = (usersResponse ?? []).map(
+    (u: any) => ({ value: u.id, label: u.fullName })
+  );
   /* ================= FORM STATE ================= */
 
   const initialForm = {
@@ -200,7 +208,10 @@ const LeadUpsertSheet = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/40 z-50"
+        onClick={onClose}
+      />
 
       <div className="fixed right-0 top-0 h-screen w-[420px] bg-white z-50 shadow-xl flex flex-col">
 
@@ -209,10 +220,12 @@ const LeadUpsertSheet = ({
           <h2 className="font-semibold">
             {lead ? "Edit Lead" : "Add Lead"}
           </h2>
-          <button onClick={onClose}><X /></button>
+          <button onClick={onClose}>
+            <X />
+          </button>
         </div>
 
-        {/* BODY */}
+        {/* BODY (SCROLL AREA) */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
 
           {/* CUSTOMER */}
@@ -228,47 +241,80 @@ const LeadUpsertSheet = ({
             }
           />
 
-          <Input label="Contact Person" required
+          <Input
+            label="Contact Person"
+            required
             value={form.fullName}
             error={errors.fullName}
-            onChange={(v: any) => setForm({ ...form, fullName: v })}
+            onChange={(v: any) =>
+              setForm({ ...form, fullName: v })
+            }
           />
 
-          <Input label="Mobile" required
+          <Input
+            label="Mobile"
+            required
             value={form.mobile}
             error={errors.mobile}
-            onChange={(v: any) => setForm({ ...form, mobile: v })}
+            onChange={(v: any) =>
+              setForm({ ...form, mobile: v })
+            }
           />
 
-          <Input label="Email"
+          <Input
+            label="Email"
             value={form.email}
-            onChange={(v: any) => setForm({ ...form, email: v })}
+            onChange={(v: any) =>
+              setForm({ ...form, email: v })
+            }
           />
 
-          <Textarea label="Billing Address"
+          <Textarea
+            label="Billing Address"
             value={form.address}
-            onChange={(v: any) => setForm({ ...form, address: v })}
+            onChange={(v: any) =>
+              setForm({ ...form, address: v })
+            }
           />
 
-          <Select label="Assigned To" value={form.assignedTo}
-            options={employees}
-            onChange={(v: any) => setForm({ ...form, assignedTo: v })}
+          <Combobox
+            options={userOptions}
+            value={form.assignedTo}
+            onValueChange={(val) =>
+              setForm({ ...form, assignedTo: val })
+            }
+            placeholder="Select user..."
+            searchPlaceholder="Search users..."
+            emptyText="No users found."
           />
 
-          <Select label="State" value={form.stateId}
+          <Select
+            label="State"
+            value={form.stateId}
             options={states}
-            onChange={(v: any) => setForm({ ...form, stateId: v, cityId: "" })}
+            onChange={(v: any) =>
+              setForm({ ...form, stateId: v, cityId: "" })
+            }
           />
 
-          <Select label="City"
+          <Select
+            label="City"
             value={form.cityId}
             options={cities[form.stateId] ?? []}
-            onChange={(v: any) => setForm({ ...form, cityId: v })}
+            onChange={(v: any) =>
+              setForm({ ...form, cityId: v })
+            }
           />
 
-          <Textarea label="Requirement Details"
+          <Textarea
+            label="Requirement Details"
             value={form.requirementDetails}
-            onChange={(v: any) => setForm({ ...form, requirementDetails: v })}
+            onChange={(v: any) =>
+              setForm({
+                ...form,
+                requirementDetails: v,
+              })
+            }
           />
 
           <Select
@@ -276,25 +322,31 @@ const LeadUpsertSheet = ({
             required
             value={form.leadStatusId}
             options={(statuses ?? []).map((s: any) => ({
-              id: s.leadStatusID,
-              name: s.statusName
+              id: s.id,
+              name: s.name,
             }))}
             error={errors.leadStatusId}
-            onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
+            onChange={(v: any) =>
+              setForm({ ...form, leadStatusId: v })
+            }
           />
 
           <Select
             label="Lead Source"
             value={form.leadSourceId}
             options={sources}
-            onChange={(v) => setForm({ ...form, leadSourceId: v })}
+            onChange={(v) =>
+              setForm({ ...form, leadSourceId: v })
+            }
           />
 
           {!isEdit && (
             <Input
               label="Links"
               value={form.links}
-              onChange={(v: any) => setForm({ ...form, links: v })}
+              onChange={(v: any) =>
+                setForm({ ...form, links: v })
+              }
             />
           )}
 
@@ -302,25 +354,33 @@ const LeadUpsertSheet = ({
             <Textarea
               label="Notes"
               value={form.notes}
-              onChange={(v: any) => setForm({ ...form, notes: v })}
+              onChange={(v: any) =>
+                setForm({ ...form, notes: v })
+              }
             />
           )}
 
           {!isEdit && (
-            <Input label="Next Follow-up Date"
+            <Input
+              label="Next Follow-up Date"
+              type="datetime-local"
               value={form.nextFollowupDate}
-              onChange={(v: any) => setForm({ ...form, nextFollowupDate: v })}
+              onChange={(v: any) =>
+                setForm({
+                  ...form,
+                  nextFollowupDate: v,
+                })
+              }
             />
           )}
-
-
-
-
         </div>
 
         {/* FOOTER */}
         <div className="p-4 border-t flex gap-3">
-          <button className="flex-1 border rounded" onClick={onClose}>
+          <button
+            className="flex-1 border rounded"
+            onClick={onClose}
+          >
             Cancel
           </button>
 
@@ -341,17 +401,29 @@ export default LeadUpsertSheet;
 
 /* ================= HELPERS ================= */
 
-const Input = ({ label, required, value, error, onChange }: any) => (
+const Input = ({
+  label,
+  required,
+  value,
+  error,
+  onChange,
+  type = "text",
+}: any) => (
   <div>
     <label className="text-sm font-medium">
       {label} {required && "*"}
     </label>
+
     <input
+      type={type}
       className={`input w-full ${error ? "border-red-500" : ""}`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />
-    {error && <p className="text-xs text-red-600">{error}</p>}
+
+    {error && (
+      <p className="text-xs text-red-600">{error}</p>
+    )}
   </div>
 );
 

@@ -25,13 +25,14 @@ export interface LeadResponse {
 export interface Lead {
   leadID: string;
   leadNo: string;
-  fullName: string;
+  contactPerson: string;
   email: string;
   mobile: string;
   customerId: string | null;
-  leadStatus: string;
-  leadSource: string;
-  createdAt: string;
+  statusName: string;
+  leadSourceName: string;
+  createdDate: string;
+
 }
 
 export interface LeadFilters {

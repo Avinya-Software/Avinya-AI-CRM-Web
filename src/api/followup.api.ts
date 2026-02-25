@@ -27,7 +27,7 @@ export const updateFollowUp = async (
   followUpId: string,
   data: UpdateFollowUpDto
 ) => {
-  const response = await api.put(`/FollowUp/update/${followUpId}`, data);
+  const response = await api.put(`/FollowUp/${followUpId}`, data);
   return response.data;
 };
 
