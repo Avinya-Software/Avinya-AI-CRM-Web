@@ -4,7 +4,7 @@ import { getProductsApi } from "../../api/product.api";
 export const useProducts = (filters: {
   pageNumber: number;
   pageSize: number;
-  productCategoryId?: number;
+  status?: boolean;
   search?: string;
 }) => {
   return useQuery({

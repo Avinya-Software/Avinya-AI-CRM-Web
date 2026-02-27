@@ -11,8 +11,6 @@ import OrderFilterSheet from "../components/order/OrderFilterSheet";
 import OrderUpsertSheet from "../components/order/OrderUpsertSheet";
 import OrderViewSheet from "../components/order/OrderViewSheet";
 
-
-
 const DEFAULT_FILTERS: OrderFilters = {
   page: 1,
   pageSize: 10,
@@ -23,10 +21,7 @@ const DEFAULT_FILTERS: OrderFilters = {
 };
 
 const Orders = () => {
-  // API filters — only updated on debounce / filter apply
   const [filters, setFilters] = useState<OrderFilters>(DEFAULT_FILTERS);
-
-  // Local search input — updates immediately for UI, debounced to API
   const [searchInput, setSearchInput] = useState("");
 
   const [openOrderSheet, setOpenOrderSheet] = useState(false);
@@ -36,7 +31,6 @@ const Orders = () => {
 
   const deleteMutation = useDeleteOrder();
 
-  // Debounce search → only hit API 500ms after user stops typing
   useEffect(() => {
     const timer = setTimeout(() => {
       setFilters((prev) => ({ ...prev, search: searchInput, page: 1 }));
@@ -69,19 +63,16 @@ const Orders = () => {
   };
 
   const handleDeleteOrder = (order: Order) => {
-    if (window.confirm(`Delete order ${order.orderNo}? This cannot be undone.`)) {
-      deleteMutation.mutate(order.orderID);
-    }
+    deleteMutation.mutate(order.orderID);
   };
 
-  // Called by filter sheet on "Apply" — merges filter-only fields (no search)
   const handleApplyFilters = (newFilters: OrderFilters) => {
     setFilters((prev) => ({
       ...prev,
-      status:    newFilters.status,
+      status: newFilters.status,
       startDate: newFilters.startDate,
-      endDate:   newFilters.endDate,
-      page:      1,
+      endDate: newFilters.endDate,
+      page: 1,
     }));
   };
 
@@ -89,7 +80,9 @@ const Orders = () => {
     <>
       <Toaster position="top-right" reverseOrder={false} />
 
+      {/* MAIN CARD */}
       <div className="bg-white rounded-lg border">
+
         {/* HEADER */}
         <div className="px-4 py-5 border-b bg-gray-100">
           <div className="grid grid-cols-2 gap-y-4 items-start">
@@ -112,7 +105,7 @@ const Orders = () => {
               </button>
             </div>
 
-            {/* SEARCH — local state, debounced to API */}
+            {/* SEARCH */}
             <div>
               <div className="relative w-[360px]">
                 <input
@@ -172,7 +165,7 @@ const Orders = () => {
           onAdd={handleAddOrder}
         />
 
-        {/* PAGINATION */}
+        {/* PAGINATION — inside card so it's never clipped */}
         <div className="border-t px-4 py-3">
           <Pagination
             page={filters.page}
@@ -180,6 +173,7 @@ const Orders = () => {
             onChange={(page) => setFilters((prev) => ({ ...prev, page }))}
           />
         </div>
+
       </div>
 
       {/* FILTER SHEET */}

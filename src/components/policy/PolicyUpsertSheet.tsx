@@ -78,9 +78,7 @@ const PolicyUpsertSheet = ({
 
   const { data: customers, isLoading: cLoading } = useCustomerDropdown();
   const { data: insurers, isLoading: iLoading } = useInsurerDropdown();
-  const { data: products, isLoading: pLoading } = useProductDropdown(
-    form.insurerId || undefined
-  );
+  const { data: products, isLoading: pLoading } = useProductDropdown();
   const { data: policyTypes, isLoading: tLoading } = usePolicyTypesDropdown();
   const { data: policyStatuses, isLoading: sLoading } =
     usePolicyStatusesDropdown();
@@ -296,7 +294,7 @@ const PolicyUpsertSheet = ({
                 }
               />
 
-              <SearchableComboBox
+              {/* <SearchableComboBox
                 label="Product"
                 required
                 items={(products || []).map((p) => ({
@@ -314,7 +312,7 @@ const PolicyUpsertSheet = ({
                     productId: item?.value || "",
                   })
                 }
-              />
+              /> */}
 
               <Select
                 label="Policy Type"
@@ -364,7 +362,7 @@ const PolicyUpsertSheet = ({
                 value={form.startDate}
                 error={errors.startDate}
                 max={today}
-                onChange={(v) => setForm({ ...form, startDate: v, endDate : "",})}
+                onChange={(v) => setForm({ ...form, startDate: v, endDate: "", })}
               />
 
               <Input
@@ -374,7 +372,7 @@ const PolicyUpsertSheet = ({
                 value={form.endDate}
                 error={errors.endDate}
                 min={form.startDate}
-                disabled={!form.startDate} 
+                disabled={!form.startDate}
                 onChange={(v) => setForm({ ...form, endDate: v })}
               />
 
@@ -425,18 +423,18 @@ const PolicyUpsertSheet = ({
               </div>
 
 
-             {!form.paymentDone && (
-              <Input
-                type="date"
-                label="Payment Due Date"
-                value={form.paymentDueDate}
-                error={errors.paymentDueDate}
-                min={form.startDate}
-                onChange={(v) =>
-                  setForm({ ...form, paymentDueDate: v })
-                }
-              />
-            )}
+              {!form.paymentDone && (
+                <Input
+                  type="date"
+                  label="Payment Due Date"
+                  value={form.paymentDueDate}
+                  error={errors.paymentDueDate}
+                  min={form.startDate}
+                  onChange={(v) =>
+                    setForm({ ...form, paymentDueDate: v })
+                  }
+                />
+              )}
 
               <Input
                 type="date"
@@ -608,9 +606,8 @@ const Select = ({
     </label>
     <select
       disabled={disabled}
-      className={`input w-full ${
-        error ? "border-red-500" : ""
-      } disabled:bg-gray-100 disabled:cursor-not-allowed`}
+      className={`input w-full ${error ? "border-red-500" : ""
+        } disabled:bg-gray-100 disabled:cursor-not-allowed`}
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
     >

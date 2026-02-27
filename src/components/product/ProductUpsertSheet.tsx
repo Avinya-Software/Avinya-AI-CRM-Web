@@ -1,123 +1,88 @@
+// src/components/product/ProductUpsertSheet.tsx
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { useUpsertProduct } from "../../hooks/product/useUpsertProduct";
-import { useProductCategoryDropdown } from "../../hooks/product/useProductCategoryDropdown";
-import { useInsurerDropdown } from "../../hooks/insurer/useInsurerDropdown";
 import Spinner from "../common/Spinner";
-import SearchableComboBox from "../common/SearchableComboBox";
+import type { Product } from "../../interfaces/product.interface";
+import { useUnitTypeDropdown } from "../../hooks/product/useUnitTypeDropdown";
+
+// Hook to fetch unit type dropdown from /api/Product/get-UnitType-dropdown
+
+
 interface Props {
   open: boolean;
   onClose: () => void;
-  product?: any;
-  insurerId?: string;
+  product?: Product | null;
   onSuccess: () => void;
 }
 
-/*   VALIDATION RULES   */
-
-const regex = {
-  productName: /^[A-Za-z0-9\s]{3,50}$/,
-  productCode: /^[A-Z0-9_-]{2,20}$/,
-  commissionRules: /^[A-Za-z0-9\s,.\-\/]{3,500}$/,
-};
-
-const ProductUpsertSheet = ({
-  open,
-  onClose,
-  product,
-  insurerId,
-  onSuccess,
-}: Props) => {
-  /*   API   */
+const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
   const { mutateAsync, isPending } = useUpsertProduct();
-  const { data: categories, isLoading: catLoading } =
-    useProductCategoryDropdown();
-  const { data: insurers, isLoading: insurerLoading } =
-    useInsurerDropdown();
-  const isLoading = catLoading || insurerLoading || isPending;
-  const loadingDropdowns = catLoading || insurerLoading;
-
-  /*   FORM STATE   */
-
+  const { data: unitTypes, isLoading: unitLoading } = useUnitTypeDropdown();
+  
   const initialForm = {
-    productId: null as string | null,
-    insurerId: "",
-    productCategoryId: 0,
+    productID: null as string | null,
     productName: "",
-    productCode: "",
-    defaultReminderDays: 0,
-    commissionRules: "",
-    isActive: true,
+    category: "",
+    unitType: "",           // unitTypeID (guid) sent to API
+    defaultRate: "" as number | string,
+    purchasePrice: "" as number | string,
+    hsnCode: "",
+    taxCategoryID: null as string | null,
+    isDesignByUs: false,
+    description: "",
+    status: 1,              // 1=Active, 0=Inactive
   };
 
   const [form, setForm] = useState(initialForm);
-  const [errors, setErrors] = useState<any>({});
-
-  /*   PREFILL   */
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!open) return;
 
-    if (product && categories) {
-      const matchedCategory = categories.find(
-        (c) => c.name === product.productCategory
-      );
-
+    if (product) {
       setForm({
-        productId: product.productId ?? null,
-        insurerId: product.insurerId ?? "",
-        productCategoryId: matchedCategory?.id ?? 0,
+        productID: product.productID ?? null,
         productName: product.productName ?? "",
-        productCode: product.productCode ?? "",
-        defaultReminderDays: product.defaultReminderDays ?? 0,
-        commissionRules: product.commissionRules ?? "",
-        isActive: product.isActive ?? true,
+        category: product.category ?? "",
+        unitType: product.unitTypeId ?? "",
+        defaultRate: product.defaultRate ?? "",
+        purchasePrice: product.purchasePrice ?? "",
+        hsnCode: product.hsnCode ?? "",
+        taxCategoryID: product.taxCategoryID ?? null,
+        isDesignByUs: product.isDesignByUs ?? false,
+        description: product.description ?? "",
+        status: product.status ?? 1,
       });
     } else {
-      setForm({
-        ...initialForm,
-        insurerId: insurerId || "",
-      });
+      setForm(initialForm);
     }
 
     setErrors({});
-  }, [open, product, categories, insurerId]);
-
-  /*   VALIDATION   */
+  }, [open, product]);
 
   const validate = () => {
-    const e: any = {};
+    const e: Record<string, string> = {};
 
-    if (!form.insurerId)
-      e.insurerId = "Insurer is required";
-
-    if (!form.productCategoryId)
-      e.productCategoryId = "Category is required";
-
-    if (!form.productName)
+    // Product Name
+    if (!form.productName.trim())
       e.productName = "Product name is required";
-    else if (!regex.productName.test(form.productName))
-      e.productName = "3–50 letters/numbers only";
+    else if (form.productName.trim().length < 2)
+      e.productName = "Min 2 characters";
 
-    if (!form.productCode)
-      e.productCode = "Product code is required";
-    else if (!regex.productCode.test(form.productCode))
-      e.productCode =
-        "Uppercase letters, numbers, _ or -";
+    // Unit Type
+    if (!form.unitType)
+      e.unitType = "Unit Type is required";
 
-    if (
-      form.defaultReminderDays === null ||
-      form.defaultReminderDays < 0
-    )
-      e.defaultReminderDays = "Must be 0 or greater";
+    // Default Rate
+    if (form.defaultRate === "" || Number(form.defaultRate) <= 0)
+      e.defaultRate = "Default Rate is required and must be greater than 0";
 
-    if (!form.commissionRules)
-      e.commissionRules = "Commission rules required";
-    else if (!regex.commissionRules.test(form.commissionRules))
-      e.commissionRules =
-        "Min 3 characters, no special symbols";
+    // Purchase Price
+    if (form.purchasePrice === "" || Number(form.purchasePrice) <= 0)
+      e.purchasePrice = "Purchase Price is required and must be greater than 0";
 
     setErrors(e);
 
@@ -129,13 +94,25 @@ const ProductUpsertSheet = ({
     return true;
   };
 
-  /*   SAVE   */
-
   const handleSave = async () => {
     if (!validate()) return;
 
-    await mutateAsync(form);
-    toast.success("Product saved successfully");
+    const payload = {
+      productID: form.productID,
+      productName: form.productName.trim(),
+      category: form.category.trim() || null,
+      unitType: form.unitType || null,
+      defaultRate: form.defaultRate !== "" ? Number(form.defaultRate) : null,
+      purchasePrice: form.purchasePrice !== "" ? Number(form.purchasePrice) : null,
+      hsnCode: form.hsnCode.trim() || null,
+      taxCategoryID: form.taxCategoryID || null,
+      isDesignByUs: form.isDesignByUs,
+      description: form.description.trim() || null,
+      status: form.status,
+    };
+
+    await mutateAsync(payload);
+    toast.success(`Product ${product ? "updated" : "created"} successfully`);
     onClose();
     onSuccess();
   };
@@ -144,151 +121,163 @@ const ProductUpsertSheet = ({
 
   return (
     <>
-      {/* OVERLAY */}
       <div
         className="fixed inset-0 bg-black/40 z-[60]"
-        onClick={isLoading ? undefined : onClose}
+        onClick={isPending ? undefined : onClose}
       />
 
-      {/* SHEET */}
-      <div className="fixed top-0 right-0 h-screen w-[420px] bg-white z-[70] shadow-2xl flex flex-col animate-slideInRight">
-        {/*   HEADER   */}
+      <div className="fixed top-0 right-0 h-screen w-[440px] bg-white z-[70] shadow-2xl flex flex-col">
+        {/* HEADER */}
         <div className="px-6 py-4 border-b flex justify-between items-center">
           <h2 className="font-semibold text-lg">
             {product ? "Edit Product" : "Add Product"}
           </h2>
-          <button onClick={onClose} disabled={isLoading}>
-            <X />
+          <button onClick={onClose} disabled={isPending} className="p-1 rounded hover:bg-slate-100">
+            <X size={20} />
           </button>
         </div>
 
-        {/*   BODY   */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          {loadingDropdowns ? (
-            <div className="flex items-center justify-center h-full">
-              <Spinner />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className={insurerId ? "opacity-50 pointer-events-none" : ""}>
-                <SearchableComboBox
-                  label="Insurer"
-                  items={insurers.map((i) => ({
-                    value: i.insurerId,
-                    label: i.insurerName,
-                  }))}
-                  value={form.insurerId}
-                  placeholder="Select insurer"
-                  onSelect={(item) =>
-                    setForm({
-                      ...form,
-                      insurerId: item?.value || "",
-                    })
-                  }
-                />
-              </div>
+        {/* BODY */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
 
-              {errors.insurerId && (
-                <p className="text-sm text-red-500 mt-1">{errors.insurerId}</p>
-              )}
+          {/* Product Name */}
+          <Field label="Product Name" required error={errors.productName}>
+            <input
+              className={`input w-full ${errors.productName ? "border-red-500" : ""}`}
+              value={form.productName}
+              onChange={(e) => setForm({ ...form, productName: e.target.value })}
+              placeholder="e.g. LED Board Installation"
+            />
+          </Field>
 
-              <Select
-                label="Product Category"
-                value={form.productCategoryId}
-                error={errors.productCategoryId}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    productCategoryId: Number(v),
-                  })
-                }
-                options={categories}
-                valueKey="id"
-                labelKey="name"
-              />
+          {/* Category */}
+          <Field label="Category">
+            <input
+              className="input w-full"
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              placeholder="e.g. Signage Services"
+            />
+          </Field>
 
-              <Input
-                label="Product Name"
-                value={form.productName}
-                error={errors.productName}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    productName: v,
-                  })
-                }
-              />
+          {/* Unit Type — from /api/Product/get-UnitType-dropdown */}
+          <Field
+            label="Unit Type"
+            required
+            error={errors.unitType}
+          >
+            {unitLoading ? (
+              <div className="flex items-center gap-2 text-sm text-slate-400"><Spinner /> Loading...</div>
+            ) : (
+              <select
+                className={`input w-full ${errors.unitType ? "border-red-500" : ""}`}
+                value={form.unitType}
+                onChange={(e) => setForm({ ...form, unitType: e.target.value })}
+              >
+                <option value="">Select Unit Type</option>
+                {unitTypes.data.map((u: any) => (
+                  <option key={u.unitTypeID} value={u.unitTypeID}>
+                    {u.unitName}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Field>
 
-              <Input
-                label="Product Code"
-                value={form.productCode}
-                error={errors.productCode}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    productCode: v,
-                  })
-                }
-              />
+          {/* Default Rate */}
+          <Field
+            label="Default Rate (₹)"
+            required
+            error={errors.defaultRate}
+          >
+            <input
+              type="number"
+              min={0}
+              className={`input w-full ${errors.defaultRate ? "border-red-500" : ""}`}
+              value={form.defaultRate}
+              onChange={(e) => setForm({ ...form, defaultRate: e.target.value })}
+              placeholder="0.00"
+            />
+          </Field>
 
-              <Input
-                label="Default Reminder Days"
-                value={form.defaultReminderDays}
-                error={errors.defaultReminderDays}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    defaultReminderDays: Number(v.replace(/[^0-9]/g, "")),
-                  })
-                }
-              />
+          {/* Purchase Price */}
+          <Field
+            label="Purchase Price (₹)"
+            required
+            error={errors.purchasePrice}
+          >
+            <input
+              type="number"
+              min={0}
+              className={`input w-full ${errors.purchasePrice ? "border-red-500" : ""}`}
+              value={form.purchasePrice}
+              onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })}
+              placeholder="0.00"
+            />
+          </Field>
 
-              <Textarea
-                label="Commission Rules"
-                value={form.commissionRules}
-                error={errors.commissionRules}
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    commissionRules: v,
-                  })
-                }
-              />
+          {/* HSN Code */}
+          <Field label="HSN Code">
+            <input
+              className="input w-full"
+              value={form.hsnCode}
+              onChange={(e) => setForm({ ...form, hsnCode: e.target.value })}
+              placeholder="e.g. 4901"
+            />
+          </Field>
 
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={form.isActive}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      isActive: e.target.checked,
-                    })
-                  }
-                />
-                Active
-              </label>
-            </div>
-          )}
+          {/* Description */}
+          <Field label="Description">
+            <textarea
+              className="input w-full h-20 resize-none"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Optional product description"
+            />
+          </Field>
+
+          {/* Design By Us */}
+          <div className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
+            <span className="text-sm font-medium text-slate-700">Design By Us</span>
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, isDesignByUs: !form.isDesignByUs })}
+              className={`relative w-11 h-6 rounded-full transition ${form.isDesignByUs ? "bg-blue-600" : "bg-slate-300"}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition transform ${form.isDesignByUs ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+          </div>
+
+          {/* Status */}
+          <div className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
+            <span className="text-sm font-medium text-slate-700">Active</span>
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, status: form.status === 1 ? 0 : 1 })}
+              className={`relative w-11 h-6 rounded-full transition ${form.status === 1 ? "bg-blue-600" : "bg-slate-300"}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition transform ${form.status === 1 ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+          </div>
+
         </div>
 
-        {/*   FOOTER   */}
+        {/* FOOTER */}
         <div className="px-6 py-4 border-t flex gap-3">
           <button
-            className="flex-1 border rounded-lg py-2"
+            className="flex-1 border rounded-lg py-2 text-sm font-medium hover:bg-slate-50"
             onClick={onClose}
-            disabled={isLoading}
+            disabled={isPending}
           >
             Cancel
           </button>
-
           <button
-            disabled={isLoading}
-            className="flex-1 bg-blue-600 text-white rounded-lg py-2 flex items-center justify-center gap-2"
+            disabled={isPending}
+            className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50"
             onClick={handleSave}
           >
-            {isLoading && <Spinner />}
-            {isLoading ? "Saving..." : "Save"}
+            {isPending && <Spinner />}
+            {isPending ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -298,93 +287,23 @@ const ProductUpsertSheet = ({
 
 export default ProductUpsertSheet;
 
-/*   HELPERS   */
-
-const Input = ({
+// ── Helper wrapper ─────────────────────────────────────────────────
+const Field = ({
   label,
-  value,
-  onChange,
-  type = "text",
+  required,
   error,
-}: any) => (
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}) => (
   <div>
-    <label className="text-sm font-medium">
-      {label}
+    <label className="text-sm font-medium text-slate-700 mb-1 block">
+      {label} {required && <span className="text-red-500">*</span>}
     </label>
-    <input
-      type={type}
-      className={`input w-full ${
-        error ? "border-red-500" : ""
-      }`}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-    {error && (
-      <p className="text-xs text-red-500 mt-1">
-        {error}
-      </p>
-    )}
-  </div>
-);
-
-const Textarea = ({
-  label,
-  value,
-  onChange,
-  error,
-}: any) => (
-  <div>
-    <label className="text-sm font-medium">
-      {label}
-    </label>
-    <textarea
-      className={`input w-full h-24 resize-none ${
-        error ? "border-red-500" : ""
-      }`}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-    {error && (
-      <p className="text-xs text-red-500 mt-1">
-        {error}
-      </p>
-    )}
-  </div>
-);
-
-const Select = ({
-  label,
-  value,
-  onChange,
-  options,
-  valueKey,
-  labelKey,
-  error,
-  disabled = false,
-}: any) => (
-  <div>
-    <label className="text-sm font-medium">
-      {label}
-    </label>
-    <select
-      disabled={disabled}
-      className={`input w-full ${
-        error ? "border-red-500" : ""
-      } disabled:bg-gray-100`}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="">Select</option>
-      {options?.map((o: any) => (
-        <option key={o[valueKey]} value={o[valueKey]}>
-          {o[labelKey]}
-        </option>
-      ))}
-    </select>
-    {error && (
-      <p className="text-xs text-red-500 mt-1">
-        {error}
-      </p>
-    )}
+    {children}
+    {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>
 );

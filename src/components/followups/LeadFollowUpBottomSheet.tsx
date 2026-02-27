@@ -59,7 +59,6 @@ const LeadFollowUpBottomSheet = ({
   };
 
   const handleView = (id: string) => {
-    console.log("View followup:", id);
   };
   return (
     <>

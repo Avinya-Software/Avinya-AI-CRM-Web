@@ -47,7 +47,6 @@ const LeadFollowUpCreateSheet = ({
 
   useEffect(() => {
     if (open) {
-      console.log("Follow-up data for editing:", followUpData);
       if (isEditMode && followUpData) {
         setFormData({
           followUpDate: followUpData.followUpDate
@@ -98,7 +97,6 @@ const LeadFollowUpCreateSheet = ({
       followUpBy: formData.followUpBy,
       status: formData.status,
     };
-    console.log(followUpData);
     if (isEditMode) {
       updateFollowUp.mutate(
         {

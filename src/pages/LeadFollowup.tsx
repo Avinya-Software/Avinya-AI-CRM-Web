@@ -51,10 +51,7 @@ const LeadFollowup = () => {
     };
 
     const handleView = (id: string) => {
-        console.log(id);
-        console.log(followUps);
         const found = followUps.find((f: any) => f.followUpID === id);
-        console.log("Viewing follow-up:", found);
         if (found) {
             setViewFollowUp(found);
         }

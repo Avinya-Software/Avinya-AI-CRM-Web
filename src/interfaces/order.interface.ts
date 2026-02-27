@@ -17,35 +17,72 @@ export interface OrderItemResponseDto {
   taxCategoryName?: string;
   lineTotal?: number;
   unitType?: string;
+  rate?: number;
+  hsnCode?: string;
 }
 
 // ── Order (read from API list / detail) ───────────────────────────
 export interface Order {
   orderID: string;
   orderNo?: string;
+
+  // Client info
   clientID?: string;
   clientName?: string;
-  quotationID?: string;
-  orderDate?: string;
-  isDesignByUs?: boolean;
-  designingCharge?: number;
-  expectedDeliveryDate?: string;
-  status?: OrderStatus;
-  statusName?: string;
-  firmID?: number;
-  designStatus?: DesignStatus;
-  assignedDesignTo?: string;
-  enableTax?: boolean;
-  taxCategoryID?: string;
+  companyName?: string;
+  email?: string;
+  mobile?: string;
+  gstNo?: string;
+
+  // Address
+  billAddress?: string;
   isUseBillingAddress?: boolean;
   shippingAddress?: string;
   stateID?: number;
   stateName?: string;
   cityID?: number;
   cityName?: string;
+
+  // Order info
+  quotationID?: string;
+  quotationNo?: string;
+  orderDate?: string;
+  expectedDeliveryDate?: string;
+
+  // Design
+  isDesignByUs?: boolean;
+  designingCharge?: number;
+  designStatus?: DesignStatus;
+  designStatusName?: string;
+  assignedDesignTo?: string;
+  assignedDesignToName?: string;
+
+  // Status
+  status?: OrderStatus;
+  statusName?: string;
+
+  // Tax & Amounts
+  enableTax?: boolean;
+  taxCategoryID?: string;
+  taxes?: number;
   totalAmount?: number;
+  grandTotal?: number;
+
+  // Meta
+  firmID?: number;
+  firmName?: string;
+  createdBy?: string;
+  createdByName?: string;
   createdDate?: string;
-  items?: OrderItemResponseDto[];
+  isAssign?: boolean;
+  billID?: string;
+
+  // Items — API returns "orderItems"
+  orderItems?: OrderItemResponseDto[];
+
+  // Work order
+  workOrder?: any;
+  bill?: any;
 }
 
 // ── Filters ────────────────────────────────────────────────────────

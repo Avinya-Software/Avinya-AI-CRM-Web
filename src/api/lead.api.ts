@@ -47,6 +47,11 @@ export const upsertLeadApi = async (data: any) => {
   return res.data;
 };
 
+export const updateLeadApi = async (id: string, payload: any) => {
+  const res = await api.put(`/Lead/${id}`, payload);
+  return res.data;
+};
+
 /*   DELETE LEAD (BY ID)   */
 
 export const deleteLeadApi = async (

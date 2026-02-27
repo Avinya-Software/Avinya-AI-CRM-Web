@@ -10,6 +10,7 @@ import QuotationViewSheet from "../components/quotation/Quotationviewsheet";
 import QuotationFilterSheet from "../components/quotation/Quotationfiltersheet";
 import Pagination from "../components/leads/Pagination";
 import QuotationTable from "../components/quotation/Quotationtable";
+import OrderUpsertSheet from "../components/order/OrderUpsertSheet";
 
 const DEFAULT_FILTERS: QuotationFilters = {
     page: 1,
@@ -31,6 +32,8 @@ const Quotations = () => {
     const [openViewSheet, setOpenViewSheet] = useState(false);
     const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
     const [openFilterSheet, setOpenFilterSheet] = useState(false);
+    const [orderFromQuotation, setOrderFromQuotation] = useState<any>(null);
+    const [openOrderSheet, setOpenOrderSheet] = useState(false);
 
     // Debounce search → only hit API 500ms after user stops typing
     useEffect(() => {
@@ -68,11 +71,16 @@ const Quotations = () => {
     const handleApplyFilters = (newFilters: QuotationFilters) => {
         setFilters(prev => ({
             ...prev,
-            status:    newFilters.status,
+            status: newFilters.status,
             startDate: newFilters.startDate,
-            endDate:   newFilters.endDate,
-            page:      1,
+            endDate: newFilters.endDate,
+            page: 1,
         }));
+    };
+
+    const handleAddOrder = (quotation: Quotation) => {
+        setOrderFromQuotation(quotation);
+        setOpenOrderSheet(true);
     };
 
     return (
@@ -161,6 +169,7 @@ const Quotations = () => {
                     onView={handleViewQuotation}
                     onEdit={handleEditQuotation}
                     onAdd={handleAddQuotation}
+                    onAddOrder={handleAddOrder}
                 />
 
                 {/* PAGINATION */}
@@ -210,6 +219,15 @@ const Quotations = () => {
                     setSelectedQuotation(null);
                 }}
                 quotation={selectedQuotation}
+            />
+
+            <OrderUpsertSheet
+                open={openOrderSheet}
+                onClose={() => {
+                    setOpenOrderSheet(false);
+                    setOrderFromQuotation(null);
+                }}
+                sourceQuotation={orderFromQuotation}
             />
         </>
     );

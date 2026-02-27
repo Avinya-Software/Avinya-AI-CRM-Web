@@ -1,22 +1,45 @@
 import { ApiResponse } from "../interfaces/common.interface";
-import { ProductDropdown } from "../interfaces/product.interface";
+import { ProductDropdown, UnitType } from "../interfaces/product.interface";
 import api from "./axios";
 
 /*  ADD / UPDATE PRODUCT  */
 
 export const upsertProductApi = async (payload: {
-  productId?: string;
-  insurerId: string;
-  productCategoryId: number;
+  productID?: string | null;
   productName: string;
-  productCode: string;
-  defaultReminderDays: number;
-  commissionRules?: string;
-  isActive: boolean;
+  category?: string | null;
+  unitType?: string | null;       // unitTypeID (guid)
+  defaultRate?: number | null;
+  purchasePrice?: number | null;
+  hsnCode?: string | null;
+  taxCategoryID?: string | null;
+  isDesignByUs?: boolean;
+  description?: string | null;
+  status?: number;                // 1=Active, 0=Inactive
+  createdBy?: string | null;
 }) => {
-  const res = await api.post("/products", payload);
+  const res = await api.post("/Product", payload);
   return res.data;
 };
+
+export const upsertUpdateProductApi = async (id: string,payload: {
+  productID?: string | null;
+  productName: string;
+  category?: string | null;
+  unitType?: string | null;       // unitTypeID (guid)
+  defaultRate?: number | null;
+  purchasePrice?: number | null;
+  hsnCode?: string | null;
+  taxCategoryID?: string | null;
+  isDesignByUs?: boolean;
+  description?: string | null;
+  status?: number;                // 1=Active, 0=Inactive
+  createdBy?: string | null;
+}) => {
+  const res = await api.patch(`/Product/${id}`, payload);
+  return res.data;
+};
+
 
 /*  PRODUCT CATEGORY DROPDOWN  */
 
@@ -30,12 +53,12 @@ export const getProductCategoryDropdownApi = async () => {
 /*  GET PRODUCTS (WITH FILTER + PAGINATION)  */
 
 export const getProductsApi = async (params: {
-  pageNumber: number;
+pageNumber: number;
   pageSize: number;
-  productCategoryId?: number;
+  status?: boolean;
   search?: string;
 }) => {
-  const res = await api.get("/products", { params });
+  const res = await api.get("/Product/filter", { params });
   return res.data;
 };
 
@@ -55,7 +78,16 @@ export const deleteProductApi = async (
   productId: string
 ) => {
   const res = await api.delete(
-    `/products/${productId}`
+    `/Product/${productId}`
   );
   return res.data;
 };
+
+export const getUnitDropDownApi = async () => {
+  const res = await api.get<ApiResponse<UnitType[]>>(
+    "/Product/get-UnitType-dropdown"
+  );
+  return res.data;
+};
+
+

@@ -40,14 +40,14 @@ export const getOrderDropdown = async (): Promise<
 
 // ── POST: Create new order ─────────────────────────────────────────
 export const createOrder = async (data: CreateOrderDto) => {
-  const response = await api.post("/Order/addOrUpdate", data);
+  const response = await api.post("/Order/save", data);
   return response.data;
 };
 
 // ── POST: Update existing order ────────────────────────────────────
 export const updateOrder = async (id: string, data: UpdateOrderDto) => {
   const payload = { orderID: id, ...data };
-  const response = await api.post("/Order/addOrUpdate", payload);
+  const response = await api.post("/Order/save", payload);
   return response.data;
 };
 
