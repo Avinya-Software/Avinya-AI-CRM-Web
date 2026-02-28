@@ -32,6 +32,7 @@ import Quotations from "./pages/Quotations";
 import LeadFollowup from "./pages/LeadFollowup";
 import Orders from "./pages/Orders";
 import Clients from "./pages/Clients";
+import Projects from "./pages/Projects";
 
 function App() {
   return (
@@ -110,6 +111,16 @@ function App() {
               element={
                 <RBACProtectedRoute module="followup" action="view">
                   <Customers />
+                </RBACProtectedRoute>
+              }
+            />
+
+            {/* followup:view (mapped to Customers) */}
+            <Route
+              path="/projects"
+              element={
+                <RBACProtectedRoute module="project" action="view">
+                  <Projects />
                 </RBACProtectedRoute>
               }
             />

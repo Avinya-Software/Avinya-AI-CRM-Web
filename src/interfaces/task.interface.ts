@@ -45,6 +45,7 @@ export interface CreateTaskDto {
   scope: string;
   teamId?: string;
   assignToId?: string;
+  projectId?: string;
 }
 
 export interface UpdateTaskDto {

@@ -69,7 +69,7 @@ export function Combobox({
                 </Button>
             </PopoverTrigger>
 
-            <PopoverContent className="w-full p-0" align="start">
+            <PopoverContent className="w-full p-0 z-[200]" align="start">
                 <Command shouldFilter={false}>
                     <CommandInput
                         placeholder={searchPlaceholder}

@@ -286,22 +286,24 @@ const TaskUpsertSheet = ({
             )}
 
             {/* ASSIGN TO */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Assign To
-              </label>
+            {formData.scope === "Personal" && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Assign To
+                </label>
 
-              <Combobox
-                options={userOptions}
-                value={formData.assignToId}
-                onValueChange={(val) =>
-                  setFormData({ ...formData, assignToId: val })
-                }
-                placeholder="Select user..."
-                searchPlaceholder="Search users..."
-                emptyText="No users found."
-              />
-            </div>
+                <Combobox
+                  options={userOptions}
+                  value={formData.assignToId}
+                  onValueChange={(val) =>
+                    setFormData({ ...formData, assignToId: val })
+                  }
+                  placeholder="Select user..."
+                  searchPlaceholder="Search users..."
+                  emptyText="No users found."
+                />
+              </div>
+            )}
 
             {/* ── TEAM COMBOBOX (replaces old <select>) ──────────────────── */}
             {formData.scope === "Team" && (

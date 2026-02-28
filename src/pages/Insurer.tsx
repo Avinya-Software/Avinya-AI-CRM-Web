@@ -139,7 +139,7 @@ const Insurers = () => {
         onSuccess={handleInsurerSuccess}
       />
 
-      {/*   PRODUCT UPSERT   */}
+        {/* PRODUCT UPSERT  
       <ProductUpsertSheet
         open={openProductSheet}
         insurerId={selectedInsurer?.insurerId}
@@ -148,7 +148,7 @@ const Insurers = () => {
           setSelectedInsurer(null);
         }}
         onSuccess={handleProductSuccess}
-      />
+      /> */}
     </>
   );
 };
