@@ -5,19 +5,27 @@ import { Task, TaskStatus } from "../../interfaces/task.interface";
 import { useUpdateTask } from "../../hooks/task/useTaskMutations";
 import { format, isPast } from "date-fns";
 import TaskDetailModal from "./TaskDetailModal";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface TaskListProps {
   tasks: Task[];
   loading: boolean;
-  onEdit: (task: Task) => void;
+  onEdit?: (task: Task) => void; // ✅ made optional for safety
 }
 
 const TaskList = ({ tasks, loading, onEdit }: TaskListProps) => {
   const updateTask = useUpdateTask();
+  const { hasPermission } = usePermissions();
+
+  const canEditTask = hasPermission("task", "edit");
+
   const [detailTask, setDetailTask] = useState<Task | null>(null);
 
   const handleToggleComplete = (e: React.MouseEvent, task: Task) => {
-    e.stopPropagation(); // prevent opening detail modal
+    e.stopPropagation();
+
+    if (!canEditTask) return; // 🔐 block status change
+
     const newStatus =
       task.status === TaskStatus.Completed
         ? TaskStatus.Pending
@@ -33,8 +41,13 @@ const TaskList = ({ tasks, loading, onEdit }: TaskListProps) => {
   };
 
   const handleEditClick = (e: React.MouseEvent, task: Task) => {
-    e.stopPropagation(); // prevent opening detail modal
+    e.stopPropagation();
+    if (!canEditTask || !onEdit) return;
     onEdit(task);
+  };
+
+  const handleOpenDetail = (task: Task) => {
+    setDetailTask(task);
   };
 
   if (loading) {
@@ -64,16 +77,20 @@ const TaskList = ({ tasks, loading, onEdit }: TaskListProps) => {
           return (
             <div
               key={task.occurrenceId}
-              onClick={() => setDetailTask(task)}
+              onClick={() => handleOpenDetail(task)}
               className="bg-white rounded-lg p-3 border hover:shadow-md hover:border-blue-200 transition group cursor-pointer"
             >
               <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                 {/* CHECKBOX */}
                 <button
                   onClick={(e) => handleToggleComplete(e, task)}
+                  disabled={!canEditTask}
                   className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition ${task.status === TaskStatus.Completed
                     ? "bg-green-500 border-green-500"
                     : "border-slate-300 hover:border-blue-500"
+                    } ${!canEditTask
+                      ? "opacity-50 cursor-not-allowed hover:border-slate-300"
+                      : ""
                     }`}
                 >
                   {task.status === TaskStatus.Completed && (
@@ -111,13 +128,15 @@ const TaskList = ({ tasks, loading, onEdit }: TaskListProps) => {
                 </div>
 
                 {/* EDIT BUTTON */}
-                <button
-                  onClick={(e) => handleEditClick(e, task)}
-                  className="sm:opacity-0 sm:group-hover:opacity-100 p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition"
-                  title="Edit task"
-                >
-                  <Edit size={14} />
-                </button>
+                {canEditTask && onEdit && (
+                  <button
+                    onClick={(e) => handleEditClick(e, task)}
+                    className="sm:opacity-0 sm:group-hover:opacity-100 p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition"
+                    title="Edit task"
+                  >
+                    <Edit size={14} />
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -129,10 +148,14 @@ const TaskList = ({ tasks, loading, onEdit }: TaskListProps) => {
         open={!!detailTask}
         task={detailTask}
         onClose={() => setDetailTask(null)}
-        onEdit={(task) => {
-          setDetailTask(null);
-          onEdit(task);
-        }}
+        onEdit={
+          canEditTask && onEdit
+            ? (task) => {
+              setDetailTask(null);
+              onEdit(task);
+            }
+            : undefined
+        }
       />
     </>
   );

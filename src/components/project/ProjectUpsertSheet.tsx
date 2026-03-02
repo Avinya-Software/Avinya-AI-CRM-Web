@@ -12,6 +12,7 @@ import { getCustomerDropdownApi } from "../../api/customer.api";
 import { Combobox, ComboboxOption } from "../ui/combobox";
 import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { useGetTeamsDropdown } from "../../hooks/team/useTeamMutation";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface Props {
     open: boolean;
@@ -35,6 +36,16 @@ const PRIORITY_OPTIONS = [
 ];
 
 const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
+    const isEdit = !!project;
+
+    /* ── PERMISSIONS ── */
+    const { hasPermission } = usePermissions();
+    const canAdd = hasPermission("project", "add");
+    const canEdit = hasPermission("project", "edit");
+
+    // Derive a single read-only flag used throughout the form
+    const isReadOnly = isEdit ? !canEdit : !canAdd;
+
     /* LOCK BODY SCROLL */
     useEffect(() => {
         document.body.style.overflow = open ? "hidden" : "unset";
@@ -42,21 +53,17 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
     }, [open]);
 
     /* ── DROPDOWN DATA ── */
-
-    // Customers → Client Name field
     const [customers, setCustomers] = useState<any[]>([]);
     const [selectedCustomerId, setSelectedCustomerId] = useState("");
     useEffect(() => {
         getCustomerDropdownApi().then(setCustomers);
     }, []);
 
-    // Employees → Project Manager field
     const { data: usersResponse } = useUsersDropdown();
     const userOptions: ComboboxOption[] = (usersResponse ?? []).map(
         (u: any) => ({ value: String(u.id), label: u.fullName })
     );
 
-    // Teams → Team field
     const { data: teamResponse } = useGetTeamsDropdown();
     const teamOptions: ComboboxOption[] = (teamResponse?.data ?? []).map(
         (t: any) => ({ value: String(t.id), label: t.name })
@@ -163,7 +170,10 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
         }
     };
 
+    // Hard guard — don't render if no permission
     if (!open) return null;
+    if (isEdit && !canEdit) return null;
+    if (!isEdit && !canAdd) return null;
 
     return (
         <>
@@ -197,6 +207,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                         error={errors.projectName}
                         onChange={(v: string) => setForm({ ...form, projectName: v })}
                         placeholder="e.g. Waterproofing for High-Rise Building"
+                        disabled={isReadOnly}
                     />
 
                     {/* Description */}
@@ -205,11 +216,11 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                         value={form.description ?? ""}
                         onChange={(v: string) => setForm({ ...form, description: v })}
                         placeholder="Project details..."
+                        disabled={isReadOnly}
                     />
 
                     {/* Client Name + Location */}
                     <div className="grid grid-cols-2 gap-3">
-                        {/* Client Name — customer dropdown, shows companyName */}
                         <div>
                             <SearchableComboBox
                                 label="Client Name"
@@ -218,10 +229,11 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                                     label: c.companyName || c.contactPerson || c.clientID,
                                 }))}
                                 value={selectedCustomerId}
-                                onSelect={(item) => {
+                                onSelect={isReadOnly ? undefined : (item: any) => {
                                     setSelectedCustomerId(item?.value ?? "");
                                     setForm({ ...form, clientID: item?.value ?? null });
                                 }}
+                                disabled={isReadOnly}
                             />
                         </div>
                         <Input
@@ -229,6 +241,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                             value={form.location ?? ""}
                             onChange={(v: string) => setForm({ ...form, location: v })}
                             placeholder="Project location"
+                            disabled={isReadOnly}
                         />
                     </div>
 
@@ -240,6 +253,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                                 className="input w-full mt-1"
                                 value={form.status ?? 0}
                                 onChange={(e) => setForm({ ...form, status: Number(e.target.value) })}
+                                disabled={isReadOnly}
                             >
                                 {STATUS_OPTIONS.map(o => (
                                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -252,6 +266,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                                 className="input w-full mt-1"
                                 value={form.priority ?? 1}
                                 onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })}
+                                disabled={isReadOnly}
                             >
                                 {PRIORITY_OPTIONS.map(o => (
                                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -267,10 +282,11 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                                 setForm({ ...form, progressPercent: Math.min(100, Math.max(0, Number(v))) })
                             }
                             placeholder="0"
+                            disabled={isReadOnly}
                         />
                     </div>
 
-                    {/* Project Manager — employee/user dropdown */}
+                    {/* Project Manager */}
                     <div>
                         <label className="text-sm font-medium">Project Manager</label>
                         <div className="mt-1">
@@ -278,16 +294,17 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                                 options={userOptions}
                                 value={form.projectManagerId ? String(form.projectManagerId) : ""}
                                 onValueChange={(val) =>
-                                    setForm({ ...form, projectManagerId: val || null })
+                                    !isReadOnly && setForm({ ...form, projectManagerId: val || null })
                                 }
                                 placeholder="Select manager..."
                                 searchPlaceholder="Search employees..."
                                 emptyText="No employees found."
+                                disabled={isReadOnly}
                             />
                         </div>
                     </div>
 
-                    {/* Team dropdown */}
+                    {/* Team */}
                     <div>
                         <label className="text-sm font-medium">Team</label>
                         <div className="mt-1">
@@ -295,11 +312,12 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                                 options={teamOptions}
                                 value={form.teamId ? String(form.teamId) : ""}
                                 onValueChange={(val) =>
-                                    setForm({ ...form, teamId: val ? Number(val) : null })
+                                    !isReadOnly && setForm({ ...form, teamId: val ? Number(val) : null })
                                 }
                                 placeholder="Select team..."
                                 searchPlaceholder="Search teams..."
                                 emptyText="No teams found."
+                                disabled={isReadOnly}
                             />
                         </div>
                     </div>
@@ -313,6 +331,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                                 className="input w-full mt-1"
                                 value={form.startDate ?? ""}
                                 onChange={(e) => setForm({ ...form, startDate: e.target.value || null })}
+                                disabled={isReadOnly}
                             />
                         </div>
                         <div>
@@ -322,6 +341,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                                 className="input w-full mt-1"
                                 value={form.endDate ?? ""}
                                 onChange={(e) => setForm({ ...form, endDate: e.target.value || null })}
+                                disabled={isReadOnly}
                             />
                         </div>
                         <div>
@@ -331,6 +351,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                                 className="input w-full mt-1"
                                 value={form.deadline ?? ""}
                                 onChange={(e) => setForm({ ...form, deadline: e.target.value || null })}
+                                disabled={isReadOnly}
                             />
                         </div>
                     </div>
@@ -344,6 +365,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                             setForm({ ...form, estimatedValue: v ? Number(v) : null })
                         }
                         placeholder="0"
+                        disabled={isReadOnly}
                     />
 
                     {/* Notes */}
@@ -352,6 +374,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                         value={form.notes ?? ""}
                         onChange={(v: string) => setForm({ ...form, notes: v })}
                         placeholder="Additional notes..."
+                        disabled={isReadOnly}
                     />
                 </div>
 
@@ -364,14 +387,18 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                     >
                         Cancel
                     </button>
-                    <button
-                        disabled={saving}
-                        className="flex-1 bg-blue-900 text-white rounded-lg py-2 flex items-center justify-center gap-2 hover:bg-blue-800 disabled:opacity-50"
-                        onClick={handleSave}
-                    >
-                        {saving && <Spinner />}
-                        {saving ? "Saving..." : project ? "Update" : "Create"}
-                    </button>
+
+                    {/* Only show Save/Update if user has permission */}
+                    {!isReadOnly && (
+                        <button
+                            disabled={saving}
+                            className="flex-1 bg-blue-900 text-white rounded-lg py-2 flex items-center justify-center gap-2 hover:bg-blue-800 disabled:opacity-50"
+                            onClick={handleSave}
+                        >
+                            {saving && <Spinner />}
+                            {saving ? "Saving..." : project ? "Update" : "Create"}
+                        </button>
+                    )}
                 </div>
             </div>
         </>
@@ -381,30 +408,32 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
 export default ProjectUpsertSheet;
 
 /*   HELPERS   */
-const Input = ({ label, required, value, error, type = "text", onChange, placeholder }: any) => (
+const Input = ({ label, required, value, error, type = "text", onChange, placeholder, disabled }: any) => (
     <div>
         <label className="text-sm font-medium">
             {label} {required && <span className="text-red-500">*</span>}
         </label>
         <input
             type={type}
-            className={`input w-full mt-1 ${error ? "border-red-500" : ""}`}
+            className={`input w-full mt-1 ${error ? "border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
+            disabled={disabled}
         />
         {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
     </div>
 );
 
-const Textarea = ({ label, value, onChange, placeholder }: any) => (
+const Textarea = ({ label, value, onChange, placeholder, disabled }: any) => (
     <div>
         <label className="text-sm font-medium">{label}</label>
         <textarea
-            className="input w-full h-20 mt-1 resize-none"
+            className="input w-full h-20 mt-1 resize-none disabled:bg-slate-50 disabled:text-slate-500"
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
+            disabled={disabled}
         />
     </div>
 );

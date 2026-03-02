@@ -12,6 +12,8 @@ import Pagination from "../components/leads/Pagination";
 import QuotationTable from "../components/quotation/Quotationtable";
 import OrderUpsertSheet from "../components/order/OrderUpsertSheet";
 
+import { usePermissions } from "../context/PermissionContext"; // ✅ ADDED
+
 const DEFAULT_FILTERS: QuotationFilters = {
     page: 1,
     pageSize: 10,
@@ -22,10 +24,14 @@ const DEFAULT_FILTERS: QuotationFilters = {
 };
 
 const Quotations = () => {
-    // API filters — only updated on debounce / filter apply
-    const [filters, setFilters] = useState<QuotationFilters>(DEFAULT_FILTERS);
 
-    // Local search input — updates immediately for UI, debounced to API
+    // ✅ PERMISSIONS
+    const { hasPermission } = usePermissions();
+    const canCreateQuotation = hasPermission("quotation", "add");
+    const canEditQuotation = hasPermission("quotation", "edit");
+    const canCreateOrder = hasPermission("order", "add");
+
+    const [filters, setFilters] = useState<QuotationFilters>(DEFAULT_FILTERS);
     const [searchInput, setSearchInput] = useState("");
 
     const [openQuotationSheet, setOpenQuotationSheet] = useState(false);
@@ -35,7 +41,7 @@ const Quotations = () => {
     const [orderFromQuotation, setOrderFromQuotation] = useState<any>(null);
     const [openOrderSheet, setOpenOrderSheet] = useState(false);
 
-    // Debounce search → only hit API 500ms after user stops typing
+    // Debounced search
     useEffect(() => {
         const timer = setTimeout(() => {
             setFilters(prev => ({ ...prev, search: searchInput, page: 1 }));
@@ -52,7 +58,9 @@ const Quotations = () => {
         setFilters(DEFAULT_FILTERS);
     };
 
+    // ✅ PROTECTED ADD
     const handleAddQuotation = () => {
+        if (!canCreateQuotation) return;
         setSelectedQuotation(null);
         setOpenQuotationSheet(true);
     };
@@ -62,12 +70,13 @@ const Quotations = () => {
         setOpenViewSheet(true);
     };
 
+    // ✅ PROTECTED EDIT
     const handleEditQuotation = (quotation: Quotation) => {
+        if (!canEditQuotation) return;
         setSelectedQuotation(quotation);
         setOpenQuotationSheet(true);
     };
 
-    // Called by filter sheet on "Apply" — merges filter-only fields (no search)
     const handleApplyFilters = (newFilters: QuotationFilters) => {
         setFilters(prev => ({
             ...prev,
@@ -78,7 +87,9 @@ const Quotations = () => {
         }));
     };
 
+    // ✅ PROTECTED CREATE ORDER FROM QUOTATION
     const handleAddOrder = (quotation: Quotation) => {
+        if (!canCreateOrder) return;
         setOrderFromQuotation(quotation);
         setOpenOrderSheet(true);
     };
@@ -88,9 +99,11 @@ const Quotations = () => {
             <Toaster position="top-right" reverseOrder={false} />
 
             <div className="bg-white rounded-lg border">
+
                 {/* HEADER */}
                 <div className="px-4 py-5 border-b bg-gray-100">
                     <div className="grid grid-cols-2 gap-y-4 items-start">
+
                         <div>
                             <h1 className="text-4xl font-serif font-semibold text-slate-900">
                                 Quotations
@@ -102,7 +115,8 @@ const Quotations = () => {
 
                         <div className="text-right">
                             <button
-                                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+                                disabled={!canCreateQuotation}
+                                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={handleAddQuotation}
                             >
                                 <span className="text-lg leading-none">+</span>
@@ -110,7 +124,7 @@ const Quotations = () => {
                             </button>
                         </div>
 
-                        {/* SEARCH — local state, debounced to API */}
+                        {/* SEARCH */}
                         <div>
                             <div className="relative w-[360px]">
                                 <input
@@ -123,7 +137,7 @@ const Quotations = () => {
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                                     🔍
                                 </span>
-                                {/* Clear search X */}
+
                                 {searchInput && (
                                     <button
                                         onClick={() => setSearchInput("")}
@@ -153,7 +167,6 @@ const Quotations = () => {
                             >
                                 <Filter size={16} />
                                 Filters
-                                {/* Active filter dot indicator */}
                                 {hasActiveFilters && (
                                     <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-600 rounded-full" />
                                 )}
@@ -182,7 +195,7 @@ const Quotations = () => {
                 </div>
             </div>
 
-            {/* FILTER SHEET — slides from side */}
+            {/* FILTER SHEET */}
             <QuotationFilterSheet
                 open={openFilterSheet}
                 onClose={() => setOpenFilterSheet(false)}
@@ -207,6 +220,7 @@ const Quotations = () => {
                 }}
                 quotation={selectedQuotation}
                 onEdit={() => {
+                    if (!canEditQuotation) return;
                     setOpenViewSheet(false);
                     setOpenQuotationSheet(true);
                 }}

@@ -18,33 +18,51 @@ import TeamUpsertModal from "../components/team/Teamupsertmodal";
 import TeamDeleteModal from "../components/team/Teamdeletemodal";
 import TeamMembersDrawer from "../components/team/Teammembersdrawer";
 import { useUsersDropdown } from "../hooks/users/Useusers";
+import { usePermissions } from "../context/PermissionContext"; // ✅ ADDED
 
 const Teams = () => {
+  const { hasPermission } = usePermissions(); // ✅ ADDED
+
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [filterStatus, setFilterStatus] =
+    useState<"all" | "active" | "inactive">("all");
+
   const [upsertOpen, setUpsertOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
+
   const [membersOpen, setMembersOpen] = useState(false);
   const [membersTeam, setMembersTeam] = useState<Team | null>(null);
+
   const { data: teamsData, isLoading } = useTeams();
   const { data: usersData } = useUsersDropdown();
+
   const teams = teamsData?.data ?? [];
+
   const userOptions: SelectOption[] = (usersData ?? []).map((u) => ({
     value: u.id,
     label: u.fullName,
   }));
+
+  // ✅ permissions
+  const canCreate = hasPermission("team", "add");
+  const canEdit = hasPermission("team", "edit");
+  const canDelete = hasPermission("team", "delete");
+  const canManageMembers = hasPermission("team", "edit");
 
   // Filter teams
   const filtered = teams.filter((t) => {
     const matchSearch =
       t.name.toLowerCase().includes(search.toLowerCase()) ||
       t.managerName.toLowerCase().includes(search.toLowerCase());
+
     const matchStatus =
       filterStatus === "all" ||
       (filterStatus === "active" && t.isActive) ||
       (filterStatus === "inactive" && !t.isActive);
+
     return matchSearch && matchStatus;
   });
 
@@ -52,23 +70,27 @@ const Teams = () => {
   const activeCount = teams.filter((t) => t.isActive).length;
   const totalMembers = teams.reduce((sum, t) => sum + t.totalMembers, 0);
 
-  // Handlers
+  // Handlers (protected)
   const handleAdd = () => {
+    if (!canCreate) return;
     setSelectedTeam(null);
     setUpsertOpen(true);
   };
 
   const handleEdit = (team: Team) => {
+    if (!canEdit) return;
     setSelectedTeam(team);
     setUpsertOpen(true);
   };
 
   const handleDelete = (team: Team) => {
+    if (!canDelete) return;
     setDeleteTeam(team);
     setDeleteOpen(true);
   };
 
   const handleManageMembers = (team: Team) => {
+    if (!canManageMembers) return;
     setMembersTeam(team);
     setMembersOpen(true);
   };
@@ -78,9 +100,10 @@ const Teams = () => {
       <Toaster position="top-right" />
 
       <div className="bg-white rounded-lg border">
-        {/* ── HEADER ────────────────────────────────────────────── */}
+        {/* HEADER */}
         <div className="px-4 py-5 border-b bg-gray-100">
-          {/* Title + Add button */}
+
+          {/* Title + Add */}
           <div className="flex items-start justify-between mb-4">
             <div>
               <h1 className="text-4xl font-serif font-semibold text-slate-900">
@@ -90,16 +113,19 @@ const Teams = () => {
                 Manage your teams and their members
               </p>
             </div>
-            <button
-              onClick={handleAdd}
-              className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
-            >
-              <Plus size={18} />
-              New Team
-            </button>
+
+            {canCreate && ( /* ✅ protected */
+              <button
+                onClick={handleAdd}
+                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+              >
+                <Plus size={18} />
+                New Team
+              </button>
+            )}
           </div>
 
-          {/* Stats Tiles */}
+          {/* Stats */}
           <div className="grid grid-cols-3 gap-3 mb-4">
             {[
               {
@@ -132,22 +158,17 @@ const Teams = () => {
                   <Icon size={16} className={iconColor} />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-slate-900 leading-tight">
-                    {value}
-                  </p>
+                  <p className="text-xl font-bold text-slate-900">{value}</p>
                   <p className="text-xs text-slate-400">{label}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Search + Status Filter */}
+          {/* Search + Filter */}
           <div className="flex gap-2">
             <div className="relative flex-1 max-w-sm">
-              <Search
-                size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search teams or managers..."
@@ -163,7 +184,7 @@ const Teams = () => {
                   key={s}
                   onClick={() => setFilterStatus(s)}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition
-                    ${filterStatus === s
+                  ${filterStatus === s
                       ? "bg-blue-900 text-white shadow-sm"
                       : "text-slate-500 hover:text-slate-800"
                     }`}
@@ -175,7 +196,7 @@ const Teams = () => {
           </div>
         </div>
 
-        {/* ── TEAMS GRID ────────────────────────────────────────── */}
+        {/* GRID */}
         <div className="p-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-24">
@@ -187,12 +208,8 @@ const Teams = () => {
               <p className="text-base font-medium text-slate-500">
                 No teams found
               </p>
-              <p className="text-sm text-slate-400 mt-1">
-                {search
-                  ? "Try adjusting your search"
-                  : "Create your first team to get started"}
-              </p>
-              {!search && (
+
+              {!search && canCreate && (
                 <button
                   onClick={handleAdd}
                   className="mt-4 inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition"
@@ -208,9 +225,9 @@ const Teams = () => {
                 <TeamCard
                   key={team.id}
                   team={team}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onManageMembers={handleManageMembers}
+                  onEdit={canEdit ? handleEdit : () => { }}
+                  onDelete={canDelete ? handleDelete : () => { }}
+                  onManageMembers={canManageMembers ? handleManageMembers : () => { }}
                 />
               ))}
             </div>
@@ -218,7 +235,7 @@ const Teams = () => {
         </div>
       </div>
 
-      {/* ── MODALS ────────────────────────────────────────────── */}
+      {/* MODALS */}
       <TeamUpsertModal
         open={upsertOpen}
         onClose={() => {

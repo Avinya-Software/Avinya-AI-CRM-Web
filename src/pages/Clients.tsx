@@ -2,43 +2,50 @@ import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
 import { useClients } from "../hooks/client/useClients";
+import { usePermissions } from "../context/PermissionContext";
 
 import Pagination from "../components/leads/Pagination";
-
 import type { Client } from "../interfaces/client.interface";
 import ClientTable from "../components/clients/Clienttable";
 import ClientUpsertSheet from "../components/clients/Clientupsertsheet";
 
 const Clients = () => {
+    const { hasPermission } = usePermissions();
+
+    const canViewClient = hasPermission("client", "view");
+    const canAddClient = hasPermission("client", "add");
+    const canEditClient = hasPermission("client", "edit");
+
     const [pageNumber, setPageNumber] = useState(1);
     const [pageSize] = useState(10);
     const [search, setSearch] = useState("");
 
-    /*   CLIENT UPSERT   */
     const [openClientSheet, setOpenClientSheet] = useState(false);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
-    /*
-     * useClients returns ClientPaginatedData (after `select` unwrap):
-     * {
-     *   pageNumber, pageSize, totalRecords, totalPages,
-     *   data: Client[]   <-- the actual array
-     * }
-     */
+    // 🔐 Block entire page if no view permission
+    if (!canViewClient) {
+        return (
+            <div className="p-10 text-center text-slate-500">
+                You don’t have permission to view clients.
+            </div>
+        );
+    }
+
     const { data, isLoading, isFetching, refetch } = useClients(
         pageNumber,
         pageSize,
         search
     );
 
-    /*   HANDLERS   */
-
     const handleAddClient = () => {
+        if (!canAddClient) return;
         setSelectedClient(null);
         setOpenClientSheet(true);
     };
 
     const handleEditClient = (client: Client) => {
+        if (!canEditClient) return;
         setSelectedClient(client);
         setOpenClientSheet(true);
     };
@@ -49,14 +56,12 @@ const Clients = () => {
         toast.success("Client saved successfully!");
     };
 
-    /*  UI  */
-
     return (
         <>
             <Toaster position="top-right" reverseOrder={false} />
 
             <div className="bg-white rounded-lg border">
-                {/*  HEADER  */}
+                {/* HEADER */}
                 <div className="px-4 py-5 border-b bg-gray-100">
                     <div className="grid grid-cols-2 gap-y-4 items-start">
                         <div>
@@ -69,13 +74,15 @@ const Clients = () => {
                         </div>
 
                         <div className="text-right">
-                            <button
-                                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium"
-                                onClick={handleAddClient}
-                            >
-                                <span className="text-lg leading-none">+</span>
-                                Add Client
-                            </button>
+                            {canAddClient && (
+                                <button
+                                    className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium"
+                                    onClick={handleAddClient}
+                                >
+                                    <span className="text-lg leading-none">+</span>
+                                    Add Client
+                                </button>
+                            )}
                         </div>
 
                         {/* SEARCH */}
@@ -99,14 +106,14 @@ const Clients = () => {
                     </div>
                 </div>
 
-                {/*   TABLE — pass data.data (the Client[]) not data itself   */}
+                {/* TABLE */}
                 <ClientTable
                     data={data?.data ?? []}
                     loading={isLoading || isFetching}
-                    onEdit={handleEditClient}
+                    onEdit={canEditClient ? handleEditClient : undefined}
                 />
 
-                {/*   PAGINATION — totalPages lives on data directly   */}
+                {/* PAGINATION */}
                 <Pagination
                     page={pageNumber}
                     totalPages={data?.totalPages ?? 1}
@@ -114,7 +121,7 @@ const Clients = () => {
                 />
             </div>
 
-            {/*   CLIENT UPSERT   */}
+            {/* UPSERT SHEET */}
             <ClientUpsertSheet
                 open={openClientSheet}
                 client={selectedClient}

@@ -2,6 +2,7 @@
 import { X, Edit2, Calendar, Building2, FileText, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { Quotation, QuotationStatus } from "../../interfaces/quotation.interface";
+import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
 
 interface QuotationViewSheetProps {
   open: boolean;
@@ -52,9 +53,13 @@ const QuotationViewSheet = ({
   quotation,
   onEdit,
 }: QuotationViewSheetProps) => {
+
+  // ✅ PERMISSIONS
+  const { hasPermission } = usePermissions();
+  const canEdit = hasPermission("quotation", "edit");
+
   if (!open || !quotation) return null;
 
-  // statusName is the human-readable value; status is the UUID from backend
   const statusKey = quotation.statusName as QuotationStatus;
   const status = statusConfig[statusKey] ?? DEFAULT_STATUS;
 
@@ -83,8 +88,11 @@ const QuotationViewSheet = ({
             <h2 className="text-2xl font-bold text-slate-900">
               {quotation.quotationNo || "—"}
             </h2>
-            <p className="text-sm text-slate-500 mt-0.5">{quotation.firmName}</p>
+            <p className="text-sm text-slate-500 mt-0.5">
+              {quotation.firmName}
+            </p>
           </div>
+
           <button
             onClick={onClose}
             className="p-1.5 hover:bg-slate-100 rounded-lg transition text-slate-400 hover:text-slate-600"
@@ -182,12 +190,13 @@ const QuotationViewSheet = ({
             </div>
           </div>
 
-          {/* Items Table */}
+          {/* Items */}
           {quotation.items && quotation.items.length > 0 && (
             <div>
               <div className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
                 Items
               </div>
+
               <div className="border border-slate-200 rounded-xl overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 border-b border-slate-200">
@@ -198,13 +207,14 @@ const QuotationViewSheet = ({
                       <th className="px-4 py-2 text-right text-xs font-medium text-slate-600">Total</th>
                     </tr>
                   </thead>
+
                   <tbody className="divide-y divide-slate-100">
                     {quotation.items.map((item, idx) => (
                       <tr key={item.quotationItemID ?? idx}>
                         <td className="px-4 py-2 text-slate-700">{item.description || "—"}</td>
-                        <td className="px-4 py-2 text-right text-slate-700">{item.quantity}</td>
-                        <td className="px-4 py-2 text-right text-slate-700">₹{item.unitPrice.toLocaleString()}</td>
-                        <td className="px-4 py-2 text-right font-medium text-slate-900">
+                        <td className="px-4 py-2 text-right">{item.quantity}</td>
+                        <td className="px-4 py-2 text-right">₹{item.unitPrice.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-right font-medium">
                           ₹{(item.quantity * item.unitPrice).toLocaleString()}
                         </td>
                       </tr>
@@ -215,7 +225,7 @@ const QuotationViewSheet = ({
             </div>
           )}
 
-          {/* Terms and Conditions */}
+          {/* Terms */}
           {quotation.termsAndConditions && (
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
               <div className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
@@ -236,13 +246,16 @@ const QuotationViewSheet = ({
           >
             Close
           </button>
-          <button
-            onClick={onEdit}
-            className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium flex items-center justify-center gap-2"
-          >
-            <Edit2 size={14} />
-            Edit Quotation
-          </button>
+
+          {canEdit && (
+            <button
+              onClick={onEdit}
+              className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium flex items-center justify-center gap-2"
+            >
+              <Edit2 size={14} />
+              Edit Quotation
+            </button>
+          )}
         </div>
       </div>
     </div>

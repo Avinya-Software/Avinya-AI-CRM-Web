@@ -5,6 +5,7 @@ import { useOutsideClick } from "../../hooks/useOutsideClick";
 import TableSkeleton from "../common/TableSkeleton";
 import type { Quotation } from "../../interfaces/quotation.interface";
 import { useDeleteQuotation } from "../../hooks/quotation/Usequotationmutations ";
+import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
 
 const DROPDOWN_HEIGHT = 280;
 const DROPDOWN_WIDTH = 230;
@@ -15,7 +16,7 @@ interface QuotationTableProps {
   onView: (quotation: Quotation) => void;
   onEdit: (quotation: Quotation) => void;
   onAdd: () => void;
-  onAddOrder: (quotation: Quotation) => void; // ✅ new prop
+  onAddOrder: (quotation: Quotation) => void;
 }
 
 const quotationStatusStyles: Record<string, string> = {
@@ -32,6 +33,13 @@ const QuotationTable = ({
   onEdit,
   onAddOrder,
 }: QuotationTableProps) => {
+
+  // ✅ PERMISSIONS
+  const { hasPermission } = usePermissions();
+  const canEdit = hasPermission("quotation", "edit");
+  const canDelete = hasPermission("quotation", "delete");
+  const canCreateOrder = hasPermission("order", "add");
+
   const [openQuotation, setOpenQuotation] = useState<Quotation | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Quotation | null>(null);
   const [style, setStyle] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
@@ -46,10 +54,12 @@ const QuotationTable = ({
     const rect = e.currentTarget.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
     const openUpwards = spaceBelow < DROPDOWN_HEIGHT;
+
     setStyle({
       top: openUpwards ? rect.top - DROPDOWN_HEIGHT - 6 : rect.bottom + 6,
       left: rect.right - DROPDOWN_WIDTH,
     });
+
     setOpenQuotation(quotation);
   };
 
@@ -60,6 +70,7 @@ const QuotationTable = ({
 
   const handleDelete = () => {
     if (!confirmDelete) return;
+
     deleteQuotation(confirmDelete.quotationID, {
       onSuccess: () => {
         setConfirmDelete(null);
@@ -109,7 +120,8 @@ const QuotationTable = ({
                   <Td className="font-medium">₹{(quotation.grandTotal ?? 0).toLocaleString()}</Td>
                   <Td>
                     <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${quotationStatusStyles[quotation.statusName ?? "Draft"]}`}
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${quotationStatusStyles[quotation.statusName ?? "Draft"]
+                        }`}
                     >
                       {quotation.statusName ?? "Draft"}
                     </span>
@@ -137,25 +149,50 @@ const QuotationTable = ({
           className="fixed z-50 w-[230px] bg-white border rounded-lg shadow-lg overflow-hidden"
           style={{ top: style.top, left: style.left }}
         >
-          <MenuItem label="View Details" onClick={() => handleAction(() => onView(openQuotation))} />
-          <MenuItem label="Edit" onClick={() => handleAction(() => onEdit(openQuotation))} />
+          <MenuItem
+            label="View Details"
+            onClick={() => handleAction(() => onView(openQuotation))}
+          />
 
-          {/* ✅ Add Order — only show if Accepted or you want always */}
-          {(openQuotation.statusName === "Accepted" || openQuotation.statusName === "Sent") && (
+          {canEdit && (
             <MenuItem
-              label="Add Order"
-              onClick={() => handleAction(() => onAddOrder(openQuotation))}
+              label="Edit"
+              onClick={() => handleAction(() => onEdit(openQuotation))}
             />
           )}
 
-          <MenuItem label="Reject" onClick={() => handleAction(() => console.log("Reject"))} />
-          <MenuItem label="Generate PDF" onClick={() => handleAction(() => console.log("Generate PDF"))} />
-          <div className="border-t my-1" />
+          {(openQuotation.statusName === "Accepted" ||
+            openQuotation.statusName === "Sent") &&
+            canCreateOrder && (
+              <MenuItem
+                label="Add Order"
+                onClick={() => handleAction(() => onAddOrder(openQuotation))}
+              />
+            )}
+
           <MenuItem
-            label="Delete Quotation"
-            danger
-            onClick={() => { setOpenQuotation(null); setConfirmDelete(openQuotation); }}
+            label="Reject"
+            onClick={() => handleAction(() => console.log("Reject"))}
           />
+
+          <MenuItem
+            label="Generate PDF"
+            onClick={() => handleAction(() => console.log("Generate PDF"))}
+          />
+
+          {canDelete && (
+            <>
+              <div className="border-t my-1" />
+              <MenuItem
+                label="Delete Quotation"
+                danger
+                onClick={() => {
+                  setOpenQuotation(null);
+                  setConfirmDelete(openQuotation);
+                }}
+              />
+            </>
+          )}
         </div>
       )}
 
@@ -165,13 +202,23 @@ const QuotationTable = ({
           <div className="bg-white rounded-lg w-[420px] p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Delete Quotation</h3>
-              <button onClick={() => setConfirmDelete(null)}><X size={18} /></button>
+              <button onClick={() => setConfirmDelete(null)}>
+                <X size={18} />
+              </button>
             </div>
+
             <p className="text-sm text-gray-600 mb-1">
               Are you sure you want to delete{" "}
-              <span className="font-medium">{confirmDelete.quotationNo}</span>?
+              <span className="font-medium">
+                {confirmDelete.quotationNo}
+              </span>
+              ?
             </p>
-            <p className="text-sm text-red-600 font-medium mb-6">This action cannot be undone.</p>
+
+            <p className="text-sm text-red-600 font-medium mb-6">
+              This action cannot be undone.
+            </p>
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
@@ -179,6 +226,7 @@ const QuotationTable = ({
               >
                 Cancel
               </button>
+
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
@@ -214,8 +262,12 @@ const MenuItem = ({
   danger?: boolean;
 }) => (
   <button
-    onClick={(e) => { e.stopPropagation(); onClick(); }}
-    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50 font-medium" : ""}`}
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick();
+    }}
+    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50 font-medium" : ""
+      }`}
   >
     {danger && <X size={14} />}
     {label}

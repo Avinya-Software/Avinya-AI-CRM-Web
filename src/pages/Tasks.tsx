@@ -11,8 +11,8 @@ import { Task, TaskFilters, TaskStatus } from "../interfaces/task.interface";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import VoiceTaskModal from "../components/voice/VoiceTaskModal";
 import { useIsMutating } from "@tanstack/react-query";
+import { usePermissions } from "../context/PermissionContext";
 
-// ─── TaskScope type ───────────────────────────────────────────────
 type TaskScope = "Personal" | "Team";
 
 const Tasks = () => {
@@ -22,11 +22,15 @@ const Tasks = () => {
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
   const [view, setView] = useState<"today" | "week" | "all">("today");
   const [openVoice, setOpenVoice] = useState(false);
-
   const [scope, setScope] = useState<TaskScope>("Personal");
+
+  /* ── PERMISSIONS ── */
+  const { hasPermission } = usePermissions();
+  const canAddTask = hasPermission("task", "add");
+  const canEditTask = hasPermission("task", "edit");
+
   const isMutating = useIsMutating();
-  const { mutate: createVoiceTask, isPending: isVoiceLoading } =
-    useAddTaskUsingVoice();
+  const { mutate: createVoiceTask, isPending: isVoiceLoading } = useAddTaskUsingVoice();
 
   const handleVoiceSend = async (text: string) => {
     if (text.trim()) createVoiceTask({ text });
@@ -79,7 +83,6 @@ const Tasks = () => {
   });
 
   const hasActiveFilters = filters.search || filters.status;
-
   const clearAllFilters = () => setFilters({});
 
   const handleAddTask = () => {
@@ -88,15 +91,15 @@ const Tasks = () => {
   };
 
   const handleEditTask = (task: Task) => {
+    // Only open edit sheet if user has edit permission
+    if (!canEditTask) return;
     setSelectedTask(task);
     setOpenTaskSheet(true);
   };
 
   const groupedTasks = {
     pending: filteredTasks.filter((t) => t.status === TaskStatus.Pending),
-    inProgress: filteredTasks.filter(
-      (t) => t.status === TaskStatus.InProgress
-    ),
+    inProgress: filteredTasks.filter((t) => t.status === TaskStatus.InProgress),
     completed: filteredTasks.filter((t) => t.status === TaskStatus.Completed),
   };
 
@@ -105,7 +108,7 @@ const Tasks = () => {
       <Toaster position="top-right" reverseOrder={false} />
 
       <div className="bg-white rounded-lg border">
-        {/* ── HEADER ──────────────────────────────────────────────── */}
+        {/* ── HEADER ── */}
         <div className="px-4 py-5 border-b bg-gray-100">
           <div className="grid grid-cols-2 gap-y-4 items-start">
 
@@ -124,12 +127,10 @@ const Tasks = () => {
                 >
                   <User size={14} />
                   My Tasks
-                  <span
-                    className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Personal"
-                      ? "bg-blue-700 text-white"
-                      : "bg-slate-100 text-slate-500"
-                      }`}
-                  >
+                  <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Personal"
+                    ? "bg-blue-700 text-white"
+                    : "bg-slate-100 text-slate-500"
+                    }`}>
                     {scope === "Personal" ? filteredTasks.length : "—"}
                   </span>
                 </button>
@@ -143,12 +144,10 @@ const Tasks = () => {
                 >
                   <Users size={14} />
                   Team Tasks
-                  <span
-                    className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Team"
-                      ? "bg-blue-700 text-white"
-                      : "bg-slate-100 text-slate-500"
-                      }`}
-                  >
+                  <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Team"
+                    ? "bg-blue-700 text-white"
+                    : "bg-slate-100 text-slate-500"
+                    }`}>
                     {scope === "Team" ? filteredTasks.length : "—"}
                   </span>
                 </button>
@@ -157,25 +156,32 @@ const Tasks = () => {
 
             {/* Right: Voice + Add Task */}
             <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setOpenVoice(true)}
-                disabled={isVoiceLoading}
-                className={`inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium transition ${isVoiceLoading
-                  ? "opacity-50 cursor-not-allowed bg-slate-100"
-                  : "hover:bg-slate-50"
-                  }`}
-              >
-                <Mic size={16} />
-                {isVoiceLoading ? "Processing..." : "Voice"}
-              </button>
 
-              <button
-                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
-                onClick={handleAddTask}
-              >
-                <Plus size={18} />
-                {scope === "Team" ? "Add Team Task" : "Add Task"}
-              </button>
+              {/* Voice button — only shown if user can add tasks */}
+              {canAddTask && (
+                <button
+                  onClick={() => setOpenVoice(true)}
+                  disabled={isVoiceLoading}
+                  className={`inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium transition ${isVoiceLoading
+                    ? "opacity-50 cursor-not-allowed bg-slate-100"
+                    : "hover:bg-slate-50"
+                    }`}
+                >
+                  <Mic size={16} />
+                  {isVoiceLoading ? "Processing..." : "Voice"}
+                </button>
+              )}
+
+              {/* Add Task button — only shown if user can add tasks */}
+              {canAddTask && (
+                <button
+                  className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+                  onClick={handleAddTask}
+                >
+                  <Plus size={18} />
+                  {scope === "Team" ? "Add Team Task" : "Add Task"}
+                </button>
+              )}
             </div>
 
             {/* View selector */}
@@ -201,9 +207,7 @@ const Tasks = () => {
                   type="text"
                   placeholder={`Search ${scope === "Team" ? "team " : ""}tasks...`}
                   value={filters.search || ""}
-                  onChange={(e) =>
-                    setFilters({ ...filters, search: e.target.value })
-                  }
+                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                   className="w-full h-10 pl-10 pr-3 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -232,7 +236,7 @@ const Tasks = () => {
           </div>
         </div>
 
-        {/* ── SCOPE CONTEXT BANNER ─────────────────────────────────── */}
+        {/* ── SCOPE CONTEXT BANNER ── */}
         {scope === "Team" && (
           <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 border-b border-blue-100 text-sm text-blue-700">
             <Users size={14} className="flex-shrink-0" />
@@ -243,8 +247,9 @@ const Tasks = () => {
           </div>
         )}
 
-        {/* ── KANBAN BOARD ────────────────────────────────────────── */}
+        {/* ── KANBAN BOARD ── */}
         <div className="grid grid-cols-3 gap-4 p-4">
+
           {/* PENDING */}
           <div className="bg-slate-50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
@@ -256,7 +261,7 @@ const Tasks = () => {
             <TaskList
               tasks={groupedTasks.pending}
               loading={isLoading || isFetching || isMutating > 0}
-              onEdit={handleEditTask}
+              onEdit={canEditTask ? handleEditTask : undefined}
             />
           </div>
 
@@ -271,7 +276,7 @@ const Tasks = () => {
             <TaskList
               tasks={groupedTasks.inProgress}
               loading={isLoading || isFetching || isMutating > 0}
-              onEdit={handleEditTask}
+              onEdit={canEditTask ? handleEditTask : undefined}
             />
           </div>
 
@@ -286,13 +291,13 @@ const Tasks = () => {
             <TaskList
               tasks={groupedTasks.completed}
               loading={isLoading || isFetching || isMutating > 0}
-              onEdit={handleEditTask}
+              onEdit={canEditTask ? handleEditTask : undefined}
             />
           </div>
         </div>
       </div>
 
-      {/* ── MODALS / SHEETS ──────────────────────────────────────── */}
+      {/* ── MODALS / SHEETS ── */}
       <TaskFilterSheet
         open={openFilterSheet}
         onClose={() => setOpenFilterSheet(false)}

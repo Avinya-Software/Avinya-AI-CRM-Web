@@ -10,6 +10,7 @@ import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store";
 import { useCreateQuotation, useUpdateQuotation } from "../../hooks/quotation/Usequotationmutations ";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface QuotationUpsertSheetProps {
     open: boolean;
@@ -44,7 +45,16 @@ const QuotationUpsertSheet = ({
     quotation,
     onSuccess,
 }: QuotationUpsertSheetProps) => {
+    const { hasPermission } = usePermissions();
+
+    const canAddQuotation = hasPermission("quotation", "add");
+    const canEditQuotation = hasPermission("quotation", "edit");
+
     const isEdit = !!quotation;
+
+    // 🔐 Block unauthorized access
+    if (open && isEdit && !canEditQuotation) return null;
+    if (open && !isEdit && !canAddQuotation) return null;
 
     const createdBy = useSelector((state: RootState) => (state.auth as any).userId ?? (state.auth as any).advisorId ?? "");
 
@@ -214,6 +224,11 @@ const QuotationUpsertSheet = ({
     // ---------- Submit ----------
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // 🔐 Double protection
+        if (isEdit && !canEditQuotation) return;
+        if (!isEdit && !canAddQuotation) return;
+
         if (!validate()) return;
 
         const payload = buildPayload();

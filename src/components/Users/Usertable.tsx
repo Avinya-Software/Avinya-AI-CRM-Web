@@ -1,6 +1,7 @@
 // src/components/users/UserTable.tsx
 import { Edit2, Trash2 } from "lucide-react";
 import type { User } from "../../interfaces/user.interface";
+import { usePermissions } from "../../context/PermissionContext"; // ✅ added
 
 interface UserTableProps {
     data: User[];
@@ -11,7 +12,21 @@ interface UserTableProps {
     onApprove?: (tenantId: string) => void;
 }
 
-const UserTable = ({ data, loading, onEdit, onDelete, onApprove }: UserTableProps) => {
+const UserTable = ({
+    data,
+    loading,
+    onEdit,
+    onDelete,
+    onApprove,
+}: UserTableProps) => {
+
+    /* 🔐 PERMISSIONS */
+    const { hasPermission } = usePermissions();
+
+    const canUpdate = hasPermission("user", "edit");
+    const canDelete = hasPermission("user", "delete");
+    const canApprove = hasPermission("user", "approve");
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -56,6 +71,7 @@ const UserTable = ({ data, loading, onEdit, onDelete, onApprove }: UserTableProp
                         </th>
                     </tr>
                 </thead>
+
                 <tbody className="bg-white divide-y divide-gray-200">
                     {data.map((user) => (
                         <tr
@@ -65,17 +81,21 @@ const UserTable = ({ data, loading, onEdit, onDelete, onApprove }: UserTableProp
                             <td className="px-4 py-3 text-sm font-medium text-slate-900">
                                 {user.fullName}
                             </td>
+
                             <td className="px-4 py-3 text-sm text-slate-600">
                                 {user.email}
                             </td>
+
                             <td className="px-4 py-3 text-sm">
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     {user.role}
                                 </span>
                             </td>
+
                             <td className="px-4 py-3 text-sm text-slate-600">
                                 {user.tenantName}
                             </td>
+
                             <td className="px-4 py-3 text-sm">
                                 <span
                                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
@@ -86,21 +106,31 @@ const UserTable = ({ data, loading, onEdit, onDelete, onApprove }: UserTableProp
                                     {user.isActive ? "Active" : "Inactive"}
                                 </span>
                             </td>
+
                             <td className="px-4 py-3 text-sm text-slate-600">
-                                {user.createdAt && user.createdAt !== "0001-01-01T00:00:00"
+                                {user.createdAt &&
+                                    user.createdAt !== "0001-01-01T00:00:00"
                                     ? new Date(user.createdAt).toLocaleDateString()
                                     : "N/A"}
                             </td>
+
+                            {/* ACTIONS */}
                             <td className="px-4 py-3 text-sm text-right">
                                 <div className="flex items-center justify-end gap-2">
-                                    <button
-                                        onClick={() => onEdit(user)}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
-                                    >
-                                        <Edit2 size={14} />
-                                        Edit
-                                    </button>
-                                    {onDelete && (
+
+                                    {/* EDIT */}
+                                    {canUpdate && (
+                                        <button
+                                            onClick={() => onEdit(user)}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+                                        >
+                                            <Edit2 size={14} />
+                                            Edit
+                                        </button>
+                                    )}
+
+                                    {/* DELETE */}
+                                    {canDelete && onDelete && (
                                         <button
                                             onClick={() => onDelete(user.userId)}
                                             className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
@@ -109,14 +139,21 @@ const UserTable = ({ data, loading, onEdit, onDelete, onApprove }: UserTableProp
                                             <Trash2 size={16} />
                                         </button>
                                     )}
-                                    {user.role === "Admin" && !user.isActive && onApprove && (
-                                        <button
-                                            onClick={() => onApprove(user.tenantId)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-md transition-colors"
-                                        >
-                                            Approve
-                                        </button>
-                                    )}
+
+                                    {/* APPROVE ADMIN */}
+                                    {canApprove &&
+                                        user.role === "Admin" &&
+                                        !user.isActive &&
+                                        onApprove && (
+                                            <button
+                                                onClick={() =>
+                                                    onApprove(user.tenantId)
+                                                }
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-md transition-colors"
+                                            >
+                                                Approve
+                                            </button>
+                                        )}
                                 </div>
                             </td>
                         </tr>

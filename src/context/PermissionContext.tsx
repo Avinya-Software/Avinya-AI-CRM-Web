@@ -42,7 +42,7 @@ export const PermissionProvider = ({ children }: { children: ReactNode }) => {
     const hasPermission = (module: string, action: Action): boolean => {
         const normalizedModule = module.toLowerCase().trim();
         const normalizedAction = action.toLowerCase().trim();
-            
+
         return permissions.some(
             (p) =>
                 p.module === normalizedModule &&

@@ -9,6 +9,7 @@ import Spinner from "../common/Spinner";
 import { useCreateTask } from "../../hooks/task/useTaskMutations";
 import { useGetTeamsDropdown } from "../../hooks/team/useTeamMutation";
 import { Users } from "lucide-react";
+import { usePermissions } from "../../context/PermissionContext";
 
 const STATUS_LABEL: Record<number, string> = {
   0: "Planning", 1: "Active", 2: "Completed", 3: "On Hold",
@@ -49,16 +50,18 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
     dueDate: ""
   });
 
+  /* ── PERMISSIONS ── */
+  const { hasPermission } = usePermissions();
+  const canEditProject = hasPermission("project", "edit");
+  const canAddTask = hasPermission("task", "add");
+
   const { data: project, isLoading } = useProjectById(projectId);
   const { mutate: addTask, isPending: addingTask } = useCreateTask();
   const { data: teamResponse } = useGetTeamsDropdown();
-  console.log(project);
-  // Find project's team name if a team is assigned
+
   const projectTeamName = project?.teamId
     ? teamResponse?.data?.find((t: any) => t.id === Number(project.teamId))?.name
     : undefined;
-
-
 
   const handleAddTask = () => {
     if (!taskForm.taskName.trim()) {
@@ -83,7 +86,7 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
         reminderAt: undefined,
         reminderChannel: "NONE",
         projectId: projectId
-      } as any, // Type assertion since CreateTaskDto might require properties absent here depending on strictness
+      } as any,
       {
         onSuccess: () => {
           setShowAddTask(false);
@@ -282,6 +285,7 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
           {/* ── TASKS TAB ── */}
           {tab === "tasks" && (
             <div className="p-5">
+
               {/* Task Stats */}
               <div className="grid grid-cols-4 gap-2 mb-4">
                 {[
@@ -297,19 +301,20 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
                 ))}
               </div>
 
-              {/* Add Task Button */}
-              <button
-                onClick={() => setShowAddTask(!showAddTask)}
-                className="w-full py-2.5 bg-blue-900 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-blue-800 transition mb-4"
-              >
-                <Plus size={16} /> Add Task
-              </button>
+              {/* Add Task Button — only shown if user has task:add */}
+              {canAddTask && (
+                <button
+                  onClick={() => setShowAddTask(!showAddTask)}
+                  className="w-full py-2.5 bg-blue-900 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-blue-800 transition mb-4"
+                >
+                  <Plus size={16} /> Add Task
+                </button>
+              )}
 
-              {/* Add Task Form */}
-              {showAddTask && (
+              {/* Add Task Form — only accessible if user has task:add */}
+              {canAddTask && showAddTask && (
                 <div className="bg-slate-50 rounded-lg p-4 mb-4 space-y-4 border border-slate-200">
 
-                  {/* Title */}
                   <div>
                     <input
                       className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -319,7 +324,6 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
                     />
                   </div>
 
-                  {/* Description */}
                   <div>
                     <input
                       className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -329,7 +333,6 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
                     />
                   </div>
 
-                  {/* Team Context */}
                   {projectTeamName && (
                     <div>
                       <label className="block text-xs font-medium text-slate-500 mb-1">Team</label>
@@ -340,7 +343,6 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
                     </div>
                   )}
 
-                  {/* Due Date */}
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Due Date & Time *</label>
                     <input
@@ -351,7 +353,6 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
                     />
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-2 pt-2">
                     <button
                       onClick={() => setShowAddTask(false)}
@@ -409,14 +410,23 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
           )}
         </div>
 
-        {/* FOOTER */}
+        {/* FOOTER — Edit button only shown if user has project:edit */}
         <div className="px-5 py-4 border-t border-slate-100">
-          <button
-            onClick={() => { onClose(); setTimeout(() => onEdit(project), 100); }}
-            className="w-full py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 flex items-center justify-center gap-2 hover:bg-slate-50 transition"
-          >
-            <Edit2 size={14} /> Edit Project
-          </button>
+          {canEditProject ? (
+            <button
+              onClick={() => { onClose(); setTimeout(() => onEdit(project), 100); }}
+              className="w-full py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 flex items-center justify-center gap-2 hover:bg-slate-50 transition"
+            >
+              <Edit2 size={14} /> Edit Project
+            </button>
+          ) : (
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 flex items-center justify-center gap-2 hover:bg-slate-50 transition"
+            >
+              Close
+            </button>
+          )}
         </div>
       </div>
     </>

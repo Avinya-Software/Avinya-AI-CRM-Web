@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, X, CheckCircle, AlertCircle } from "lucide-react";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface Props {
     open: boolean;
@@ -9,9 +10,12 @@ interface Props {
 
 type Status = "listening" | "processing" | "success" | "error";
 
-const SILENCE_DELAY = 1800; // ms (1.8 sec)
+const SILENCE_DELAY = 1800;
 
 const VoiceTaskModal = ({ open, onClose, onSendText }: Props) => {
+    const { hasPermission } = usePermissions();
+    const canAddTask = hasPermission("task", "add");
+
     const recognitionRef = useRef<any>(null);
     const silenceTimerRef = useRef<any>(null);
 
@@ -20,14 +24,17 @@ const VoiceTaskModal = ({ open, onClose, onSendText }: Props) => {
     const [finalText, setFinalText] = useState("");
     const [message, setMessage] = useState("");
 
+    // 🔐 Hard block if no permission
+    if (!canAddTask) return null;
+
     useEffect(() => {
         if (!open) return;
+
         const SpeechRecognition =
             (window as any).webkitSpeechRecognition ||
             (window as any).SpeechRecognition;
 
         if (!SpeechRecognition) {
-            console.error("Speech recognition not supported");
             setStatus("error");
             setMessage("Speech recognition not supported");
             return;
@@ -37,8 +44,8 @@ const VoiceTaskModal = ({ open, onClose, onSendText }: Props) => {
         recognitionRef.current = recognition;
 
         recognition.lang = "en-IN";
-        recognition.continuous = true;        // 🔥 IMPORTANT
-        recognition.interimResults = true;    // 🔥 IMPORTANT
+        recognition.continuous = true;
+        recognition.interimResults = true;
 
         recognition.onstart = () => {
             setStatus("listening");
@@ -56,25 +63,25 @@ const VoiceTaskModal = ({ open, onClose, onSendText }: Props) => {
 
             setLiveText(transcript);
 
-            // 🔁 Reset silence timer on every word
             clearTimeout(silenceTimerRef.current);
 
             silenceTimerRef.current = setTimeout(async () => {
-                recognition.stop(); // 🛑 user done speaking
+                recognition.stop();
 
                 setFinalText(transcript);
                 setStatus("processing");
+                if (!canAddTask) return;
 
                 try {
-                    const response = await onSendText(transcript);
+                    await onSendText(transcript);
 
                     setStatus("success");
                     setMessage("Task created successfully 🎉");
 
-                    setTimeout(() => onClose(), 3500);
+                    setTimeout(() => onClose(), 2500);
                 } catch {
                     setStatus("error");
-                    setMessage("Kuch galat ho gaya 😕");
+                    setMessage("Something went wrong 😕");
                 }
             }, SILENCE_DELAY);
         };
@@ -91,7 +98,7 @@ const VoiceTaskModal = ({ open, onClose, onSendText }: Props) => {
             clearTimeout(silenceTimerRef.current);
             recognitionRef.current = null;
         };
-    }, [open]);
+    }, [open, canAddTask]);
 
     if (!open) return null;
 
@@ -142,11 +149,17 @@ const VoiceTaskModal = ({ open, onClose, onSendText }: Props) => {
                     {status === "error" && "Error"}
                 </h2>
 
-                {/* LIVE TEXT */}
+                {/* TEXT DISPLAY */}
                 {(liveText || finalText) && (
                     <div className="mt-4 p-3 bg-slate-50 border rounded text-sm text-center">
                         {status === "listening" ? liveText : finalText}
                     </div>
+                )}
+
+                {message && (
+                    <p className="mt-3 text-center text-sm text-slate-500">
+                        {message}
+                    </p>
                 )}
             </div>
         </div>

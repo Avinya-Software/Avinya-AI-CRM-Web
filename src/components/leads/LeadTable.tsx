@@ -7,6 +7,7 @@ import type { Lead } from "../../interfaces/lead.interface";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { useDeleteLead } from "../../hooks/lead/useDeleteLead";
 import TableSkeleton from "../common/TableSkeleton";
+import { usePermissions } from "../../context/PermissionContext";
 
 const leadStatusStyles: Record<string, string> = {
   New: "bg-slate-100 text-slate-700 border-slate-200",
@@ -23,8 +24,8 @@ const DROPDOWN_WIDTH = 230;
 interface LeadTableProps {
   data: Lead[];
   loading?: boolean;
-  onEdit: (lead: Lead) => void;
-  onAdd: () => void;
+  onEdit?: (lead: Lead) => void;
+  onAdd?: () => void;
   onCreateFollowUp?: (lead: Lead) => void;
   onViewFollowUps?: (lead: Lead) => void;
   onRowClick?: (lead: Lead) => void;
@@ -44,6 +45,14 @@ const LeadTable = ({
   onCreateQuotation,
   canEdit = () => true,
 }: LeadTableProps) => {
+
+  const { hasPermission } = usePermissions();
+
+  const canEditLead = hasPermission("lead", "edit");
+  const canDeleteLead = hasPermission("lead", "delete");
+  const canAddFollowUp = hasPermission("followup", "add");
+  const canAddQuotation = hasPermission("quotation", "add");
+
   const [openLead, setOpenLead] = useState<Lead | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Lead | null>(null);
   const navigate = useNavigate();
@@ -54,9 +63,7 @@ const LeadTable = ({
   });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  useOutsideClick(dropdownRef, () => {
-    setOpenLead(null);
-  });
+  useOutsideClick(dropdownRef, () => setOpenLead(null));
 
   const { mutate: deleteLead, isPending } = useDeleteLead();
 
@@ -65,6 +72,15 @@ const LeadTable = ({
     lead: Lead
   ) => {
     e.stopPropagation();
+
+    // 🔐 If no action permissions, don't open dropdown
+    if (
+      !canEditLead &&
+      !canDeleteLead &&
+      !canAddFollowUp &&
+      !canAddQuotation
+    ) return;
+
     const rect = e.currentTarget.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
 
@@ -85,7 +101,8 @@ const LeadTable = ({
   };
 
   const handleDelete = () => {
-    if (!confirmDelete) return;
+    if (!confirmDelete || !canDeleteLead) return;
+
     deleteLead(confirmDelete.leadID, {
       onSuccess: () => {
         setConfirmDelete(null);
@@ -95,6 +112,8 @@ const LeadTable = ({
   };
 
   const handleAddFollowUp = (lead: Lead) => {
+    if (!canAddFollowUp) return;
+
     if (!(lead as any).createFollowup) {
       toast.error("Please complete the previous follow-up first.");
       navigate(`/LeadFollowup/${lead.leadID}`);
@@ -166,12 +185,17 @@ const LeadTable = ({
                   </Td>
 
                   <Td className="text-left">
-                    <button
-                      onClick={(e) => openDropdown(e, lead)}
-                      className="p-2 rounded hover:bg-slate-200"
-                    >
-                      <MoreVertical size={16} />
-                    </button>
+                    {(canEditLead ||
+                      canDeleteLead ||
+                      canAddFollowUp ||
+                      canAddQuotation) && (
+                        <button
+                          onClick={(e) => openDropdown(e, lead)}
+                          className="p-2 rounded hover:bg-slate-200"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                      )}
                   </Td>
                 </tr>
               ))
@@ -188,56 +212,72 @@ const LeadTable = ({
           className="fixed z-50 w-[230px] bg-white border rounded-lg shadow-lg overflow-hidden"
           style={{ top: style.top, left: style.left }}
         >
-          {/* Edit - Only if canEdit and not Lost */}
-          {canEdit(openLead) && openLead.statusName !== "Lost" && (
-            <MenuItem
-              label="Edit"
-              onClick={() => handleAction(() => onEdit(openLead))}
-            />
-          )}
+          {/* Edit */}
+          {canEditLead &&
+            canEdit(openLead) &&
+            openLead.statusName !== "Lost" && (
+              <MenuItem
+                label="Edit"
+                onClick={() => handleAction(() => onEdit?.(openLead))}
+              />
+            )}
 
-          {/* View Details - Always show */}
+          {/* View Details */}
           <MenuItem
             label="View Details"
-            onClick={() => handleAction(() => onViewDetails?.(openLead))}
+            onClick={() =>
+              handleAction(() => onViewDetails?.(openLead))
+            }
           />
 
-          {/* Add Follow-Up - Only if not Lost */}
-          {openLead.statusName !== "Lost" && (
-            <MenuItem
-              label="Add Follow-Up"
-              onClick={() => handleAction(() => handleAddFollowUp(openLead))}
-            />
-          )}
+          {/* Add Follow-Up */}
+          {canAddFollowUp &&
+            openLead.statusName !== "Lost" && (
+              <MenuItem
+                label="Add Follow-Up"
+                onClick={() =>
+                  handleAction(() => handleAddFollowUp(openLead))
+                }
+              />
+            )}
 
-          {/* View Follow-Up History - Always show */}
+          {/* View Follow-Up */}
           <MenuItem
             label="View Follow-Up History"
-            onClick={() => handleAction(() => handleViewFollowUp(openLead))}
+            onClick={() =>
+              handleAction(() => handleViewFollowUp(openLead))
+            }
           />
 
-          {/* Create Quotation - Only if New or Lost */}
-          {(openLead.statusName === "New" || openLead.statusName === "Lost") && (
-            <MenuItem
-              label="Create Quotation"
-              onClick={() => handleAction(() => onCreateQuotation?.(openLead))}
-            />
-          )}
+          {/* Create Quotation */}
+          {canAddQuotation &&
+            (openLead.statusName === "New" ||
+              openLead.statusName === "Lost") && (
+              <MenuItem
+                label="Create Quotation"
+                onClick={() =>
+                  handleAction(() =>
+                    onCreateQuotation?.(openLead)
+                  )
+                }
+              />
+            )}
 
-          {/* Separator before delete */}
           <div className="border-t my-1" />
 
-          {/* Delete Lead - Always show */}
-          <MenuItem
-            label="Delete Lead"
-            danger
-            onClick={() => setConfirmDelete(openLead)}
-          />
+          {/* Delete */}
+          {canDeleteLead && (
+            <MenuItem
+              label="Delete Lead"
+              danger
+              onClick={() => setConfirmDelete(openLead)}
+            />
+          )}
         </div>
       )}
 
       {/* CONFIRM DELETE */}
-      {confirmDelete && (
+      {confirmDelete && canDeleteLead && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg w-[420px] p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
@@ -279,6 +319,8 @@ const LeadTable = ({
 };
 
 export default LeadTable;
+
+/* Helpers unchanged */
 
 const Th = ({ children, className = "" }: any) => (
   <th className={`px-4 py-3 text-left font-semibold ${className}`}>

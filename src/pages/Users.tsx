@@ -8,6 +8,7 @@ import Pagination from "../components/Users/Pagination";
 import UserFilterSheet from "../components/Users/Userfiltersheet ";
 import UserUpsertSheet from "../components/Users/Userupsertsheet";
 import { useApproveUser } from "../hooks/admin/useApproveAdmin";
+import { usePermissions } from "../context/PermissionContext"; // ✅ added
 
 const DEFAULT_FILTERS = {
     pageNumber: 1,
@@ -21,21 +22,25 @@ const DEFAULT_FILTERS = {
 };
 
 const Users = () => {
-    /*   STATE   */
 
+    /* 🔐 PERMISSIONS */
+    const { hasPermission } = usePermissions();
+    const canView = hasPermission("user", "view");
+    const canCreate = hasPermission("user", "add");
+    const canUpdate = hasPermission("user", "edit");
+    const canApprove = hasPermission("user", "approve");
+
+    /* STATE */
     const [filters, setFilters] = useState(DEFAULT_FILTERS);
-
     const [openUserSheet, setOpenUserSheet] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
-
     const [openFilterSheet, setOpenFilterSheet] = useState(false);
 
-    /*   API   */
-
+    /* API */
     const { data, isLoading, isFetching } = useUsers(filters);
+    const approveAdmin = useApproveUser();
 
-    /*   HELPERS   */
-
+    /* HELPERS */
     const hasActiveFilters =
         filters.search ||
         filters.fullName ||
@@ -49,28 +54,37 @@ const Users = () => {
     };
 
     const handleAddUser = () => {
+        if (!canCreate) return;
         setSelectedUser(null);
         setOpenUserSheet(true);
     };
 
     const handleEditUser = (user: any) => {
+        if (!canUpdate) return;
         setSelectedUser(user);
         setOpenUserSheet(true);
     };
 
-    const approveAdmin = useApproveUser();
-
     const handleApprove = (tenantId: string) => {
+        if (!canApprove) return;
         approveAdmin.mutate(tenantId);
     };
 
+    // 🔐 If no view permission → block page
+    if (!canView) {
+        return (
+            <div className="p-10 text-center text-slate-500">
+                You don't have permission to view this page.
+            </div>
+        );
+    }
 
     return (
         <>
             <Toaster position="top-right" reverseOrder={false} />
 
             <div className="bg-white rounded-lg border">
-                {/*  HEADER  */}
+                {/* HEADER */}
                 <div className="px-4 py-5 border-b bg-gray-100">
                     <div className="grid grid-cols-2 gap-y-4 items-start">
                         <div>
@@ -82,17 +96,20 @@ const Users = () => {
                             </p>
                         </div>
 
+                        {/* ADD USER BUTTON */}
                         <div className="text-right">
-                            <button
-                                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium"
-                                onClick={handleAddUser}
-                            >
-                                <span className="text-lg leading-none">+</span>
-                                Add User
-                            </button>
+                            {canCreate && (
+                                <button
+                                    className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium"
+                                    onClick={handleAddUser}
+                                >
+                                    <span className="text-lg leading-none">+</span>
+                                    Add User
+                                </button>
+                            )}
                         </div>
 
-                        {/* 🔍 SEARCH */}
+                        {/* SEARCH */}
                         <div>
                             <div className="relative w-[360px]">
                                 <input
@@ -114,7 +131,7 @@ const Users = () => {
                             </div>
                         </div>
 
-                        {/* 🎯 FILTER + CLEAR */}
+                        {/* FILTER + CLEAR */}
                         <div className="flex justify-end gap-2">
                             {hasActiveFilters && (
                                 <button
@@ -137,23 +154,16 @@ const Users = () => {
                     </div>
                 </div>
 
-                {/*   USERS TABLE   */}
-                {/* <UserTable
-                    data={data?.data ?? []}
-                    loading={isLoading || isFetching}
-                    onAdd={handleAddUser}
-                    onEdit={handleEditUser}
-                /> */}
+                {/* USERS TABLE */}
                 <UserTable
                     data={data?.data ?? []}
                     loading={isLoading || isFetching}
-                    onAdd={handleAddUser}
-                    onEdit={handleEditUser}
-                    onApprove={handleApprove}
+                    onAdd={canCreate ? handleAddUser : undefined}
+                    onEdit={canUpdate ? handleEditUser : undefined}
+                    onApprove={canApprove ? handleApprove : undefined}
                 />
 
-
-                {/*   PAGINATION   */}
+                {/* PAGINATION */}
                 <div className="border-t px-4 py-3">
                     <Pagination
                         page={filters.pageNumber}
@@ -165,7 +175,7 @@ const Users = () => {
                 </div>
             </div>
 
-            {/*   FILTER SHEET   */}
+            {/* FILTER SHEET */}
             <UserFilterSheet
                 open={openFilterSheet}
                 onClose={() => setOpenFilterSheet(false)}
@@ -174,15 +184,17 @@ const Users = () => {
                 onClear={clearAllFilters}
             />
 
-            {/*   UPSERT SHEET   */}
-            <UserUpsertSheet
-                open={openUserSheet}
-                onClose={() => {
-                    setOpenUserSheet(false);
-                    setSelectedUser(null);
-                }}
-                user={selectedUser}
-            />
+            {/* UPSERT SHEET */}
+            {canCreate || canUpdate ? (
+                <UserUpsertSheet
+                    open={openUserSheet}
+                    onClose={() => {
+                        setOpenUserSheet(false);
+                        setSelectedUser(null);
+                    }}
+                    user={selectedUser}
+                />
+            ) : null}
         </>
     );
 };

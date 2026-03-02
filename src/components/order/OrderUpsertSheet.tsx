@@ -8,12 +8,13 @@ import { useProductDropdown } from "../../hooks/product/useProductDropdown";
 import { useCreateOrder, useUpdateOrder } from "../../hooks/order/useOrders";
 import { useCities } from "../../hooks/city/useCities";
 import { useStates } from "../../hooks/state/useStates";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface OrderUpsertSheetProps {
     open: boolean;
     onClose: () => void;
-    order?: Order | null;          // for edit mode
-    sourceQuotation?: any | null;  // for create-from-quotation mode
+    order?: Order | null;
+    sourceQuotation?: any | null;
     onSuccess?: () => void;
 }
 
@@ -35,6 +36,10 @@ const OrderUpsertSheet = ({
     onSuccess,
 }: OrderUpsertSheetProps) => {
     const isEdit = !!order;
+
+    const { hasPermission } = usePermissions();
+    const canAdd = hasPermission("order", "add");
+    const canEdit = hasPermission("order", "edit");
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -74,12 +79,10 @@ const OrderUpsertSheet = ({
         setFormData(prev => ({ ...prev, stateID, cityID: "" }));
     };
 
-    // ── Populate form ───────────────────────────────────────────────
     useEffect(() => {
         if (!open) return;
 
         if (order) {
-            // EDIT MODE — populate from existing order
             const sourceItems = order.orderItems ?? (order as any).items ?? [];
             setFormData({
                 clientID: order.clientID || "",
@@ -110,7 +113,6 @@ const OrderUpsertSheet = ({
             );
 
         } else if (sourceQuotation) {
-            // CREATE FROM QUOTATION MODE — prefill from quotation
             const delivery = new Date();
             delivery.setDate(delivery.getDate() + 15);
 
@@ -124,7 +126,6 @@ const OrderUpsertSheet = ({
                 cityID: "",
             });
 
-            // Prefill products from quotation items
             const quotationItems = sourceQuotation.quotationItems
                 ?? sourceQuotation.items
                 ?? sourceQuotation.products
@@ -145,7 +146,6 @@ const OrderUpsertSheet = ({
             );
 
         } else {
-            // CREATE MODE — blank form
             const delivery = new Date();
             delivery.setDate(delivery.getDate() + 15);
 
@@ -168,7 +168,6 @@ const OrderUpsertSheet = ({
         setErrors({});
     }, [order, sourceQuotation, open]);
 
-    // ── Validation ──────────────────────────────────────────────────
     const validate = () => {
         const newErrors: Record<string, string> = {};
         if (!formData.clientID) newErrors.clientID = "Company is required";
@@ -178,12 +177,10 @@ const OrderUpsertSheet = ({
         return Object.keys(newErrors).length === 0;
     };
 
-    // ── Build payload ───────────────────────────────────────────────
     const buildPayload = (): CreateOrderDto => ({
         orderID: isEdit ? order!.orderID : null,
         orderNo: isEdit ? order!.orderNo : null,
         clientID: formData.clientID,
-        // Link back to quotation if created from one
         quotationID: sourceQuotation?.quotationID ?? (isEdit ? order!.quotationID : null) ?? null,
         orderDate: new Date(formData.orderDate).toISOString(),
         expectedDeliveryDate: new Date(formData.expectedDeliveryDate).toISOString(),
@@ -210,7 +207,6 @@ const OrderUpsertSheet = ({
         })),
     });
 
-    // ── Submit ──────────────────────────────────────────────────────
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
@@ -234,7 +230,6 @@ const OrderUpsertSheet = ({
         }
     };
 
-    // ── Product item helpers ────────────────────────────────────────
     const addProductItem = () => {
         setProductItems(prev => [...prev, {
             id: Date.now().toString(), orderItemId: null,
@@ -272,7 +267,12 @@ const OrderUpsertSheet = ({
 
     const subtotal = productItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
 
+    // Guard: if no relevant permission, don't render the sheet
     if (!open) return null;
+    if (isEdit && !canEdit) return null;
+    if (!isEdit && !canAdd) return null;
+
+    const isFormReadOnly = isEdit ? !canEdit : !canAdd;
 
     const title = isEdit
         ? "Edit Order"
@@ -313,7 +313,7 @@ const OrderUpsertSheet = ({
                             <select
                                 value={formData.clientID}
                                 onChange={(e) => setFormData({ ...formData, clientID: e.target.value })}
-                                disabled={isEdit || !!sourceQuotation}
+                                disabled={isEdit || !!sourceQuotation || isFormReadOnly}
                                 className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.clientID
                                     ? "border-red-500 focus:ring-red-500"
                                     : "border-slate-300 focus:ring-blue-500"
@@ -335,7 +335,8 @@ const OrderUpsertSheet = ({
                                 type="date"
                                 value={formData.orderDate}
                                 onChange={(e) => setFormData({ ...formData, orderDate: e.target.value })}
-                                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                disabled={isFormReadOnly}
+                                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-50 disabled:text-slate-500"
                             />
                         </div>
                     </div>
@@ -349,7 +350,8 @@ const OrderUpsertSheet = ({
                             type="date"
                             value={formData.expectedDeliveryDate}
                             onChange={(e) => setFormData({ ...formData, expectedDeliveryDate: e.target.value })}
-                            className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.expectedDeliveryDate ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:ring-blue-500"}`}
+                            disabled={isFormReadOnly}
+                            className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.expectedDeliveryDate ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:ring-blue-500"} disabled:bg-slate-50 disabled:text-slate-500`}
                         />
                         {errors.expectedDeliveryDate && <p className="text-red-500 text-xs mt-1">{errors.expectedDeliveryDate}</p>}
                     </div>
@@ -359,8 +361,9 @@ const OrderUpsertSheet = ({
                         <span className="text-sm font-medium text-slate-700">Use Billing Address</span>
                         <button
                             type="button"
+                            disabled={isFormReadOnly}
                             onClick={() => setFormData({ ...formData, isUseBillingAddress: !formData.isUseBillingAddress })}
-                            className={`relative w-12 h-6 rounded-full transition ${formData.isUseBillingAddress ? "bg-blue-600" : "bg-slate-300"}`}
+                            className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.isUseBillingAddress ? "bg-blue-600" : "bg-slate-300"}`}
                         >
                             <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition transform shadow-sm ${formData.isUseBillingAddress ? "translate-x-6" : "translate-x-0"}`} />
                         </button>
@@ -376,7 +379,8 @@ const OrderUpsertSheet = ({
                                     value={formData.shippingAddress}
                                     onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
                                     placeholder="Enter shipping address"
-                                    className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                    disabled={isFormReadOnly}
+                                    className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-50 disabled:text-slate-500"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -385,7 +389,8 @@ const OrderUpsertSheet = ({
                                     <select
                                         value={formData.stateID}
                                         onChange={(e) => handleStateChange(e.target.value)}
-                                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                        disabled={isFormReadOnly}
+                                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-50 disabled:text-slate-500"
                                     >
                                         <option value="">Select State</option>
                                         {(states as any[]).map((s) => (
@@ -398,7 +403,7 @@ const OrderUpsertSheet = ({
                                     <select
                                         value={formData.cityID}
                                         onChange={(e) => setFormData({ ...formData, cityID: e.target.value })}
-                                        disabled={!formData.stateID}
+                                        disabled={!formData.stateID || isFormReadOnly}
                                         className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-50 disabled:text-slate-400"
                                     >
                                         <option value="">{formData.stateID ? "Select City" : "Select state first"}</option>
@@ -417,13 +422,15 @@ const OrderUpsertSheet = ({
                             <label className="block text-sm font-medium text-slate-700">
                                 Product Items <span className="text-red-500">*</span>
                             </label>
-                            <button
-                                type="button"
-                                onClick={addProductItem}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition"
-                            >
-                                <Plus size={14} /> Add Product
-                            </button>
+                            {!isFormReadOnly && (
+                                <button
+                                    type="button"
+                                    onClick={addProductItem}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition"
+                                >
+                                    <Plus size={14} /> Add Product
+                                </button>
+                            )}
                         </div>
 
                         {errors.items && <p className="text-red-500 text-xs mb-2">{errors.items}</p>}
@@ -438,7 +445,7 @@ const OrderUpsertSheet = ({
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Unit Price</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Qty</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Total</th>
-                                        <th className="px-3 py-2 w-10"></th>
+                                        {!isFormReadOnly && <th className="px-3 py-2 w-10"></th>}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -448,7 +455,8 @@ const OrderUpsertSheet = ({
                                                 <select
                                                     value={item.productID}
                                                     onChange={(e) => handleProductChange(item.id, e.target.value)}
-                                                    className="w-40 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    disabled={isFormReadOnly}
+                                                    className="w-40 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
                                                 >
                                                     <option value="">Select</option>
                                                     {(products as ProductDropdown[])?.map((p) => (
@@ -461,7 +469,8 @@ const OrderUpsertSheet = ({
                                                     value={item.description}
                                                     onChange={(e) => updateItem(item.id, "description", e.target.value)}
                                                     placeholder="Description"
-                                                    className="w-36 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    readOnly={isFormReadOnly}
+                                                    className="w-36 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
                                                 />
                                             </td>
                                             <td className="px-3 py-2">
@@ -478,7 +487,8 @@ const OrderUpsertSheet = ({
                                                     value={item.unitPrice || ""}
                                                     onChange={(e) => updateItem(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
                                                     placeholder="0.00"
-                                                    className="w-24 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    readOnly={isFormReadOnly}
+                                                    className="w-24 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 read-only:bg-slate-50 read-only:text-slate-500"
                                                 />
                                             </td>
                                             <td className="px-3 py-2">
@@ -488,22 +498,25 @@ const OrderUpsertSheet = ({
                                                     value={item.quantity || ""}
                                                     onChange={(e) => updateItem(item.id, "quantity", parseFloat(e.target.value) || 1)}
                                                     placeholder="1"
-                                                    className="w-16 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    readOnly={isFormReadOnly}
+                                                    className="w-16 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 read-only:bg-slate-50 read-only:text-slate-500"
                                                 />
                                             </td>
                                             <td className="px-3 py-2 text-slate-700 font-medium whitespace-nowrap">
                                                 ₹{(item.unitPrice * item.quantity).toFixed(2)}
                                             </td>
-                                            <td className="px-3 py-2 text-center">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeProductItem(item.id)}
-                                                    disabled={productItems.length === 1}
-                                                    className="p-1 text-red-500 hover:bg-red-50 rounded transition disabled:opacity-30"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </td>
+                                            {!isFormReadOnly && (
+                                                <td className="px-3 py-2 text-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeProductItem(item.id)}
+                                                        disabled={productItems.length === 1}
+                                                        className="p-1 text-red-500 hover:bg-red-50 rounded transition disabled:opacity-30"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </td>
+                                            )}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -533,17 +546,21 @@ const OrderUpsertSheet = ({
                         >
                             Cancel
                         </button>
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
-                        >
-                            {isLoading ? (
-                                <><Loader2 size={16} className="animate-spin" /> Saving...</>
-                            ) : (
-                                <><Save size={16} /> {isEdit ? "Update" : "Create"} Order</>
-                            )}
-                        </button>
+
+                        {/* Only show Save/Update if user has the right permission */}
+                        {!isFormReadOnly && (
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
+                            >
+                                {isLoading ? (
+                                    <><Loader2 size={16} className="animate-spin" /> Saving...</>
+                                ) : (
+                                    <><Save size={16} /> {isEdit ? "Update" : "Create"} Order</>
+                                )}
+                            </button>
+                        )}
                     </div>
                 </form>
             </div>

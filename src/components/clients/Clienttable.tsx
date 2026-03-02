@@ -4,6 +4,7 @@ import type { Client } from "../../interfaces/client.interface";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { useDeleteClient } from "../../hooks/client/useDeleteClient";
 import TableSkeleton from "../common/TableSkeleton";
+import { usePermissions } from "../../context/PermissionContext";
 
 const DROPDOWN_HEIGHT = 100;
 const DROPDOWN_WIDTH = 180;
@@ -11,7 +12,7 @@ const DROPDOWN_WIDTH = 180;
 interface ClientTableProps {
     data: Client[];
     loading?: boolean;
-    onEdit: (client: Client) => void;
+    onEdit?: (client: Client) => void;
 }
 
 const ClientTable = ({
@@ -19,6 +20,11 @@ const ClientTable = ({
     loading = false,
     onEdit,
 }: ClientTableProps) => {
+    const { hasPermission } = usePermissions();
+
+    const canEditClient = hasPermission("client", "edit");
+    const canDeleteClient = hasPermission("client", "delete");
+
     const [openClient, setOpenClient] = useState<Client | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<Client | null>(null);
     const [style, setStyle] = useState({ top: 0, left: 0 });
@@ -28,12 +34,14 @@ const ClientTable = ({
 
     const { mutate: deleteClient, isPending } = useDeleteClient();
 
-    /*   DROPDOWN   */
+    /* DROPDOWN */
 
     const openDropdown = (
         e: React.MouseEvent<HTMLButtonElement>,
         client: Client
     ) => {
+        if (!canEditClient && !canDeleteClient) return; // 🔐 no access
+
         e.stopPropagation();
 
         const rect = e.currentTarget.getBoundingClientRect();
@@ -50,14 +58,15 @@ const ClientTable = ({
     };
 
     const handleEdit = () => {
-        if (!openClient) return;
+        if (!openClient || !canEditClient || !onEdit) return;
+
         const c = openClient;
         setOpenClient(null);
         setTimeout(() => onEdit(c), 0);
     };
 
     const handleDelete = () => {
-        if (!confirmDelete) return;
+        if (!confirmDelete || !canDeleteClient) return;
 
         deleteClient(confirmDelete.clientID, {
             onSuccess: () => {
@@ -67,7 +76,7 @@ const ClientTable = ({
         });
     };
 
-    /*   UI   */
+    /* UI */
 
     return (
         <div className="relative overflow-x-auto">
@@ -110,20 +119,23 @@ const ClientTable = ({
                                     <Td>
                                         <span
                                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.status
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-red-100 text-red-700"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-red-100 text-red-700"
                                                 }`}
                                         >
                                             {c.status ? "Active" : "Inactive"}
                                         </span>
                                     </Td>
+
                                     <Td className="text-center">
-                                        <button
-                                            onClick={(e) => openDropdown(e, c)}
-                                            className="p-2 rounded hover:bg-slate-200"
-                                        >
-                                            <MoreVertical size={16} />
-                                        </button>
+                                        {(canEditClient || canDeleteClient) && (
+                                            <button
+                                                onClick={(e) => openDropdown(e, c)}
+                                                className="p-2 rounded hover:bg-slate-200"
+                                            >
+                                                <MoreVertical size={16} />
+                                            </button>
+                                        )}
                                     </Td>
                                 </tr>
                             ))
@@ -132,25 +144,30 @@ const ClientTable = ({
                 )}
             </table>
 
-            {/*   DROPDOWN   */}
-            {openClient && (
+            {/* DROPDOWN */}
+            {openClient && (canEditClient || canDeleteClient) && (
                 <div
                     ref={dropdownRef}
                     className="fixed z-50 w-[180px] bg-white border rounded-lg shadow-lg"
                     style={style}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <MenuItem label="Edit Client" onClick={handleEdit} />
-                    <MenuItem
-                        label="Delete Client"
-                        danger
-                        onClick={() => setConfirmDelete(openClient)}
-                    />
+                    {canEditClient && (
+                        <MenuItem label="Edit Client" onClick={handleEdit} />
+                    )}
+
+                    {canDeleteClient && (
+                        <MenuItem
+                            label="Delete Client"
+                            danger
+                            onClick={() => setConfirmDelete(openClient)}
+                        />
+                    )}
                 </div>
             )}
 
-            {/*   CONFIRM DELETE MODAL   */}
-            {confirmDelete && (
+            {/* CONFIRM DELETE MODAL */}
+            {confirmDelete && canDeleteClient && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
                     <div className="bg-white rounded-lg w-[420px] p-6 shadow-lg">
                         <div className="flex items-center justify-between mb-4">
@@ -162,7 +179,10 @@ const ClientTable = ({
 
                         <p className="text-sm text-gray-600 mb-6">
                             Are you sure you want to delete{" "}
-                            <span className="font-medium">{confirmDelete.companyName}</span>?
+                            <span className="font-medium">
+                                {confirmDelete.companyName}
+                            </span>
+                            ?
                             <br />
                             <span className="text-red-600 font-medium">
                                 This action cannot be undone.
@@ -194,11 +214,12 @@ const ClientTable = ({
 
 export default ClientTable;
 
-/*   HELPERS   */
+/* HELPERS */
 
 const Th = ({ children, className }: any) => (
     <th
-        className={`px-4 py-3 text-left font-semibold text-slate-700 ${className ?? ""}`}
+        className={`px-4 py-3 text-left font-semibold text-slate-700 ${className ?? ""
+            }`}
     >
         {children}
     </th>

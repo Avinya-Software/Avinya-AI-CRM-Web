@@ -5,6 +5,7 @@ import type { Product } from "../../interfaces/product.interface";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { useDeleteProduct } from "../../hooks/product/useDeleteProduct";
 import TableSkeleton from "../common/TableSkeleton";
+import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
 
 const DROPDOWN_HEIGHT = 120;
 const DROPDOWN_WIDTH = 180;
@@ -21,6 +22,11 @@ interface Props {
 }
 
 const ProductTable = ({ data = [], loading = false, onEdit }: Props) => {
+  // ✅ permissions
+  const { hasPermission } = usePermissions();
+  const canUpdate = hasPermission("product", "add");
+  const canDelete = hasPermission("product", "delete");
+
   const [openProduct, setOpenProduct] = useState<Product | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Product | null>(null);
   const [style, setStyle] = useState({ top: 0, left: 0 });
@@ -30,26 +36,35 @@ const ProductTable = ({ data = [], loading = false, onEdit }: Props) => {
 
   const { mutate: deleteProduct, isPending } = useDeleteProduct();
 
-  const openDropdown = (e: React.MouseEvent<HTMLButtonElement>, product: Product) => {
+  const openDropdown = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    product: Product
+  ) => {
     e.stopPropagation();
+
+    // ✅ Do not open menu if no permissions
+    if (!canUpdate && !canDelete) return;
+
     const rect = e.currentTarget.getBoundingClientRect();
     setStyle({
       top: rect.bottom + window.scrollY + 6,
       left: rect.right + window.scrollX - DROPDOWN_WIDTH,
     });
+
     setOpenProduct(product);
   };
 
   const handleEdit = () => {
-    if (!openProduct) return;
+    if (!openProduct || !canUpdate) return;
+
     const p = openProduct;
     setOpenProduct(null);
     setTimeout(() => onEdit(p), 0);
   };
 
   const handleDelete = () => {
-    if (!confirmDelete) return;
-    // ✅ API uses productID (from response)
+    if (!confirmDelete || !canDelete) return;
+
     deleteProduct(confirmDelete.productID, {
       onSuccess: () => {
         setConfirmDelete(null);
@@ -87,46 +102,68 @@ const ProductTable = ({ data = [], loading = false, onEdit }: Props) => {
               </tr>
             ) : (
               data.map((p) => {
-                // ✅ API: status=1 means active
                 const isActive = p.status === 1;
                 const statusKey = isActive ? "active" : "inactive";
 
                 return (
-                  <tr key={p.productID} className="border-t h-[52px] hover:bg-slate-50">
+                  <tr
+                    key={p.productID}
+                    className="border-t h-[52px] hover:bg-slate-50"
+                  >
                     <Td>
                       <div>
-                        <p className="font-medium text-slate-800">{p.productName}</p>
+                        <p className="font-medium text-slate-800">
+                          {p.productName}
+                        </p>
                         {p.description && (
-                          <p className="text-xs text-slate-400 truncate max-w-[200px]">{p.description}</p>
+                          <p className="text-xs text-slate-400 truncate max-w-[200px]">
+                            {p.description}
+                          </p>
                         )}
                       </div>
                     </Td>
+
                     <Td>{p.category || "-"}</Td>
                     <Td>{p.unitTypeName || "-"}</Td>
                     <Td>{p.hsnCode || "-"}</Td>
-                    <Td>{p.defaultRate != null ? `₹${p.defaultRate}` : "-"}</Td>
                     <Td>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${p.isDesignByUs ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-500"}`}>
+                      {p.defaultRate != null ? `₹${p.defaultRate}` : "-"}
+                    </Td>
+
+                    <Td>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${p.isDesignByUs
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-slate-100 text-slate-500"
+                          }`}
+                      >
                         {p.isDesignByUs ? "Yes" : "No"}
                       </span>
                     </Td>
+
                     <Td>
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${statusStyles[statusKey]}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${statusStyles[statusKey]}`}
+                      >
                         {isActive ? "Active" : "Inactive"}
                       </span>
                     </Td>
+
                     <Td>
                       {p.createdDate
                         ? new Date(p.createdDate).toLocaleDateString("en-IN")
                         : "-"}
                     </Td>
+
                     <Td className="text-center">
-                      <button
-                        onClick={(e) => openDropdown(e, p)}
-                        className="p-2 rounded hover:bg-slate-200"
-                      >
-                        <MoreVertical size={16} />
-                      </button>
+                      {(canUpdate || canDelete) && (
+                        <button
+                          onClick={(e) => openDropdown(e, p)}
+                          className="p-2 rounded hover:bg-slate-200"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                      )}
                     </Td>
                   </tr>
                 );
@@ -144,30 +181,49 @@ const ProductTable = ({ data = [], loading = false, onEdit }: Props) => {
           style={style}
           onClick={(e) => e.stopPropagation()}
         >
-          <MenuItem label="Edit Product" onClick={handleEdit} />
-          <MenuItem
-            label="Delete Product"
-            danger
-            onClick={() => { setOpenProduct(null); setConfirmDelete(openProduct); }}
-          />
+          {canUpdate && (
+            <MenuItem label="Edit Product" onClick={handleEdit} />
+          )}
+
+          {canDelete && (
+            <MenuItem
+              label="Delete Product"
+              danger
+              onClick={() => {
+                setOpenProduct(null);
+                setConfirmDelete(openProduct);
+              }}
+            />
+          )}
         </div>
       )}
 
       {/* CONFIRM DELETE MODAL */}
-      {confirmDelete && (
+      {confirmDelete && canDelete && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg w-[420px] p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Delete Product</h3>
-              <button onClick={() => setConfirmDelete(null)} className="p-1 rounded hover:bg-slate-100">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="p-1 rounded hover:bg-slate-100"
+              >
                 <X size={18} />
               </button>
             </div>
+
             <p className="text-sm text-gray-600 mb-1">
               Are you sure you want to delete{" "}
-              <span className="font-semibold text-slate-800">{confirmDelete.productName}</span>?
+              <span className="font-semibold text-slate-800">
+                {confirmDelete.productName}
+              </span>
+              ?
             </p>
-            <p className="text-sm text-red-600 font-medium mb-6">This action cannot be undone.</p>
+
+            <p className="text-sm text-red-600 font-medium mb-6">
+              This action cannot be undone.
+            </p>
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
@@ -175,6 +231,7 @@ const ProductTable = ({ data = [], loading = false, onEdit }: Props) => {
               >
                 Cancel
               </button>
+
               <button
                 onClick={handleDelete}
                 disabled={isPending}
@@ -192,8 +249,12 @@ const ProductTable = ({ data = [], loading = false, onEdit }: Props) => {
 
 export default ProductTable;
 
+/* helpers */
+
 const Th = ({ children, className = "" }: any) => (
-  <th className={`px-4 py-3 text-left font-semibold ${className}`}>{children}</th>
+  <th className={`px-4 py-3 text-left font-semibold ${className}`}>
+    {children}
+  </th>
 );
 
 const Td = ({ children, className = "" }: any) => (
@@ -210,8 +271,12 @@ const MenuItem = ({
   danger?: boolean;
 }) => (
   <button
-    onClick={(e) => { e.stopPropagation(); onClick(); }}
-    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50" : ""}`}
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick();
+    }}
+    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50" : ""
+      }`}
   >
     {danger && <X size={14} />}
     {label}

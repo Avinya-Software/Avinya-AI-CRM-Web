@@ -3,12 +3,13 @@ import { useState, useEffect } from "react";
 import { X, Save, Loader2 } from "lucide-react";
 import { useCreateFollowUp, useUpdateFollowUp } from "../../hooks/followup/useFollowUpMutations";
 import { useUsersDropdown } from "../../hooks/users/Useusers";
+import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
 
 interface LeadFollowUpCreateSheetProps {
   open: boolean;
   leadId: string | null;
   leadName?: string;
-  followUpData?: any | null;  // if provided → edit mode
+  followUpData?: any | null;
   onClose: () => void;
   onSuccess?: () => void;
 }
@@ -27,14 +28,28 @@ const LeadFollowUpCreateSheet = ({
   onClose,
   onSuccess,
 }: LeadFollowUpCreateSheetProps) => {
+
   const isEditMode = !!followUpData;
+
+  /* ================= PERMISSIONS (ONLY ADDED) ================= */
+
+  const { hasPermission } = usePermissions();
+
+  const canAddFollowUp = hasPermission("followup", "add");
+  const canEditFollowUp = hasPermission("followup", "edit");
+
+  // 🔐 Block unauthorized modal
+  if (open && isEditMode && !canEditFollowUp) return null;
+  if (open && !isEditMode && !canAddFollowUp) return null;
+
+  /* ============================================================= */
 
   const [formData, setFormData] = useState({
     followUpDate: "",
     notes: "",
     nextFollowupDate: "",
     followUpBy: "",
-    status: 1, // numeric ID
+    status: 1,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -66,7 +81,7 @@ const LeadFollowUpCreateSheet = ({
           notes: "",
           nextFollowupDate: "",
           followUpBy: "",
-          status: 1, // numeric ID
+          status: 1,
         });
       }
       setErrors({});
@@ -74,20 +89,30 @@ const LeadFollowUpCreateSheet = ({
   }, [open, followUpData]);
 
   const validate = () => {
-    debugger
     const newErrors: Record<string, string> = {};
+
     if (!isEditMode) {
-      if (!formData.followUpDate) newErrors.followUpDate = "Follow-up date is required";
+      if (!formData.followUpDate)
+        newErrors.followUpDate = "Follow-up date is required";
     }
-    if (!formData.notes.trim()) newErrors.notes = "Notes are required";
-    if (!formData.followUpBy) newErrors.followUpBy = "Follow-up by is required";
+
+    if (!formData.notes.trim())
+      newErrors.notes = "Notes are required";
+
+    if (!formData.followUpBy)
+      newErrors.followUpBy = "Follow-up by is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    debugger
     e.preventDefault();
+
+    // 🔐 Double protection
+    if (isEditMode && !canEditFollowUp) return;
+    if (!isEditMode && !canAddFollowUp) return;
+
     if (!validate()) return;
 
     const payload = {
@@ -97,6 +122,7 @@ const LeadFollowUpCreateSheet = ({
       followUpBy: formData.followUpBy,
       status: formData.status,
     };
+
     if (isEditMode) {
       updateFollowUp.mutate(
         {
@@ -112,6 +138,7 @@ const LeadFollowUpCreateSheet = ({
       );
     } else {
       if (!leadId) return;
+
       createFollowUp.mutate(
         { leadId, ...payload },
         {
@@ -131,6 +158,7 @@ const LeadFollowUpCreateSheet = ({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
       <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 sticky top-0 bg-white z-10">
           <div>
@@ -156,7 +184,6 @@ const LeadFollowUpCreateSheet = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
 
-          {/* Lead No — readonly, shown in edit mode */}
           {isEditMode && followUpData?.leadId && (
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -171,7 +198,6 @@ const LeadFollowUpCreateSheet = ({
             </div>
           )}
 
-          {/* Follow-Up Date — shown in create mode only */}
           {!isEditMode && (
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -189,12 +215,13 @@ const LeadFollowUpCreateSheet = ({
                   }`}
               />
               {errors.followUpDate && (
-                <p className="text-red-500 text-xs mt-1">{errors.followUpDate}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.followUpDate}
+                </p>
               )}
             </div>
           )}
 
-          {/* Notes */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Notes <span className="text-red-500">*</span>
@@ -216,7 +243,6 @@ const LeadFollowUpCreateSheet = ({
             )}
           </div>
 
-          {/* Next Follow-Up Date */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Next Follow-Up Date
@@ -225,13 +251,15 @@ const LeadFollowUpCreateSheet = ({
               type="date"
               value={formData.nextFollowupDate}
               onChange={(e) =>
-                setFormData({ ...formData, nextFollowupDate: e.target.value })
+                setFormData({
+                  ...formData,
+                  nextFollowupDate: e.target.value,
+                })
               }
               className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
           </div>
 
-          {/* ✅ Status — shown in EDIT mode only */}
           {isEditMode && (
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -240,12 +268,18 @@ const LeadFollowUpCreateSheet = ({
               <select
                 value={formData.status}
                 onChange={(e) =>
-                  setFormData({ ...formData, status: Number(e.target.value) })
+                  setFormData({
+                    ...formData,
+                    status: Number(e.target.value),
+                  })
                 }
                 className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
                 {STATUS_OPTIONS.map((s) => (
-                  <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
+                  <option
+                    key={s.leadFollowupStatusID}
+                    value={s.leadFollowupStatusID}
+                  >
                     {s.statusName}
                   </option>
                 ))}
@@ -253,7 +287,6 @@ const LeadFollowUpCreateSheet = ({
             </div>
           )}
 
-          {/* Follow-Up By */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Follow-Up By <span className="text-red-500">*</span>
@@ -276,11 +309,12 @@ const LeadFollowUpCreateSheet = ({
               ))}
             </select>
             {errors.followUpBy && (
-              <p className="text-red-500 text-xs mt-1">{errors.followUpBy}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.followUpBy}
+              </p>
             )}
           </div>
 
-          {/* Submit Buttons */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"

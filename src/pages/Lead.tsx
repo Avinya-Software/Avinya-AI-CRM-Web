@@ -11,10 +11,10 @@ import LeadFilterSheet from "../components/leads/LeadFilterSheet";
 import LeadUpsertSheet from "../components/leads/LeadUpsertSheet";
 import LeadFollowUpCreateSheet from "../components/followups/LeadFollowUpCreateSheet";
 import CustomerUpsertSheet from "../components/customer/CustomerUpsertSheet";
-
+import LeadDetailsModal from "../components/leads/Leaddetailsmodal";
+import { usePermissions } from "../context/PermissionContext";
 
 import type { RootState } from "../store";
-import LeadDetailsModal from "../components/leads/Leaddetailsmodal";
 import QuotationUpsertSheet from "../components/quotation/Quotationupsertsheet ";
 
 const DEFAULT_FILTERS = {
@@ -27,6 +27,15 @@ const DEFAULT_FILTERS = {
 };
 
 const Leads = () => {
+  const { hasPermission } = usePermissions();
+
+  const canViewLead = hasPermission("lead", "view");
+  const canAddLead = hasPermission("lead", "add");
+  const canEditLead = hasPermission("lead", "edit");
+  const canAddFollowUp = hasPermission("followup", "add");
+  const canAddQuotation = hasPermission("quotation", "add");
+  const canAddCustomer = hasPermission("customer", "add");
+
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [openLeadSheet, setOpenLeadSheet] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
@@ -44,15 +53,22 @@ const Leads = () => {
     leadName?: string;
   } | null>(null);
 
-  // ← NEW: lead details modal state
   const [viewLeadDetails, setViewLeadDetails] = useState<any | null>(null);
-
   const [openCustomerSheet, setOpenCustomerSheet] = useState(false);
   const [leadForCustomer, setLeadForCustomer] = useState<any>(null);
 
   const advisorId = useSelector((state: RootState) => state.auth.advisorId);
 
   const { data, isLoading, isFetching } = useLeads(filters);
+
+  // 🔐 Page Guard
+  if (!canViewLead) {
+    return (
+      <div className="p-10 text-center text-slate-500">
+        You don’t have permission to view leads.
+      </div>
+    );
+  }
 
   const hasActiveFilters =
     filters.search || filters.status || filters.startDate || filters.endDate;
@@ -75,29 +91,32 @@ const Leads = () => {
   };
 
   const handleAddLead = () => {
+    if (!canAddLead) return;
     closeAllSheets();
     setSelectedLead(null);
     setOpenLeadSheet(true);
   };
 
   const handleEditLead = (lead: any) => {
+    if (!canEditLead) return;
     closeAllSheets();
     setSelectedLead(lead);
     setOpenLeadSheet(true);
   };
 
   const handleAddCustomerFromLead = (lead: any) => {
+    if (!canAddCustomer) return;
     closeAllSheets();
     setLeadForCustomer(lead);
     setOpenCustomerSheet(true);
   };
 
-  // ← NEW: open lead details modal
   const handleViewLeadDetails = (lead: any) => {
     setViewLeadDetails(lead);
   };
 
   const handleCreateQuotation = (lead: any) => {
+    if (!canAddQuotation) return;
     closeAllSheets();
     setLeadForQuotation(lead);
     setOpenQuotationSheet(true);
@@ -108,9 +127,9 @@ const Leads = () => {
       <Toaster position="top-right" reverseOrder={false} />
 
       <div className="relative min-h-screen">
-        {/* LEADS LIST VIEW */}
         <div
-          className={`${viewFollowUpLead ? "hidden" : "block"} bg-white rounded-lg border`}
+          className={`${viewFollowUpLead ? "hidden" : "block"
+            } bg-white rounded-lg border`}
         >
           {/* HEADER */}
           <div className="px-4 py-5 border-b bg-gray-100">
@@ -125,13 +144,15 @@ const Leads = () => {
               </div>
 
               <div className="text-right">
-                <button
-                  className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium"
-                  onClick={handleAddLead}
-                >
-                  <span className="text-lg leading-none">+</span>
-                  Add Lead
-                </button>
+                {canAddLead && (
+                  <button
+                    className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium"
+                    onClick={handleAddLead}
+                  >
+                    <span className="text-lg leading-none">+</span>
+                    Add Lead
+                  </button>
+                )}
               </div>
 
               {/* SEARCH */}
@@ -167,35 +188,33 @@ const Leads = () => {
                     Clear Filters
                   </button>
                 )}
-
-                {/* <button
-                  onClick={() => setOpenFilterSheet(true)}
-                  className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium"
-                >
-                  <Filter size={16} />
-                  Filters
-                </button> */}
               </div>
             </div>
           </div>
 
-          {/* LEADS TABLE */}
+          {/* TABLE */}
           <LeadTable
             data={data?.data ?? []}
             loading={isLoading || isFetching}
-            onAdd={handleAddLead}
-            onEdit={handleEditLead}
+            onAdd={canAddLead ? handleAddLead : undefined}
+            onEdit={canEditLead ? handleEditLead : undefined}
             onRowClick={openViewFollowUps}
             onViewFollowUps={openViewFollowUps}
             onViewDetails={handleViewLeadDetails}
-            onCreateQuotation={handleCreateQuotation}  // ← NEW prop
-            onCreateFollowUp={(lead) => {
-              closeAllSheets();
-              setCreateFollowUpLead({
-                leadId: lead.leadID,
-                leadName: lead.contactPerson,
-              });
-            }}
+            onCreateQuotation={
+              canAddQuotation ? handleCreateQuotation : undefined
+            }
+            onCreateFollowUp={
+              canAddFollowUp
+                ? (lead) => {
+                  closeAllSheets();
+                  setCreateFollowUpLead({
+                    leadId: lead.leadID,
+                    leadName: lead.contactPerson,
+                  });
+                }
+                : undefined
+            }
           />
 
           {/* PAGINATION */}
@@ -203,7 +222,9 @@ const Leads = () => {
             <Pagination
               page={filters.pageNumber}
               totalPages={data?.totalPages || 1}
-              onChange={(page) => setFilters({ ...filters, pageNumber: page })}
+              onChange={(page) =>
+                setFilters({ ...filters, pageNumber: page })
+              }
             />
           </div>
         </div>
@@ -218,7 +239,7 @@ const Leads = () => {
         onClear={clearAllFilters}
       />
 
-      {/* OTHER SHEETS */}
+      {/* LEAD UPSERT */}
       <LeadUpsertSheet
         open={openLeadSheet}
         onClose={() => {
@@ -229,6 +250,7 @@ const Leads = () => {
         advisorId={advisorId}
       />
 
+      {/* CUSTOMER UPSERT */}
       <CustomerUpsertSheet
         open={openCustomerSheet}
         leadId={leadForCustomer?.leadId}
@@ -242,6 +264,7 @@ const Leads = () => {
         }}
       />
 
+      {/* FOLLOW UP CREATE */}
       <LeadFollowUpCreateSheet
         open={!!createFollowUpLead}
         leadId={createFollowUpLead?.leadId || null}
@@ -253,7 +276,7 @@ const Leads = () => {
         }}
       />
 
-      {/* ← NEW: Lead Details Modal */}
+      {/* DETAILS MODAL */}
       {viewLeadDetails && (
         <LeadDetailsModal
           lead={viewLeadDetails}
@@ -261,6 +284,7 @@ const Leads = () => {
         />
       )}
 
+      {/* QUOTATION SHEET */}
       <QuotationUpsertSheet
         open={openQuotationSheet}
         quotation={null}

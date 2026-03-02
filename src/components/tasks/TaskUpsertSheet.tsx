@@ -10,6 +10,7 @@ import { useGetTeamsDropdown, useCreateTeam } from "../../hooks/team/useTeamMuta
 import { Combobox, ComboboxOption } from "../../components/ui/combobox"; // your existing Combobox
 import { AddTeamModal } from "../../components/team/Addteammodal"; // the new modal we created
 import { useUsersDropdown } from "../../hooks/users/Useusers";
+import { usePermissions } from "../../context/PermissionContext";
 
 const TaskUpsertSheet = ({
   open,
@@ -20,7 +21,13 @@ const TaskUpsertSheet = ({
   const isEdit = !!task;
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
+  const { hasPermission } = usePermissions();
+  const canAddTask = hasPermission("task", "add");
+  const canEditTask = hasPermission("task", "edit");
 
+  if (isEdit && !canEditTask) return null;
+  if (!isEdit && !canAddTask) return null;
+  console.log(isEdit, canAddTask, canEditTask);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -445,17 +452,17 @@ const TaskUpsertSheet = ({
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <><Loader2 size={16} className="animate-spin" />Saving...</>
-                ) : (
-                  <><Save size={16} />{isEdit ? "Update" : "Create"} Task</>
-                )}
-              </button>
+              {(isEdit ? canEditTask : canAddTask) && (
+                <button type="submit" disabled={isLoading}
+                  className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <><Loader2 size={16} className="animate-spin" />Saving...</>
+                  ) : (
+                    <><Save size={16} />{isEdit ? "Update" : "Create"} Task</>
+                  )}
+                </button>
+              )}
             </div>
           </form>
         </div>

@@ -11,6 +11,7 @@ import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { Combobox, ComboboxOption } from "../ui/combobox";
 import { useStates } from "../../hooks/state/useStates";
 import { useCities } from "../../hooks/city/useCities";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface Props {
   open: boolean;
@@ -19,25 +20,25 @@ interface Props {
   advisorId: string | null;
 }
 
-const LeadUpsertSheet = ({
-  open,
-  onClose,
-  lead,
-  advisorId,
-}: Props) => {
+const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
   const { mutate, isPending } = useUpsertLead();
   const { data: statuses } = useLeadStatuses();
   const { data: sources } = useLeadSources();
+  const isEdit = !!lead;
+
+  /* ── PERMISSIONS ── */
+  const { hasPermission } = usePermissions();
+  const canAdd = hasPermission("lead", "add");
+  const canEdit = hasPermission("lead", "edit");
+  const isReadOnly = isEdit ? !canEdit : !canAdd;
 
   /* BODY SCROLL LOCK */
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "unset";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    return () => { document.body.style.overflow = "unset"; };
   }, [open]);
 
-  /* ================= CUSTOMERS ================= */
+  /* ── CUSTOMERS ── */
   const [customers, setCustomers] = useState<any[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
 
@@ -50,14 +51,14 @@ const LeadUpsertSheet = ({
     (u: any) => ({ value: u.id, label: u.fullName })
   );
 
-  /* ================= STATES & CITIES (dynamic, like OrderUpsertSheet) ================= */
+  /* ── STATES & CITIES ── */
   const { data: states = [] } = useStates();
   const [selectedStateId, setSelectedStateId] = useState<string>("");
   const { data: cities = [] } = useCities(
     selectedStateId ? Number(selectedStateId) : null
   );
 
-  /* ================= FORM STATE ================= */
+  /* ── FORM STATE ── */
   const initialForm = {
     customerId: null as string | null,
     fullName: "",
@@ -76,20 +77,17 @@ const LeadUpsertSheet = ({
 
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const isEdit = !!lead;
 
-  /* Handle state change — reset city just like OrderUpsertSheet */
   const handleStateChange = (stateId: string) => {
     setSelectedStateId(stateId);
     setForm((prev) => ({ ...prev, cityId: "" }));
   };
 
-  /* ================= PREFILL ON EDIT ================= */
+  /* ── PREFILL ON EDIT ── */
   useEffect(() => {
     if (!open || !lead) return;
 
     const stateId = lead.stateID?.toString() ?? "";
-
     setSelectedStateId(stateId);
     setForm({
       customerId: lead.clientID ?? null,
@@ -100,19 +98,16 @@ const LeadUpsertSheet = ({
       assignedTo: lead.assignedTo ?? "",
       requirementDetails: lead.requirementDetails ?? "",
       links: lead.links ?? "",
-      nextFollowupDate: lead.nextFollowupDate
-        ? lead.nextFollowupDate.slice(0, 16)
-        : "",
+      nextFollowupDate: lead.nextFollowupDate ? lead.nextFollowupDate.slice(0, 16) : "",
       leadStatusId: lead.status ?? "",
       leadSourceId: lead.leadSourceID ?? "",
       notes: lead.notes ?? "",
       cityId: lead.cityID?.toString() ?? "",
     });
-
     setSelectedCustomerId(lead.clientID ?? "");
   }, [lead, open]);
 
-  /* ================= RESET ON CLOSE ================= */
+  /* ── RESET ON CLOSE ── */
   useEffect(() => {
     if (!open) {
       setForm(initialForm);
@@ -122,7 +117,7 @@ const LeadUpsertSheet = ({
     }
   }, [open]);
 
-  /* ================= VALIDATION ================= */
+  /* ── VALIDATION ── */
   const validate = () => {
     const e: any = {};
     const mobileRegex = /^[6-9]\d{9}$/;
@@ -141,16 +136,12 @@ const LeadUpsertSheet = ({
     return true;
   };
 
-  /* ================= SAVE ================= */
+  /* ── SAVE ── */
   const handleSave = () => {
     if (!validate()) return;
 
-    const selectedStatus = statuses?.find(
-      (s: any) => s.leadStatusID === form.leadStatusId
-    );
-    const selectedSource = sources?.find(
-      (s: any) => s.leadSourceID === form.leadSourceId
-    );
+    const selectedStatus = statuses?.find((s: any) => s.leadStatusID === form.leadStatusId);
+    const selectedSource = sources?.find((s: any) => s.leadSourceID === form.leadSourceId);
 
     const payload = {
       LeadID: lead?.leadID ?? null,
@@ -164,9 +155,7 @@ const LeadUpsertSheet = ({
       RequirementDetails: form.requirementDetails,
       Links: form.links,
       Notes: form.notes,
-      NextFollowupDate: form.nextFollowupDate
-        ? new Date(form.nextFollowupDate)
-        : null,
+      NextFollowupDate: form.nextFollowupDate ? new Date(form.nextFollowupDate) : null,
       Status: selectedStatus?.name,
       LeadSource: selectedSource?.name,
       AssignedTo: form.assignedTo || advisorId,
@@ -175,9 +164,11 @@ const LeadUpsertSheet = ({
     mutate(payload, { onSuccess: onClose });
   };
 
+  // Hard guard — don't render if no permission
   if (!open) return null;
+  if (isEdit && !canEdit) return null;
+  if (!isEdit && !canAdd) return null;
 
-  /* ================= UI ================= */
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
@@ -205,10 +196,11 @@ const LeadUpsertSheet = ({
               label: `${c.contactPerson} - ${c.email ?? ""}`,
             }))}
             value={selectedCustomerId}
-            onSelect={(item) => {
+            onSelect={isReadOnly ? undefined : (item: any) => {
               setSelectedCustomerId(item?.value ?? "");
               setForm({ ...form, customerId: item?.value ?? null });
             }}
+            disabled={isReadOnly}
           />
 
           <Input
@@ -217,6 +209,7 @@ const LeadUpsertSheet = ({
             value={form.fullName}
             error={errors.fullName}
             onChange={(v: any) => setForm({ ...form, fullName: v })}
+            disabled={isReadOnly}
           />
 
           <Input
@@ -225,65 +218,69 @@ const LeadUpsertSheet = ({
             value={form.mobile}
             error={errors.mobile}
             onChange={(v: any) => setForm({ ...form, mobile: v })}
+            disabled={isReadOnly}
           />
 
           <Input
             label="Email"
             value={form.email}
             onChange={(v: any) => setForm({ ...form, email: v })}
+            disabled={isReadOnly}
           />
 
           <Textarea
             label="Billing Address"
             value={form.address}
             onChange={(v: any) => setForm({ ...form, address: v })}
+            disabled={isReadOnly}
           />
 
+          {/* EMPLOYEE */}
           <div>
             <label className="text-sm font-medium">Employee</label>
             <Combobox
               options={userOptions}
               value={form.assignedTo}
-              onValueChange={(val) => setForm({ ...form, assignedTo: val })}
+              onValueChange={(val) =>
+                !isReadOnly && setForm({ ...form, assignedTo: val })
+              }
               placeholder="Select user..."
               searchPlaceholder="Search users..."
               emptyText="No users found."
+              disabled={isReadOnly}
             />
           </div>
 
-          {/* STATE — dynamic from API, same as OrderUpsertSheet */}
+          {/* STATE */}
           <div>
             <label className="text-sm font-medium">State</label>
             <select
-              className="input w-full mt-1"
+              className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
               value={selectedStateId}
               onChange={(e) => handleStateChange(e.target.value)}
+              disabled={isReadOnly}
             >
               <option value="">Select State</option>
               {(states as any[]).map((s) => (
-                <option key={s.stateID} value={s.stateID}>
-                  {s.stateName}
-                </option>
+                <option key={s.stateID} value={s.stateID}>{s.stateName}</option>
               ))}
             </select>
           </div>
 
-          {/* CITY — dynamic, dependent on selected state, disabled until state picked */}
+          {/* CITY */}
           <div>
             <label className="text-sm font-medium">City</label>
             <select
               className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-400"
               value={form.cityId}
-              disabled={!selectedStateId}
+              disabled={!selectedStateId || isReadOnly}
               onChange={(e) => setForm({ ...form, cityId: e.target.value })}
             >
               <option value="">
                 {selectedStateId ? "Select City" : "Select state first"}
               </option>
               {(cities as any[]).map((c) => (
-                <option key={c.cityID} value={c.cityID}>
-                  {c.cityName}
-                </option>
+                <option key={c.cityID} value={c.cityID}>{c.cityName}</option>
               ))}
             </select>
           </div>
@@ -292,25 +289,25 @@ const LeadUpsertSheet = ({
             label="Requirement Details"
             value={form.requirementDetails}
             onChange={(v: any) => setForm({ ...form, requirementDetails: v })}
+            disabled={isReadOnly}
           />
 
           <Select
             label="Lead Status"
             required
             value={form.leadStatusId}
-            options={(statuses ?? []).map((s: any) => ({
-              id: s.id,
-              name: s.name,
-            }))}
+            options={(statuses ?? []).map((s: any) => ({ id: s.id, name: s.name }))}
             error={errors.leadStatusId}
             onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
+            disabled={isReadOnly}
           />
 
           <Select
             label="Lead Source"
             value={form.leadSourceId}
             options={sources}
-            onChange={(v) => setForm({ ...form, leadSourceId: v })}
+            onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
+            disabled={isReadOnly}
           />
 
           {!isEdit && (
@@ -318,6 +315,7 @@ const LeadUpsertSheet = ({
               label="Links"
               value={form.links}
               onChange={(v: any) => setForm({ ...form, links: v })}
+              disabled={isReadOnly}
             />
           )}
 
@@ -326,6 +324,7 @@ const LeadUpsertSheet = ({
               label="Notes"
               value={form.notes}
               onChange={(v: any) => setForm({ ...form, notes: v })}
+              disabled={isReadOnly}
             />
           )}
 
@@ -335,22 +334,30 @@ const LeadUpsertSheet = ({
               type="datetime-local"
               value={form.nextFollowupDate}
               onChange={(v: any) => setForm({ ...form, nextFollowupDate: v })}
+              disabled={isReadOnly}
             />
           )}
         </div>
 
         {/* FOOTER */}
         <div className="p-4 border-t flex gap-3">
-          <button className="flex-1 border rounded" onClick={onClose}>
+          <button
+            className="flex-1 border rounded hover:bg-slate-50"
+            onClick={onClose}
+          >
             Cancel
           </button>
-          <button
-            disabled={isPending}
-            className="flex-1 bg-blue-600 text-white rounded"
-            onClick={handleSave}
-          >
-            {isPending ? <Spinner /> : "Save"}
-          </button>
+
+          {/* Save button hidden in read-only mode */}
+          {!isReadOnly && (
+            <button
+              disabled={isPending}
+              className="flex-1 bg-blue-600 text-white rounded disabled:opacity-50 flex items-center justify-center"
+              onClick={handleSave}
+            >
+              {isPending ? <Spinner /> : isEdit ? "Update" : "Save"}
+            </button>
+          )}
         </div>
       </div>
     </>
@@ -361,50 +368,51 @@ export default LeadUpsertSheet;
 
 /* ================= HELPERS ================= */
 
-const Input = ({ label, required, value, error, onChange, type = "text" }: any) => (
+const Input = ({ label, required, value, error, onChange, type = "text", disabled }: any) => (
   <div>
     <label className="text-sm font-medium">
       {label} {required && "*"}
     </label>
     <input
       type={type}
-      className={`input w-full ${error ? "border-red-500" : ""}`}
+      className={`input w-full ${error ? "border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
     />
     {error && <p className="text-xs text-red-600">{error}</p>}
   </div>
 );
 
-const Select = ({ label, required, value, options, onChange, error }: any) => (
+const Select = ({ label, required, value, options, onChange, error, disabled }: any) => (
   <div>
     <label className="text-sm font-medium">
       {label} {required && "*"}
     </label>
     <select
-      className={`input w-full mt-1 ${error ? "border-red-500" : ""}`}
+      className={`input w-full mt-1 ${error ? "border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
     >
       <option value="">Select</option>
       {Array.isArray(options) &&
         options.map((o: any) => (
-          <option key={o.id} value={o.id}>
-            {o.name}
-          </option>
+          <option key={o.id} value={o.id}>{o.name}</option>
         ))}
     </select>
     {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
   </div>
 );
 
-const Textarea = ({ label, value, onChange }: any) => (
+const Textarea = ({ label, value, onChange, disabled }: any) => (
   <div>
     <label className="text-sm font-medium">{label}</label>
     <textarea
-      className="input w-full h-24"
+      className="input w-full h-24 disabled:bg-slate-50 disabled:text-slate-500"
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
     />
   </div>
 );

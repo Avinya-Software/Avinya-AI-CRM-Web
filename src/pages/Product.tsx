@@ -8,8 +8,14 @@ import ProductUpsertSheet from "../components/product/ProductUpsertSheet";
 import Pagination from "../components/leads/Pagination";
 
 import type { Product } from "../interfaces/product.interface";
+import { usePermissions } from "../context/PermissionContext"; // ✅ ADDED
 
 const Products = () => {
+  const { hasPermission } = usePermissions(); // ✅ ADDED
+
+  const canCreate = hasPermission("product", "add");
+  const canUpdate = hasPermission("product", "edit");
+
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize] = useState(10);
   const [search, setSearch] = useState("");
@@ -29,12 +35,16 @@ const Products = () => {
   const totalRecords: number = data?.data?.totalRecords ?? 0;
   const totalPages: number = data?.data?.totalPages ?? 1;
 
+  // ✅ Protected Add
   const handleAdd = () => {
+    if (!canCreate) return;
     setSelectedProduct(null);
     setOpenSheet(true);
   };
 
+  // ✅ Protected Edit
   const handleEdit = (product: Product) => {
+    if (!canUpdate) return;
     setSelectedProduct(product);
     setOpenSheet(true);
   };
@@ -54,17 +64,23 @@ const Products = () => {
         <div className="px-4 py-5 border-b bg-gray-100">
           <div className="grid grid-cols-2 gap-y-4 items-start">
             <div>
-              <h1 className="text-4xl font-serif font-semibold">Products</h1>
-              <p className="mt-1 text-sm text-slate-600">{totalRecords} total products</p>
+              <h1 className="text-4xl font-serif font-semibold">
+                Products
+              </h1>
+              <p className="mt-1 text-sm text-slate-600">
+                {totalRecords} total products
+              </p>
             </div>
 
             <div className="text-right">
-              <button
-                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
-                onClick={handleAdd}
-              >
-                + Add Product
-              </button>
+              {canCreate && ( // ✅ Button hidden if no permission
+                <button
+                  className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+                  onClick={handleAdd}
+                >
+                  + Add Product
+                </button>
+              )}
             </div>
 
             {/* SEARCH + STATUS FILTER */}
@@ -74,10 +90,15 @@ const Products = () => {
                   type="text"
                   placeholder="Search by product name..."
                   value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPageNumber(1); }}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPageNumber(1);
+                  }}
                   className="w-full h-10 pl-10 pr-3 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  🔍
+                </span>
               </div>
 
               <select
@@ -102,7 +123,7 @@ const Products = () => {
         <ProductTable
           data={products}
           loading={isLoading || isFetching}
-          onEdit={handleEdit}
+          onEdit={canUpdate ? handleEdit : () => { }} // ✅ Protected
         />
 
         {/* PAGINATION */}

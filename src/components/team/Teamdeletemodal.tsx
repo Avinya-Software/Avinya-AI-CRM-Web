@@ -2,12 +2,19 @@
 import { Trash2, Loader2, AlertTriangle } from "lucide-react";
 import { useDeleteTeam } from "../../hooks/team/useTeamMutation";
 import { TeamDeleteModalProps } from "../../interfaces/team.interface";
+import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
 
 const TeamDeleteModal = ({ open, team, onClose }: TeamDeleteModalProps) => {
+  const { hasPermission } = usePermissions(); // ✅ ADDED
+  const canDelete = hasPermission("team", "delete");
+
   const deleteTeam = useDeleteTeam();
 
   const handleConfirm = () => {
+    // ✅ Permission Guard (important security layer)
     if (!team) return;
+    if (!canDelete) return;
+
     deleteTeam.mutate(team.id, { onSuccess: onClose });
   };
 
@@ -33,20 +40,23 @@ const TeamDeleteModal = ({ open, team, onClose }: TeamDeleteModalProps) => {
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
               Delete Team
             </h3>
+
             <p className="text-sm text-slate-500 leading-relaxed">
               Are you sure you want to delete{" "}
               <span className="font-semibold text-slate-800">
                 "{team.name}"
-              </span>
+              </span>{" "}
               ?{" "}
               <span className="text-red-500">
                 This action cannot be undone.
               </span>
             </p>
+
             {team.totalMembers > 0 && (
               <div className="mt-3 inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium px-3 py-1.5 rounded-full">
                 <AlertTriangle size={11} />
-                {team.totalMembers} member{team.totalMembers > 1 ? "s" : ""} will be removed
+                {team.totalMembers} member
+                {team.totalMembers > 1 ? "s" : ""} will be removed
               </div>
             )}
           </div>
@@ -60,9 +70,10 @@ const TeamDeleteModal = ({ open, team, onClose }: TeamDeleteModalProps) => {
             >
               Cancel
             </button>
+
             <button
               onClick={handleConfirm}
-              disabled={deleteTeam.isPending}
+              disabled={deleteTeam.isPending || !canDelete} // ✅ Protected
               className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {deleteTeam.isPending ? (

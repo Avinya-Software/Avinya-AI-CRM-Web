@@ -6,7 +6,8 @@ import toast from "react-hot-toast";
 import { updateUserApi, upsertUserApi } from "../../api/user.api";
 import type { User, UserUpsertRequest } from "../../interfaces/user.interface";
 import { useCompanies } from "../../hooks/users/Useusers";
-import { usePermissions } from "../../hooks/users/usePermissions";
+import { usePermissions as useUserPermissions } from "../../hooks/users/usePermissions";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface UserUpsertSheetProps {
     open: boolean;
@@ -17,7 +18,14 @@ interface UserUpsertSheetProps {
 const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
     const queryClient = useQueryClient();
     const isEdit = !!user;
-    const { data: permissionModules = [] } = usePermissions();
+
+    /* ── PERMISSIONS ── */
+    const { hasPermission } = usePermissions();
+    const canAdd = hasPermission("user", "add");
+    const canEdit = hasPermission("user", "edit");
+    const isReadOnly = isEdit ? !canEdit : !canAdd;
+
+    const { data: permissionModules = [] } = useUserPermissions();
 
     const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
 
@@ -31,7 +39,8 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
         permissionIds: selectedPermissions,
     });
 
-    const { data: companies = [], isLoading } = useCompanies();
+    const { data: companies = [] } = useCompanies();
+
     useEffect(() => {
         if (open && user) {
             setSelectedPermissions(user.permissionIds ?? []);
@@ -79,7 +88,6 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
             onClose();
         },
         onError: (error: any) => {
-            console.log(error);
             toast.error(error?.response?.data?.statusMessage || "Failed to save user");
         },
     });
@@ -91,22 +99,17 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
         if (!formData.email.trim()) { toast.error("Email is required"); return; }
         if (!formData.tenantId) { toast.error("Tenant is required"); return; }
 
-        const payload = {
-            ...formData,
-            permissionIds: selectedPermissions,
-        };
+        const payload = { ...formData, permissionIds: selectedPermissions };
 
         if (isEdit) {
             updateMutation.mutate(payload);
         } else {
             mutation.mutate(payload);
         }
-
     };
 
-    if (!open) return null;
-
     const togglePermission = (id: number) => {
+        if (isReadOnly) return;
         setSelectedPermissions((prev) =>
             prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
         );
@@ -126,6 +129,10 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
         onClose();
     };
 
+    // Hard guard — don't render if no permission
+    if (!open) return null;
+    if (isEdit && !canEdit) return null;
+    if (!isEdit && !canAdd) return null;
 
     return (
         <>
@@ -134,6 +141,7 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
 
             {/* Sheet */}
             <div className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-xl z-50 flex flex-col">
+
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b">
                     <h2 className="text-lg font-semibold">
@@ -147,6 +155,7 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
                     <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+
                         {/* Full Name */}
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -156,7 +165,8 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                 type="text"
                                 value={formData.fullName}
                                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                className="w-full px-3 py-2 border rounded text-sm"
+                                disabled={isReadOnly}
+                                className="w-full px-3 py-2 border rounded text-sm disabled:bg-slate-50 disabled:text-slate-500"
                                 placeholder="Enter full name"
                             />
                         </div>
@@ -170,7 +180,8 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-3 py-2 border rounded text-sm"
+                                disabled={isReadOnly}
+                                className="w-full px-3 py-2 border rounded text-sm disabled:bg-slate-50 disabled:text-slate-500"
                                 placeholder="Enter email address"
                             />
                         </div>
@@ -184,7 +195,8 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                     <select
                                         value={formData.tenantId}
                                         onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                                        className="w-full px-3 py-2 border rounded text-sm"
+                                        disabled={isReadOnly}
+                                        className="w-full px-3 py-2 border rounded text-sm disabled:bg-slate-50 disabled:text-slate-500"
                                     >
                                         <option value="">Select Company</option>
                                         {companies.map((company) => (
@@ -202,7 +214,8 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                     <select
                                         value={formData.role}
                                         onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                        className="w-full px-3 py-2 border rounded text-sm"
+                                        disabled={isReadOnly}
+                                        className="w-full px-3 py-2 border rounded text-sm disabled:bg-slate-50 disabled:text-slate-500"
                                     >
                                         <option value="User">User</option>
                                         <option value="Manager">Manager</option>
@@ -219,20 +232,22 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                 Status
                             </label>
                             <div className="flex items-center gap-4">
-                                <label className="flex items-center gap-2 cursor-pointer">
+                                <label className={`flex items-center gap-2 ${isReadOnly ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
                                     <input
                                         type="radio"
                                         checked={formData.isActive}
-                                        onChange={() => setFormData({ ...formData, isActive: true })}
+                                        onChange={() => !isReadOnly && setFormData({ ...formData, isActive: true })}
+                                        disabled={isReadOnly}
                                         className="w-4 h-4"
                                     />
                                     <span className="text-sm">Active</span>
                                 </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
+                                <label className={`flex items-center gap-2 ${isReadOnly ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
                                     <input
                                         type="radio"
                                         checked={!formData.isActive}
-                                        onChange={() => setFormData({ ...formData, isActive: false })}
+                                        onChange={() => !isReadOnly && setFormData({ ...formData, isActive: false })}
+                                        disabled={isReadOnly}
                                         className="w-4 h-4"
                                     />
                                     <span className="text-sm">Inactive</span>
@@ -254,6 +269,7 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                     );
 
                                     const toggleAll = () => {
+                                        if (isReadOnly) return;
                                         if (allSelected) {
                                             setSelectedPermissions((prev) =>
                                                 prev.filter((id) => !modulePermissionIds.includes(id))
@@ -275,13 +291,16 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                                 <span className="text-sm font-semibold text-slate-700">
                                                     {module.moduleName}
                                                 </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={toggleAll}
-                                                    className="text-xs text-blue-600 hover:underline"
-                                                >
-                                                    {allSelected ? "Deselect All" : "Select All"}
-                                                </button>
+                                                {/* Select All / Deselect All hidden in read-only mode */}
+                                                {!isReadOnly && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={toggleAll}
+                                                        className="text-xs text-blue-600 hover:underline"
+                                                    >
+                                                        {allSelected ? "Deselect All" : "Select All"}
+                                                    </button>
+                                                )}
                                             </div>
 
                                             <div className="grid grid-cols-3 gap-x-2 gap-y-1">
@@ -290,16 +309,20 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                                     return (
                                                         <label
                                                             key={perm.permissionId}
-                                                            className={`flex items-center gap-2 px-2 py-[6px] rounded-md text-sm cursor-pointer select-none transition-colors ${checked
-                                                                ? "bg-blue-50 border border-blue-200 text-blue-700"
-                                                                : "border border-transparent text-slate-600 hover:bg-slate-100"
+                                                            className={`flex items-center gap-2 px-2 py-[6px] rounded-md text-sm select-none transition-colors ${isReadOnly
+                                                                    ? "cursor-not-allowed opacity-70"
+                                                                    : "cursor-pointer"
+                                                                } ${checked
+                                                                    ? "bg-blue-50 border border-blue-200 text-blue-700"
+                                                                    : "border border-transparent text-slate-600 hover:bg-slate-100"
                                                                 }`}
                                                         >
                                                             <input
                                                                 type="checkbox"
                                                                 checked={checked}
                                                                 onChange={() => togglePermission(perm.permissionId)}
-                                                                className="w-[14px] h-[14px] flex-shrink-0 accent-blue-600 cursor-pointer"
+                                                                disabled={isReadOnly}
+                                                                className="w-[14px] h-[14px] flex-shrink-0 accent-blue-600 cursor-pointer disabled:cursor-not-allowed"
                                                             />
                                                             <span className="min-w-0 truncate leading-none">
                                                                 {perm.actionName}
@@ -313,7 +336,6 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                 })}
                             </div>
                         </div>
-
                     </div>
 
                     {/* Footer */}
@@ -325,13 +347,20 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                         >
                             Cancel
                         </button>
-                        <button
-                            type="submit"
-                            disabled={mutation.isPending}
-                            className="flex-1 px-4 py-2 bg-blue-900 text-white rounded text-sm font-medium hover:bg-blue-800 disabled:opacity-50"
-                        >
-                            {mutation.isPending ? "Saving..." : isEdit ? "Update User" : "Create User"}
-                        </button>
+
+                        {/* Save button hidden in read-only mode */}
+                        {!isReadOnly && (
+                            <button
+                                type="submit"
+                                disabled={mutation.isPending || updateMutation.isPending}
+                                className="flex-1 px-4 py-2 bg-blue-900 text-white rounded text-sm font-medium hover:bg-blue-800 disabled:opacity-50"
+                            >
+                                {(mutation.isPending || updateMutation.isPending)
+                                    ? "Saving..."
+                                    : isEdit ? "Update User" : "Create User"
+                                }
+                            </button>
+                        )}
                     </div>
                 </form>
             </div>

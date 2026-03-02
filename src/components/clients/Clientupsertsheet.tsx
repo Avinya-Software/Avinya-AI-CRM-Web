@@ -7,6 +7,7 @@ import Spinner from "../common/Spinner";
 import type { Client } from "../../interfaces/client.interface";
 import { useStates } from "../../hooks/state/useStates";
 import { useCities } from "../../hooks/city/useCities";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface Props {
     open: boolean;
@@ -21,15 +22,21 @@ const CLIENT_TYPES = [
 ];
 
 const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
+    const isEdit = !!client;
+
+    /* ── PERMISSIONS ── */
+    const { hasPermission } = usePermissions();
+    const canAdd = hasPermission("client", "add");
+    const canEdit = hasPermission("client", "edit");
+    const isReadOnly = isEdit ? !canEdit : !canAdd;
+
     /*   LOCK BODY SCROLL   */
     useEffect(() => {
         document.body.style.overflow = open ? "hidden" : "unset";
-        return () => {
-            document.body.style.overflow = "unset";
-        };
+        return () => { document.body.style.overflow = "unset"; };
     }, [open]);
 
-    /*   STATES & CITIES — dynamic, same pattern as OrderUpsertSheet   */
+    /*   STATES & CITIES   */
     const { data: states = [] } = useStates();
     const [selectedStateId, setSelectedStateId] = useState<string>("");
     const { data: cities = [] } = useCities(
@@ -45,7 +52,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
         email: "",
         gstNo: "",
         billingAddress: "",
-        cityID: "" as string,   // string for controlled select, cast to number on save
+        cityID: "" as string,
         clientType: 1,
         status: true,
         notes: "",
@@ -55,7 +62,6 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [saving, setSaving] = useState(false);
 
-    /*   State change — reset city just like OrderUpsertSheet   */
     const handleStateChange = (stateId: string) => {
         setSelectedStateId(stateId);
         setForm((prev) => ({ ...prev, cityID: "" }));
@@ -67,7 +73,6 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
 
         if (client) {
             const stateId = client.stateID != null ? String(client.stateID) : "";
-            // Set state first so useCities fetches before city is applied
             setSelectedStateId(stateId);
             setForm({
                 clientID: client.clientID,
@@ -122,7 +127,6 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
 
         setSaving(true);
         try {
-            // Cast state/city back to numbers before sending
             const payload = {
                 ...form,
                 stateID: selectedStateId ? Number(selectedStateId) : null,
@@ -130,10 +134,8 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
             };
 
             if (client?.clientID) {
-                // PUT /api/Client/{id}
                 await updateClientApi(client.clientID, payload as any);
             } else {
-                // POST /api/Client
                 const { clientID, ...rest } = payload;
                 await createClientApi(rest as Omit<Client, "clientID">);
             }
@@ -146,9 +148,11 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
         }
     };
 
+    // Hard guard — don't render if no permission
     if (!open) return null;
+    if (isEdit && !canEdit) return null;
+    if (!isEdit && !canAdd) return null;
 
-    /*  UI  */
     return (
         <>
             {/* OVERLAY */}
@@ -159,6 +163,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
 
             {/* SHEET */}
             <div className="fixed top-0 right-0 h-screen w-[440px] bg-white z-[70] shadow-2xl flex flex-col animate-slideInRight">
+
                 {/* HEADER */}
                 <div className="px-6 py-4 border-b flex justify-between items-center">
                     <h2 className="font-semibold text-lg">
@@ -171,12 +176,14 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
 
                 {/* BODY */}
                 <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+
                     <Input
                         label="Company Name"
                         required
                         value={form.companyName}
                         error={errors.companyName}
                         onChange={(v: string) => setForm({ ...form, companyName: v })}
+                        disabled={isReadOnly}
                     />
 
                     <Input
@@ -185,6 +192,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                         value={form.contactPerson}
                         error={errors.contactPerson}
                         onChange={(v: string) => setForm({ ...form, contactPerson: v })}
+                        disabled={isReadOnly}
                     />
 
                     <Input
@@ -195,6 +203,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                         onChange={(v: string) =>
                             setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })
                         }
+                        disabled={isReadOnly}
                     />
 
                     <Input
@@ -202,27 +211,31 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                         value={form.email}
                         error={errors.email}
                         onChange={(v: string) => setForm({ ...form, email: v })}
+                        disabled={isReadOnly}
                     />
 
                     <Input
                         label="GST No"
                         value={form.gstNo}
                         onChange={(v: string) => setForm({ ...form, gstNo: v.toUpperCase() })}
+                        disabled={isReadOnly}
                     />
 
                     <Textarea
                         label="Billing Address"
                         value={form.billingAddress}
                         onChange={(v: string) => setForm({ ...form, billingAddress: v })}
+                        disabled={isReadOnly}
                     />
 
-                    {/* STATE — fetched from API */}
+                    {/* STATE */}
                     <div>
                         <label className="text-sm font-medium">State</label>
                         <select
-                            className="input w-full mt-1"
+                            className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
                             value={selectedStateId}
                             onChange={(e) => handleStateChange(e.target.value)}
+                            disabled={isReadOnly}
                         >
                             <option value="">Select State</option>
                             {(states as any[]).map((s) => (
@@ -233,13 +246,13 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                         </select>
                     </div>
 
-                    {/* CITY — fetched based on selected state, disabled until state is chosen */}
+                    {/* CITY */}
                     <div>
                         <label className="text-sm font-medium">City</label>
                         <select
                             className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-400"
                             value={form.cityID}
-                            disabled={!selectedStateId}
+                            disabled={!selectedStateId || isReadOnly}
                             onChange={(e) => setForm({ ...form, cityID: e.target.value })}
                         >
                             <option value="">
@@ -257,16 +270,13 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                     <div>
                         <label className="text-sm font-medium">Client Type</label>
                         <select
-                            className="input w-full mt-1"
+                            className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
                             value={form.clientType}
-                            onChange={(e) =>
-                                setForm({ ...form, clientType: Number(e.target.value) })
-                            }
+                            onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
+                            disabled={isReadOnly}
                         >
                             {CLIENT_TYPES.map((t) => (
-                                <option key={t.value} value={t.value}>
-                                    {t.label}
-                                </option>
+                                <option key={t.value} value={t.value}>{t.label}</option>
                             ))}
                         </select>
                     </div>
@@ -276,8 +286,9 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                         <label className="text-sm font-medium">Status</label>
                         <button
                             type="button"
-                            onClick={() => setForm({ ...form, status: !form.status })}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.status ? "bg-blue-600" : "bg-gray-300"
+                            onClick={() => !isReadOnly && setForm({ ...form, status: !form.status })}
+                            disabled={isReadOnly}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${form.status ? "bg-blue-600" : "bg-gray-300"
                                 }`}
                         >
                             <span
@@ -294,27 +305,31 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                         label="Notes"
                         value={form.notes}
                         onChange={(v: string) => setForm({ ...form, notes: v })}
+                        disabled={isReadOnly}
                     />
                 </div>
 
                 {/* FOOTER */}
                 <div className="px-6 py-4 border-t flex gap-3">
                     <button
-                        className="flex-1 border rounded-lg py-2"
+                        className="flex-1 border rounded-lg py-2 hover:bg-slate-50"
                         onClick={onClose}
                         disabled={saving}
                     >
                         Cancel
                     </button>
 
-                    <button
-                        disabled={saving}
-                        className="flex-1 bg-blue-600 text-white rounded-lg py-2 flex items-center justify-center gap-2"
-                        onClick={handleSave}
-                    >
-                        {saving && <Spinner />}
-                        {saving ? "Saving..." : "Save"}
-                    </button>
+                    {/* Save button hidden in read-only mode */}
+                    {!isReadOnly && (
+                        <button
+                            disabled={saving}
+                            className="flex-1 bg-blue-600 text-white rounded-lg py-2 flex items-center justify-center gap-2 disabled:opacity-50"
+                            onClick={handleSave}
+                        >
+                            {saving && <Spinner />}
+                            {saving ? "Saving..." : isEdit ? "Update" : "Save"}
+                        </button>
+                    )}
                 </div>
             </div>
         </>
@@ -325,28 +340,30 @@ export default ClientUpsertSheet;
 
 /*   HELPERS   */
 
-const Input = ({ label, required, value, error, type = "text", onChange }: any) => (
+const Input = ({ label, required, value, error, type = "text", onChange, disabled }: any) => (
     <div>
         <label className="text-sm font-medium">
             {label} {required && <span className="text-red-500">*</span>}
         </label>
         <input
             type={type}
-            className={`input w-full mt-1 ${error ? "border-red-500" : ""}`}
+            className={`input w-full mt-1 ${error ? "border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
             value={value}
             onChange={(e) => onChange(e.target.value)}
+            disabled={disabled}
         />
         {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
     </div>
 );
 
-const Textarea = ({ label, value, onChange }: any) => (
+const Textarea = ({ label, value, onChange, disabled }: any) => (
     <div>
         <label className="text-sm font-medium">{label}</label>
         <textarea
-            className="input w-full h-24 mt-1"
+            className="input w-full h-24 mt-1 disabled:bg-slate-50 disabled:text-slate-500"
             value={value}
             onChange={(e) => onChange(e.target.value)}
+            disabled={disabled}
         />
     </div>
 );

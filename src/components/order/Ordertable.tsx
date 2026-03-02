@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MoreVertical, Eye, Pencil, Trash2, PackageOpen, X } from "lucide-react";
 import type { Order } from "../../interfaces/order.interface";
+import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
 
 interface Props {
     data: Order[];
@@ -41,7 +42,8 @@ const DESIGN_STATUS_STYLE: Record<number, string> = {
     3: "bg-red-100 text-red-700",
 };
 
-// ── ActionMenu receives onDeleteClick to trigger parent modal ──────
+/* ================= ACTION MENU ================= */
+
 const ActionMenu = ({
     onView,
     onEdit,
@@ -87,6 +89,7 @@ const ActionMenu = ({
             {open && (
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+
                     <div
                         className="fixed z-50 w-36 bg-white rounded-lg shadow-lg border py-1 text-sm"
                         style={{ top: menuPos.top, left: menuPos.left }}
@@ -97,12 +100,14 @@ const ActionMenu = ({
                         >
                             <Eye size={14} /> View
                         </button>
+
                         <button
                             onClick={() => { setOpen(false); onEdit(); }}
                             className="flex items-center gap-2 w-full px-3 py-2 hover:bg-slate-50 text-slate-700"
                         >
                             <Pencil size={14} /> Edit
                         </button>
+
                         <button
                             onClick={() => { setOpen(false); onDeleteClick(); }}
                             className="flex items-center gap-2 w-full px-3 py-2 hover:bg-red-50 text-red-600"
@@ -116,13 +121,21 @@ const ActionMenu = ({
     );
 };
 
-// ── Main Table ─────────────────────────────────────────────────────
+/* ================= MAIN TABLE ================= */
+
 const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) => {
-    // ✅ confirmDelete lives here so the modal can render properly
+
+    /* ✅ PERMISSIONS ADDED */
+    const { hasPermission } = usePermissions();
+
+    const canViewOrder = hasPermission("order", "view");
+    const canEditOrder = hasPermission("order", "edit");
+    const canDeleteOrder = hasPermission("order", "delete");
+
     const [confirmDelete, setConfirmDelete] = useState<Order | null>(null);
 
     const handleDeleteConfirmed = () => {
-        if (!confirmDelete) return;
+        if (!confirmDelete || !canDeleteOrder) return;
         onDelete(confirmDelete);
         setConfirmDelete(null);
     };
@@ -143,12 +156,16 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
             <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
                 <PackageOpen size={40} strokeWidth={1.2} />
                 <p className="text-sm">No orders found</p>
-                <button
-                    onClick={onAdd}
-                    className="text-sm text-blue-900 font-medium hover:underline"
-                >
-                    + Add your first order
-                </button>
+
+                {/* ✅ ADD PROTECTION */}
+                {canEditOrder && (
+                    <button
+                        onClick={onAdd}
+                        className="text-sm text-blue-900 font-medium hover:underline"
+                    >
+                        + Add your first order
+                    </button>
+                )}
             </div>
         );
     }
@@ -173,57 +190,61 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
                             {columns.map((col) => (
                                 <th
                                     key={col}
-                                    className={`px-4 py-3 font-medium whitespace-nowrap ${col === "Actions" ? "w-16 text-center" : "text-left"
-                                        }`}
+                                    className={`px-4 py-3 font-medium whitespace-nowrap ${col === "Actions" ? "w-16 text-center" : "text-left"}`}
                                 >
                                     {col}
                                 </th>
                             ))}
                         </tr>
                     </thead>
+
                     <tbody className="divide-y divide-slate-100">
                         {data.map((order) => (
                             <tr key={order.orderID} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-4 py-3 font-medium text-slate-800 whitespace-nowrap">
+
+                                <td className="px-4 py-3 font-medium text-slate-800">
                                     {order.orderNo ?? "—"}
                                 </td>
-                                <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+
+                                <td className="px-4 py-3 text-slate-600">
                                     {order.clientName ?? "—"}
                                 </td>
-                                <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
+
+                                <td className="px-4 py-3 text-slate-500">
                                     {order.orderDate
                                         ? new Date(order.orderDate).toLocaleDateString("en-IN")
                                         : "—"}
                                 </td>
-                                <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
+
+                                <td className="px-4 py-3 text-slate-500">
                                     {order.expectedDeliveryDate
                                         ? new Date(order.expectedDeliveryDate).toLocaleDateString("en-IN")
                                         : "—"}
                                 </td>
-                                <td className="px-4 py-3 text-slate-700 font-medium whitespace-nowrap">
+
+                                <td className="px-4 py-3 font-medium">
                                     ₹{order.totalAmount?.toFixed(2) ?? "0.00"}
                                 </td>
+
                                 <td className="px-4 py-3">
-                                    <span
-                                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[order.status ?? 0] ?? "bg-slate-100 text-slate-600"
-                                            }`}
-                                    >
-                                        {STATUS_LABEL[order.status ?? 0] ?? "—"}
+                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[order.status ?? 0]}`}>
+                                        {STATUS_LABEL[order.status ?? 0]}
                                     </span>
                                 </td>
+
                                 <td className="px-4 py-3">
-                                    <span
-                                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${DESIGN_STATUS_STYLE[order.designStatus ?? 0] ?? "bg-slate-100 text-slate-600"
-                                            }`}
-                                    >
-                                        {DESIGN_STATUS_LABEL[order.designStatus ?? 0] ?? "—"}
+                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${DESIGN_STATUS_STYLE[order.designStatus ?? 0]}`}>
+                                        {DESIGN_STATUS_LABEL[order.designStatus ?? 0]}
                                     </span>
                                 </td>
-                                <td className="px-4 py-3 w-16 text-center">
+
+                                <td className="px-4 py-3 text-center">
                                     <ActionMenu
-                                        onView={() => onView(order)}
-                                        onEdit={() => onEdit(order)}
-                                        onDeleteClick={() => setConfirmDelete(order)}
+                                        onView={() => canViewOrder && onView(order)}
+                                        onEdit={() => canEditOrder && onEdit(order)}
+                                        onDeleteClick={() =>
+                                            canDeleteOrder && setConfirmDelete(order)
+                                        }
                                     />
                                 </td>
                             </tr>
@@ -232,41 +253,32 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
                 </table>
             </div>
 
-            {/* CONFIRM DELETE MODAL */}
+            {/* DELETE MODAL */}
             {confirmDelete && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
                     <div className="bg-white rounded-lg w-[420px] p-6 shadow-lg">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex justify-between mb-4">
                             <h3 className="text-lg font-semibold">Delete Order</h3>
-                            <button
-                                onClick={() => setConfirmDelete(null)}
-                                className="p-1 rounded hover:bg-slate-100"
-                            >
+                            <button onClick={() => setConfirmDelete(null)}>
                                 <X size={18} />
                             </button>
                         </div>
 
-                        <p className="text-sm text-gray-600 mb-1">
-                            Are you sure you want to delete order{" "}
-                            <span className="font-semibold text-slate-800">
-                                {confirmDelete.orderNo}
-                            </span>
-                            ?
-                        </p>
-                        <p className="text-sm text-red-600 font-medium mb-6">
-                            This action cannot be undone.
+                        <p className="text-sm text-gray-600 mb-6">
+                            Delete order <b>{confirmDelete.orderNo}</b> ?
                         </p>
 
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setConfirmDelete(null)}
-                                className="px-4 py-2 border rounded hover:bg-gray-100 text-sm"
+                                className="px-4 py-2 border rounded"
                             >
                                 Cancel
                             </button>
+
                             <button
                                 onClick={handleDeleteConfirmed}
-                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                                className="px-4 py-2 bg-red-600 text-white rounded"
                             >
                                 Delete
                             </button>
