@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import { usePermissions } from "../context/PermissionContext";
 import { Loader2 } from "lucide-react";
 import type { Action } from "../context/PermissionContext";
+import { useFirstPermittedRoute } from "../hooks/useFirstPermittedRoute";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -27,7 +28,10 @@ export const ProtectedRoute = ({
 
   // ❌ Only AFTER permissions are ready → decide
   if (!hasPermission(module, action)) {
-    return <Navigate to="/unauthorized" replace />;
+    const { getFirstRoute } = useFirstPermittedRoute();
+    const firstRoute = getFirstRoute();
+    return <Navigate to={firstRoute} replace />;
+
   }
 
   // ✅ Allowed

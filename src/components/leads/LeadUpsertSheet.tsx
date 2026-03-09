@@ -58,6 +58,8 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     selectedStateId ? Number(selectedStateId) : null
   );
 
+
+
   /* ── FORM STATE ── */
   const initialForm = {
     customerId: null as string | null,
@@ -116,6 +118,60 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       setErrors({});
     }
   }, [open]);
+
+
+  const onCustomerSelect = (customerId: string | null) => {
+    if (customerId) {
+      setSelectedCustomerId(customerId);
+
+      const customer = customers.find(
+        (c: any) => c.clientID === customerId
+      );
+
+      if (customer) {
+        const stateId = customer.stateID?.toString() ?? "";
+
+        setSelectedStateId(stateId);
+
+        setForm((prev) => ({
+          ...prev,
+          customerId: customerId,
+          fullName: customer.contactPerson || "",
+          email: customer.email || "",
+          mobile: customer.mobileNumber || "",
+          address: customer.billAddress || "",
+          cityId: customer.cityID?.toString() ?? "",
+        }));
+
+        // load cities automatically
+        if (customer.stateID) {
+          setSelectedStateId(customer.stateID.toString());
+        }
+
+        // clear validation errors
+        setErrors((prev) => ({
+          ...prev,
+          fullName: "",
+          email: "",
+          mobile: "",
+          address: "",
+        }));
+      }
+    } else {
+      // reset when cleared
+      setSelectedCustomerId("");
+      setForm((prev) => ({
+        ...prev,
+        customerId: null,
+        fullName: "",
+        email: "",
+        mobile: "",
+        address: "",
+        cityId: "",
+      }));
+      setSelectedStateId("");
+    }
+  };
 
   /* ── VALIDATION ── */
   const validate = () => {
@@ -196,10 +252,10 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
               label: `${c.contactPerson} - ${c.email ?? ""}`,
             }))}
             value={selectedCustomerId}
-            onSelect={isReadOnly ? undefined : (item: any) => {
-              setSelectedCustomerId(item?.value ?? "");
-              setForm({ ...form, customerId: item?.value ?? null });
-            }}
+            onSelect={isReadOnly
+              ? undefined
+              : (item: any) => onCustomerSelect(item?.value ?? null)
+            }
             disabled={isReadOnly}
           />
 
@@ -209,7 +265,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             value={form.fullName}
             error={errors.fullName}
             onChange={(v: any) => setForm({ ...form, fullName: v })}
-            disabled={isReadOnly}
+            disabled={isReadOnly || !!form.customerId}
           />
 
           <Input
@@ -218,21 +274,21 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             value={form.mobile}
             error={errors.mobile}
             onChange={(v: any) => setForm({ ...form, mobile: v })}
-            disabled={isReadOnly}
+            disabled={isReadOnly || !!form.customerId}
           />
 
           <Input
             label="Email"
             value={form.email}
             onChange={(v: any) => setForm({ ...form, email: v })}
-            disabled={isReadOnly}
+            disabled={isReadOnly || !!form.customerId}
           />
 
           <Textarea
             label="Billing Address"
             value={form.address}
             onChange={(v: any) => setForm({ ...form, address: v })}
-            disabled={isReadOnly}
+            disabled={isReadOnly || !!form.customerId}
           />
 
           {/* EMPLOYEE */}
@@ -258,7 +314,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
               className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
               value={selectedStateId}
               onChange={(e) => handleStateChange(e.target.value)}
-              disabled={isReadOnly}
+              disabled={isReadOnly || !!form.customerId}
             >
               <option value="">Select State</option>
               {(states as any[]).map((s) => (
@@ -273,7 +329,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             <select
               className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-400"
               value={form.cityId}
-              disabled={!selectedStateId || isReadOnly}
+              disabled={!selectedStateId || isReadOnly || !!form.customerId}
               onChange={(e) => setForm({ ...form, cityId: e.target.value })}
             >
               <option value="">

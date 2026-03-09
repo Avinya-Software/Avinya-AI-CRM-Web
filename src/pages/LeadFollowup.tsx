@@ -26,7 +26,6 @@ const LeadFollowup = () => {
 
     const { data, isLoading, refetch } = useLeadFollowUps(leadId || null);
     const { mutate: deleteFollowUp } = useDeleteFollowUp();
-
     const followUps = data?.data || [];
 
     /* ================= FILTER ================= */
@@ -147,6 +146,8 @@ const LeadFollowup = () => {
                     setEditFollowUp(null);
                 }}
                 onSuccess={() => {
+                    console.log("Follow-up created/updated successfully");
+                    console.log(leadId);
                     setOpenCreateSheet(false);
                     setEditFollowUp(null);
                     refetch();

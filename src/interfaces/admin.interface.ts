@@ -9,6 +9,7 @@ export interface AdminLoginResponse {
   email: string;
   token: string;
   expiresAt: string;
+  userId: string;
 }
 
 //   COMMON API WRAPPER  
@@ -50,6 +51,7 @@ export type MenuItem = {
   order: number;
 };
 
+export type MenuResponse = ApiWrapper<MenuItem[]>;
 export type PermissionResponse = ApiWrapper<string[]>; 
 
 

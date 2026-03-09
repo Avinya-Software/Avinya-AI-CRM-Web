@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { X, Save, Loader2 } from "lucide-react";
 import { useCreateFollowUp, useUpdateFollowUp } from "../../hooks/followup/useFollowUpMutations";
 import { useUsersDropdown } from "../../hooks/users/Useusers";
-import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
+import { usePermissions } from "../../context/PermissionContext";
 
 interface LeadFollowUpCreateSheetProps {
   open: boolean;
@@ -28,21 +28,12 @@ const LeadFollowUpCreateSheet = ({
   onClose,
   onSuccess,
 }: LeadFollowUpCreateSheetProps) => {
-
   const isEditMode = !!followUpData;
 
-  /* ================= PERMISSIONS (ONLY ADDED) ================= */
-
+  // ✅ ALL hooks must be called before any conditional return
   const { hasPermission } = usePermissions();
-
   const canAddFollowUp = hasPermission("followup", "add");
   const canEditFollowUp = hasPermission("followup", "edit");
-
-  // 🔐 Block unauthorized modal
-  if (open && isEditMode && !canEditFollowUp) return null;
-  if (open && !isEditMode && !canAddFollowUp) return null;
-
-  /* ============================================================= */
 
   const [formData, setFormData] = useState({
     followUpDate: "",
@@ -88,6 +79,11 @@ const LeadFollowUpCreateSheet = ({
     }
   }, [open, followUpData]);
 
+  // ✅ Hard guard AFTER all hooks
+  if (!open) return null;
+  if (isEditMode && !canEditFollowUp) return null;
+  if (!isEditMode && !canAddFollowUp) return null;
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
@@ -109,7 +105,6 @@ const LeadFollowUpCreateSheet = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 🔐 Double protection
     if (isEditMode && !canEditFollowUp) return;
     if (!isEditMode && !canAddFollowUp) return;
 
@@ -125,33 +120,17 @@ const LeadFollowUpCreateSheet = ({
 
     if (isEditMode) {
       updateFollowUp.mutate(
-        {
-          followUpId: followUpData.followUpID,
-          data: payload,
-        },
-        {
-          onSuccess: () => {
-            onSuccess?.();
-            onClose();
-          },
-        }
+        { followUpId: followUpData.followUpID, data: payload },
+        { onSuccess: () => { onSuccess?.(); onClose(); } }
       );
     } else {
       if (!leadId) return;
-
       createFollowUp.mutate(
         { leadId, ...payload },
-        {
-          onSuccess: () => {
-            onSuccess?.();
-            onClose();
-          },
-        }
+        { onSuccess: () => { onSuccess?.(); onClose(); } }
       );
     }
   };
-
-  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -215,9 +194,7 @@ const LeadFollowUpCreateSheet = ({
                   }`}
               />
               {errors.followUpDate && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.followUpDate}
-                </p>
+                <p className="text-red-500 text-xs mt-1">{errors.followUpDate}</p>
               )}
             </div>
           )}
@@ -228,9 +205,7 @@ const LeadFollowUpCreateSheet = ({
             </label>
             <textarea
               value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={4}
               placeholder="Enter follow-up notes"
               className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm resize-none ${errors.notes
@@ -251,10 +226,7 @@ const LeadFollowUpCreateSheet = ({
               type="date"
               value={formData.nextFollowupDate}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  nextFollowupDate: e.target.value,
-                })
+                setFormData({ ...formData, nextFollowupDate: e.target.value })
               }
               className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
@@ -268,18 +240,12 @@ const LeadFollowUpCreateSheet = ({
               <select
                 value={formData.status}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    status: Number(e.target.value),
-                  })
+                  setFormData({ ...formData, status: Number(e.target.value) })
                 }
                 className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
                 {STATUS_OPTIONS.map((s) => (
-                  <option
-                    key={s.leadFollowupStatusID}
-                    value={s.leadFollowupStatusID}
-                  >
+                  <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
                     {s.statusName}
                   </option>
                 ))}
@@ -309,9 +275,7 @@ const LeadFollowUpCreateSheet = ({
               ))}
             </select>
             {errors.followUpBy && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.followUpBy}
-              </p>
+              <p className="text-red-500 text-xs mt-1">{errors.followUpBy}</p>
             )}
           </div>
 
@@ -330,15 +294,9 @@ const LeadFollowUpCreateSheet = ({
               className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
             >
               {isPending ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Saving...
-                </>
+                <><Loader2 size={16} className="animate-spin" />Saving...</>
               ) : (
-                <>
-                  <Save size={16} />
-                  {isEditMode ? "Update Follow-Up" : "Save Follow-Up"}
-                </>
+                <><Save size={16} />{isEditMode ? "Update Follow-Up" : "Save Follow-Up"}</>
               )}
             </button>
           </div>

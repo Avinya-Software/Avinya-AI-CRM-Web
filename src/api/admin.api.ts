@@ -5,6 +5,7 @@ import type {
   AdvisorStatusResponse,
   ApiWrapper,
   MenuItem,
+  MenuResponse,
   PermissionResponse,
 } from "../interfaces/admin.interface";
 
@@ -83,19 +84,33 @@ export const getPendingCompaniesApi = async () => {
 };
 
 // Get user menu items
-export const getUserMenu = async () => {
-   const res = await api.get<ApiWrapper<MenuItem[]>>(
-    "/users/me/menu"
-  );
-  return res.data;
+// export const getUserMenu = async () => {
+//    const res = await api.get<ApiWrapper<MenuItem[]>>(
+//     "/users/me/menu"
+//   );
+//   return res.data;
+// };
+
+export const getUserMenu = async (userId: string) => {
+  debugger
+    const res = await api.get<MenuResponse>(
+        `/users/me/menu`,
+        {
+            params: { userId }  // ← query param mein jayega
+        }
+    );
+    return res.data;
 };
 
 // Get user permissions
-export const getUserPermissions = async () => {
+export const getUserPermissions = async (userId: string) => {
     const res = await api.get<PermissionResponse>(
-    "/permission/me/permissions"
-  );
-  return res.data;
+        `/permission/me/permissions`,
+        {
+            params: { userId }  // ← query param mein jayega
+        }
+    );
+    return res.data;
 };
 
 

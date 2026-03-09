@@ -44,7 +44,7 @@ export const updateFollowUpStatus = async (
 
 // ── DELETE: Delete follow-up ───────────────────────────────────────
 export const deleteFollowUp = async (followUpId: string) => {
-  const response = await api.delete(`/FollowUp/delete/${followUpId}`);
+  const response = await api.delete(`/FollowUp/${followUpId}`);
   return response.data;
 };
 

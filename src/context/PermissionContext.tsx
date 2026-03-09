@@ -1,6 +1,7 @@
 // src/context/PermissionContext.tsx
 import { createContext, useContext, ReactNode } from "react";
 import { useGetUserPermissions } from "../hooks/admin/useLoginAdmin";
+import { getUserId } from "../utils/token";
 
 export type Action =
     | "view"
@@ -27,7 +28,9 @@ const PermissionContext = createContext<PermissionContextType | undefined>(
 );
 
 export const PermissionProvider = ({ children }: { children: ReactNode }) => {
+    // const userId = getUserId();
     const { data: permissionResponse, isLoading } = useGetUserPermissions();
+
 
     const rawPermissions: string[] = permissionResponse?.data ?? [];
 

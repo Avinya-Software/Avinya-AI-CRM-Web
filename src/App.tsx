@@ -33,6 +33,8 @@ import LeadFollowup from "./pages/LeadFollowup";
 import Orders from "./pages/Orders";
 import Clients from "./pages/Clients";
 import Projects from "./pages/Projects";
+import Expenses from "./pages/Expenses";
+import SmartRedirect from "./components/SmartRedirect";
 
 function App() {
   return (
@@ -54,6 +56,8 @@ function App() {
               </ProtectedRoute>
             }
           >
+         
+            <Route path="/redirect" element={<SmartRedirect />} />
             {/* dashboard:view */}
             <Route
               path="/"
@@ -121,6 +125,16 @@ function App() {
               element={
                 <RBACProtectedRoute module="project" action="view">
                   <Projects />
+                </RBACProtectedRoute>
+              }
+            />
+
+            {/* followup:view (mapped to Customers) */}
+            <Route
+              path="/expenses"
+              element={
+                <RBACProtectedRoute module="expense" action="view">
+                  <Expenses />
                 </RBACProtectedRoute>
               }
             />

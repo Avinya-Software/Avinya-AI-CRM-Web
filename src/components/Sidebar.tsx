@@ -14,12 +14,12 @@ import * as Icons from "lucide-react";
 import { useGetUserMenu } from "../hooks/admin/useLoginAdmin";
 import { usePermissions } from "../context/PermissionContext";
 import { MenuItem } from "../interfaces/admin.interface";
-import { clearToken } from "../utils/token";
+import { clearToken, clearUserId, getToken } from "../utils/token";
 
 /* ================= JWT HELPER ================= */
 const getUserFromToken = () => {
   try {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return null;
 
     const payload = token.split(".")[1];
@@ -67,6 +67,7 @@ const Sidebar = () => {
   /* ================= LOGOUT ================= */
   const handleLogout = () => {
     clearToken();
+    clearUserId();
     navigate("/login", { replace: true });
   };
 
