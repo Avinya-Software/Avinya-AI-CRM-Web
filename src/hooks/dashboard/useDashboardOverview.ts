@@ -10,11 +10,11 @@ export const useDashboardOverview = () => {
     try {
       setLoading(true);
       const res = await getDashboardOverviewApi();
-      setData(res);
+      // res.data is the actual payload based on your JSON structure
+      setData(res.data);
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message ||
-          "Failed to load dashboard data"
+        error?.response?.data?.message || "Failed to load dashboard data"
       );
     } finally {
       setLoading(false);
@@ -25,9 +25,5 @@ export const useDashboardOverview = () => {
     fetchDashboard();
   }, []);
 
-  return {
-    data,
-    loading,
-    refresh: fetchDashboard,
-  };
+  return { data, loading, refresh: fetchDashboard };
 };

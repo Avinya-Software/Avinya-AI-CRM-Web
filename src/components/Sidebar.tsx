@@ -9,7 +9,9 @@ import {
   ListTodo,
   Loader2,
   AlertCircle,
+  LayoutDashboard,
 } from "lucide-react";
+
 import { useState } from "react";
 import * as Icons from "lucide-react";
 
@@ -19,6 +21,7 @@ import { MenuItem } from "../interfaces/admin.interface";
 import { useAuth } from "../auth/useAuth";
 
 /* ================= JWT HELPER ================= */
+
 const getUserFromToken = (token: string | null) => {
   try {
     if (!token) return null;
@@ -40,12 +43,14 @@ const getUserFromToken = (token: string | null) => {
 };
 
 /* ================= QUICKBOOKS ================= */
+
 const connectQuickBooks = () => {
   window.location.href =
     "https://avinyacrmapiuat.avinyasoftware.com/api/quickbooks/connect";
 };
 
 /* ================= DYNAMIC ICON ================= */
+
 const DynamicIcon = ({
   iconName,
   size = 18,
@@ -62,9 +67,8 @@ const DynamicIcon = ({
 };
 
 /* ================= MODULE GROUPS ================= */
-const MODULE_GROUPS: Record<string, string> = {
-  dashboard: "Dashboard",
 
+const MODULE_GROUPS: Record<string, string> = {
   client: "CRM",
   lead: "CRM",
   quotation: "CRM",
@@ -87,7 +91,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openGroup, setOpenGroup] = useState<string | null>("CRM");
+  const [openGroup, setOpenGroup] = useState<string | null>("null");
 
   const { data: menuResponse, isLoading, isError } =
     useGetUserMenu(userId, token);
@@ -97,7 +101,9 @@ const Sidebar = () => {
   const menuItems: MenuItem[] = menuResponse?.data ?? [];
 
   /* ================= GROUP MENU ================= */
+
   const groupedMenu = menuItems
+    .filter((item) => item.moduleKey !== "dashboard") // prevent duplicate
     .filter((item) => hasPermission(item.moduleKey, "view"))
     .sort((a, b) => a.order - b.order)
     .reduce((groups: any, item) => {
@@ -115,6 +121,7 @@ const Sidebar = () => {
   };
 
   /* ================= LOGOUT ================= */
+
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
@@ -127,6 +134,7 @@ const Sidebar = () => {
       }`}
     >
       {/* ---------- HEADER ---------- */}
+
       <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between">
         {!isCollapsed && (
           <div>
@@ -149,13 +157,27 @@ const Sidebar = () => {
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-2 rounded-lg hover:bg-slate-800"
           >
-            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            {isCollapsed ? (
+              <ChevronRight size={18} />
+            ) : (
+              <ChevronLeft size={18} />
+            )}
           </button>
         </div>
       </div>
 
       {/* ---------- NAV ---------- */}
+
       <nav className="flex-1 px-4 py-6 overflow-y-auto">
+        {/* ===== DASHBOARD ALWAYS VISIBLE ===== */}
+
+        <NavItem
+          to="/"
+          icon={<LayoutDashboard size={18} />}
+          label="Dashboard"
+          isCollapsed={isCollapsed}
+        />
+
         {isLoading || permissionLoading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -169,7 +191,6 @@ const Sidebar = () => {
           <>
             {Object.entries(groupedMenu).map(([groupName, items]: any) => (
               <div key={groupName} className="mb-2">
-                {/* GROUP HEADER */}
                 <button
                   onClick={() => toggleGroup(groupName)}
                   className="flex items-center justify-between w-full px-4 py-2 text-xs font-semibold text-slate-400 uppercase hover:text-white"
@@ -184,7 +205,6 @@ const Sidebar = () => {
                     ))}
                 </button>
 
-                {/* SUB MENU */}
                 {openGroup === groupName &&
                   items.map((item: MenuItem) => (
                     <NavItem
@@ -202,6 +222,7 @@ const Sidebar = () => {
       </nav>
 
       {/* ---------- QUICKBOOKS ---------- */}
+
       <div className="px-4 pb-2 space-y-1">
         {!isCollapsed && (
           <p className="text-xs font-semibold text-slate-500 uppercase px-4 mb-1">
@@ -235,6 +256,7 @@ const Sidebar = () => {
       </div>
 
       {/* ---------- LOGOUT ---------- */}
+
       <button
         onClick={handleLogout}
         className={`flex items-center gap-3 px-4 py-2 mx-4 mb-3 rounded-lg text-sm hover:bg-red-600 ${
@@ -245,7 +267,8 @@ const Sidebar = () => {
         {!isCollapsed && "Logout"}
       </button>
 
-      {/* ---------- USER ---------- */}
+      {/* ---------- USER INFO ---------- */}
+
       <div className="px-6 py-4 border-t border-slate-800 text-sm">
         {!isCollapsed ? (
           <>
@@ -265,6 +288,7 @@ const Sidebar = () => {
 };
 
 /* ================= NAV ITEM ================= */
+
 const NavItem = ({
   to,
   icon,
