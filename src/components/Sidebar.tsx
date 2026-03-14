@@ -1,5 +1,6 @@
 // src/components/Sidebar.tsx
 import { NavLink, useNavigate } from "react-router-dom";
+import { Link } from "lucide-react";
 import {
   LogOut,
   ChevronLeft,
@@ -14,12 +15,12 @@ import * as Icons from "lucide-react";
 import { useGetUserMenu } from "../hooks/admin/useLoginAdmin";
 import { usePermissions } from "../context/PermissionContext";
 import { MenuItem } from "../interfaces/admin.interface";
-import { clearToken, clearUserId, getToken } from "../utils/token";
+import { clearToken, clearUserId } from "../utils/token";
+import { useAuth } from "../auth/useAuth";
 
 /* ================= JWT HELPER ================= */
-const getUserFromToken = () => {
+const getUserFromToken = (token: string | null) => {
   try {
-    const token = getToken();
     if (!token) return null;
 
     const payload = token.split(".")[1];
@@ -37,7 +38,9 @@ const getUserFromToken = () => {
     return null;
   }
 };
-
+const connectQuickBooks = () => {
+  window.location.href = "https://avinyacrmapiuat.avinyasoftware.com/api/quickbooks/connect";
+};
 /* ================= DYNAMIC ICON ================= */
 const DynamicIcon = ({
   iconName,
@@ -55,19 +58,19 @@ const DynamicIcon = ({
 };
 
 const Sidebar = () => {
-  const user = getUserFromToken();
+  const { token, userId, logout: authLogout } = useAuth();
+  const user = getUserFromToken(token);
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const { data: menuResponse, isLoading, isError } = useGetUserMenu();
+  const { data: menuResponse, isLoading, isError } = useGetUserMenu(userId, token);
   const { hasPermission, isLoading: permissionLoading } = usePermissions();
 
   const menuItems: MenuItem[] = menuResponse?.data ?? [];
 
   /* ================= LOGOUT ================= */
   const handleLogout = () => {
-    clearToken();
-    clearUserId();
+    authLogout();
     navigate("/login", { replace: true });
   };
 
@@ -139,6 +142,36 @@ const Sidebar = () => {
           </>
         )}
       </nav>
+      {/* ---------- QUICKBOOKS SECTION ---------- */}
+      <div className="px-4 pb-2 space-y-1">
+        {!isCollapsed && (
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-4 mb-1">
+            QuickBooks
+          </p>
+        )}
+        <button
+          onClick={connectQuickBooks}
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm
+      text-slate-300 hover:bg-slate-800 transition
+      ${isCollapsed ? "justify-center" : ""}`}
+          title={isCollapsed ? "Connect QuickBooks" : ""}
+        >
+          <Link size={18} />
+          {!isCollapsed && "Connect QuickBooks"}
+        </button>
+        <NavItem
+          to="/quickbook-customers"
+          icon={<Icons.Users size={18} />}
+          label="QB Customers"
+          isCollapsed={isCollapsed}
+        />
+        <NavItem
+          to="/quickbook-invoices"
+          icon={<Icons.FileText size={18} />}
+          label="QB Invoices"
+          isCollapsed={isCollapsed}
+        />
+      </div>
 
       {/* ---------- LOGOUT ---------- */}
       <button

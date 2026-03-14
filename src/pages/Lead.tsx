@@ -57,7 +57,7 @@ const Leads = () => {
   const [openCustomerSheet, setOpenCustomerSheet] = useState(false);
   const [leadForCustomer, setLeadForCustomer] = useState<any>(null);
 
-  const advisorId = useSelector((state: RootState) => state.auth.advisorId);
+  const advisorId = useSelector((state: RootState) => state.auth.userId);
 
   const { data, isLoading, isFetching } = useLeads(filters);
 

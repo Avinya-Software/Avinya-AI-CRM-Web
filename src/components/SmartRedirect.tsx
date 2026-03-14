@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 import { useFirstPermittedRoute } from "../hooks/useFirstPermittedRoute";
 
 const SmartRedirect = () => {
-    debugger;
     const { getFirstRoute, isReady } = useFirstPermittedRoute();
 
     // ⏳ Permissions load hone tak wait karo

@@ -92,25 +92,24 @@ export const getPendingCompaniesApi = async () => {
 // };
 
 export const getUserMenu = async (userId: string) => {
-  debugger
-    const res = await api.get<MenuResponse>(
-        `/users/me/menu`,
-        {
-            params: { userId }  // ← query param mein jayega
-        }
-    );
-    return res.data;
+  const res = await api.get<MenuResponse>(
+    `/users/me/menu`,
+    {
+      params: { userId }  // ← query param mein jayega
+    }
+  );
+  return res.data;
 };
 
 // Get user permissions
 export const getUserPermissions = async (userId: string) => {
-    const res = await api.get<PermissionResponse>(
-        `/permission/me/permissions`,
-        {
-            params: { userId }  // ← query param mein jayega
-        }
-    );
-    return res.data;
+  const res = await api.get<PermissionResponse>(
+    `/permission/me/permissions`,
+    {
+      params: { userId }  // ← query param mein jayega
+    }
+  );
+  return res.data;
 };
 
 

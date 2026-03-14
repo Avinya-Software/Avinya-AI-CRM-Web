@@ -4,6 +4,7 @@ import { X, Save, Loader2, Calendar, Users } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCreateTask } from "../../hooks/task/useTaskMutations";
 import { Combobox, ComboboxOption } from "../../components/ui/combobox";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface ProjectTaskUpsertModalProps {
     open: boolean;
@@ -23,6 +24,8 @@ const ProjectTaskUpsertModal = ({
     teamMembers = [],
 }: ProjectTaskUpsertModalProps) => {
     const addTask = useCreateTask();
+    const { hasPermission } = usePermissions();
+    const canAddTask = hasPermission("task", "add");
 
     const [formData, setFormData] = useState({
         taskName: "",
@@ -189,7 +192,7 @@ const ProjectTaskUpsertModal = ({
                         </button>
                         <button
                             type="submit"
-                            disabled={isLoading || !formData.taskName.trim()}
+                            disabled={isLoading || !formData.taskName.trim() || !canAddTask}
                             className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
                         >
                             {isLoading ? (

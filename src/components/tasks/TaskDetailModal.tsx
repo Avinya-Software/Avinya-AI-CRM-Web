@@ -2,6 +2,7 @@
 import { X, Calendar, Clock, Repeat, CheckCircle2, Circle, Edit2, AlertCircle } from "lucide-react";
 import { Task, TaskStatus } from "../../interfaces/task.interface";
 import { format, isPast, formatDistanceToNow } from "date-fns";
+import { usePermissions } from "../../context/PermissionContext";
 
 interface TaskDetailModalProps {
     open: boolean;
@@ -44,6 +45,8 @@ const TaskDetailModal = ({ open, onClose, task, onEdit }: TaskDetailModalProps) 
     const isOverdue = isPast(dueDate) && task.status !== TaskStatus.Completed;
     const isCompleted = task.status === TaskStatus.Completed;
     const status = statusConfig[task.status] ?? statusConfig[TaskStatus.Pending];
+    const { hasPermission } = usePermissions();
+    const canEditTask = hasPermission("task", "edit");
 
     const handleEditClick = () => {
         onClose();
@@ -140,10 +143,10 @@ const TaskDetailModal = ({ open, onClose, task, onEdit }: TaskDetailModalProps) 
 
                     {/* Time relative */}
                     <div className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm ${isOverdue
-                            ? "bg-red-50 border border-red-100 text-red-600"
-                            : isCompleted
-                                ? "bg-green-50 border border-green-100 text-green-600"
-                                : "bg-blue-50 border border-blue-100 text-blue-600"
+                        ? "bg-red-50 border border-red-100 text-red-600"
+                        : isCompleted
+                            ? "bg-green-50 border border-green-100 text-green-600"
+                            : "bg-blue-50 border border-blue-100 text-blue-600"
                         }`}>
                         <Clock size={14} className="flex-shrink-0" />
                         <span className="font-medium">
@@ -180,7 +183,8 @@ const TaskDetailModal = ({ open, onClose, task, onEdit }: TaskDetailModalProps) 
                         </button>
                         <button
                             onClick={handleEditClick}
-                            className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium flex items-center justify-center gap-2"
+                            disabled={!canEditTask}
+                            className={`flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium flex items-center justify-center gap-2 ${!canEditTask ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                             <Edit2 size={14} />
                             Edit Task

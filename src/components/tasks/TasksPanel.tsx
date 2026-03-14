@@ -2,6 +2,7 @@ import { CheckCircle, Clock, Calendar } from "lucide-react";
 import { usePendingSystemEvents } from "../../hooks/system-events/usePendingSystemEvents";
 import { useAcknowledgeSystemEvent } from "../../hooks/system-events/useAcknowledgeSystemEvent";
 import type { SystemEvent } from "../../interfaces/systemEvent.interface";
+import { usePermissions } from "../../context/PermissionContext";
 
 /* =====================================================
  * MAIN PANEL
@@ -10,6 +11,8 @@ import type { SystemEvent } from "../../interfaces/systemEvent.interface";
 const TasksPanel = () => {
   const { data: events = [], isLoading } = usePendingSystemEvents();
   const acknowledgeMutation = useAcknowledgeSystemEvent();
+  const { hasPermission } = usePermissions();
+  const canEditTask = hasPermission("task", "edit");
 
   const handleAcknowledge = (eventId: string) => {
     acknowledgeMutation.mutate(eventId);
@@ -52,7 +55,7 @@ const TasksPanel = () => {
                 <TaskCard
                   key={event.eventId}
                   event={event}
-                  showAction
+                  showAction={canEditTask}
                   onAcknowledge={() => handleAcknowledge(event.eventId)}
                 />
               ))}
@@ -130,11 +133,10 @@ const TaskCard = ({
 
   return (
     <div
-      className={`border rounded-lg p-4 transition-all ${
-        showAction
+      className={`border rounded-lg p-4 transition-all ${showAction
           ? "bg-white hover:bg-slate-50 hover:border-slate-300"
           : "bg-slate-50 border-slate-200"
-      }`}
+        }`}
     >
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1 min-w-0">

@@ -1,10 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLoginAdmin } from "../hooks/admin/useLoginAdmin";
-import { saveUserId } from "../utils/token";
 import { useQueryClient } from "@tanstack/react-query";
-import { getUserPermissions } from "../api/admin.api";
+import { usePermissions } from "../context/PermissionContext";
+import { useAuth } from "../auth/useAuth";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../store/authSlice";
 
 type LoginErrors = { email?: string; password?: string };
 
@@ -15,6 +17,10 @@ const Login = () => {
   const [errors, setErrors] = useState<LoginErrors>({});
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isReady } = usePermissions();
+  const [loginDone, setLoginDone] = useState(false);
+  const dispatch = useDispatch();
+  const { login: authLogin } = useAuth();
 
   const { mutate: loginAdmin, isPending: adminLoading, isError: adminError, error: adminErr } = useLoginAdmin();
 
@@ -34,50 +40,24 @@ const Login = () => {
     loginAdmin(
       { email, password },
       {
-        onSuccess: async (res) => {
-          debugger
+        onSuccess: (res) => {
           const data = res.data;
-          // saveUserId(data.userId);
-
-          // ✅ Permissions directly fetch karo — context ka wait nahi
-          try {
-            const permRes = await getUserPermissions(data.userId);
-            const perms = permRes?.data ?? [];
-
-            if (perms.length > 0) {
-              // ✅ Cache mein daal do
-              queryClient.setQueryData(["user-permissions", data.userId], permRes);
-
-              // ✅ Pehla permitted route dhundo
-              const MODULE_ROUTE_MAP = [
-                { module: "dashboard", route: "/" },
-                { module: "lead", route: "/leads" },
-                { module: "quotation", route: "/quotations" },
-                { module: "user", route: "/users" },
-                { module: "followup", route: "/customers" },
-                { module: "client", route: "/clients" },
-                { module: "task", route: "/tasks" },
-                { module: "team", route: "/teams" },
-                { module: "order", route: "/orders" },
-                { module: "project", route: "/projects" },
-                { module: "expense", route: "/expenses" },
-                { module: "campaign", route: "/campaign" },
-                { module: "settings", route: "/settings" },
-              ];
-
-              const firstRoute = MODULE_ROUTE_MAP.find(({ module }) =>
-                perms.some((p: string) => p.startsWith(`${module}:view`))
-              )?.route ?? "/unauthorized";
-
-              navigate(firstRoute);
-            }
-          } catch (e) {
-            console.error("Permission fetch failed", e);
-          }
+          authLogin(data.token, data.userId);
+          dispatch(loginSuccess(data));
+          queryClient.invalidateQueries({ queryKey: ["user-permissions"] });
+          queryClient.invalidateQueries({ queryKey: ["user-menu"] });
+          setLoginDone(true);
         }
       }
     );
   };
+
+  // ✅ Navigate to first permitted route once permissions are ready
+  useEffect(() => {
+    if (loginDone && isReady) {
+      navigate("/redirect");
+    }
+  }, [loginDone, isReady, navigate]);
 
   const errorMessage = (adminErr as any)?.response?.data?.message;
 

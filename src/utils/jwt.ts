@@ -1,5 +1,7 @@
+import { getToken } from "./token";
+
 export function getAdvisorIdFromToken(): string | null {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   if (!token) return null;
 
   try {
@@ -9,7 +11,7 @@ export function getAdvisorIdFromToken(): string | null {
 
     return (
       payload[
-        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
       ] ?? null
     );
   } catch (err) {

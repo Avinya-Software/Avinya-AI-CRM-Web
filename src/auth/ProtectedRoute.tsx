@@ -1,13 +1,13 @@
 import { Navigate } from "react-router-dom";
 import React from "react";
-import { getToken } from "../utils/token";
+import { useAuth } from "./useAuth";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const token = getToken();
+  const { token } = useAuth();
 
   if (!token) {
     return <Navigate to="/login" replace />;

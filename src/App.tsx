@@ -35,7 +35,9 @@ import Clients from "./pages/Clients";
 import Projects from "./pages/Projects";
 import Expenses from "./pages/Expenses";
 import SmartRedirect from "./components/SmartRedirect";
-
+import QuickBooksSuccess from "./pages/QuickBooksSuccess";
+import QuickBookCustomers from "./pages/QuickBookCustomers";
+import QuickBookInvoices from "./pages/QuickBookInvoices";
 function App() {
   return (
     <>
@@ -56,7 +58,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-         
+
             <Route path="/redirect" element={<SmartRedirect />} />
             {/* dashboard:view */}
             <Route
@@ -231,6 +233,15 @@ function App() {
                 </RBACProtectedRoute>
               }
             />
+            <Route
+              path="/quickbook-customers"
+              element={<QuickBookCustomers />}
+            />
+            <Route
+              path="/quickbook-invoices"
+              element={<QuickBookInvoices />}
+            />
+            <Route path="/quickbooks-success" element={<QuickBooksSuccess />} />
 
             {/* -------- ADMIN ROUTES -------- */}
             <Route path="/admin" element={<AdminDashboard />} />
