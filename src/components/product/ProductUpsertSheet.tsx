@@ -8,6 +8,7 @@ import Spinner from "../common/Spinner";
 import type { Product } from "../../interfaces/product.interface";
 import { useUnitTypeDropdown } from "../../hooks/product/useUnitTypeDropdown";
 import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
+import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
 
 interface Props {
   open: boolean;
@@ -19,7 +20,7 @@ interface Props {
 const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
   const { mutateAsync, isPending } = useUpsertProduct();
   const { data: unitTypes, isLoading: unitLoading } = useUnitTypeDropdown();
-
+  const { data: taxCategories = [], isLoading: taxLoading } = useTaxCategories();
   // ✅ permissions
   const { hasPermission } = usePermissions();
   const isEdit = !!product;
@@ -166,47 +167,177 @@ const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
         </div>
 
         {/* BODY (UNCHANGED — YOUR ORIGINAL UI) */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        {/* BODY */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
-          <Field label="Product Name" required error={errors.productName}>
+        {/* Product Name */}
+        <Field label="Product Name" required error={errors.productName}>
+          <input
+            className={`input w-full ${errors.productName ? "border-red-500" : ""}`}
+            placeholder="Enter product name"
+            value={form.productName}
+            onChange={(e) => setForm({ ...form, productName: e.target.value })}
+          />
+        </Field>
+
+        {/* Category */}
+        <Field label="Category">
+          <input
+            className="input w-full"
+            placeholder="Enter category"
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+          />
+        </Field>
+
+        {/* Unit Type */}
+        <Field label="Unit Type" required error={errors.unitType}>
+          {unitLoading ? (
+            <div className="flex items-center gap-2 text-sm text-slate-400">
+              <Spinner /> Loading unit types...
+            </div>
+          ) : (
+            <select
+          className={`input w-full ${errors.unitType ? "border-red-500" : ""}`}
+          value={form.unitType || ""}
+          onChange={(e) => setForm({ ...form, unitType: e.target.value })}
+        >
+          <option value="">Select Unit Type</option>
+
+          {unitTypes?.data?.map((u: any) => (
+            <option key={u.unitTypeID} value={u.unitTypeID}>
+              {u.unitName}
+            </option>
+          ))}
+        </select>
+          )}
+        </Field>
+
+        {/* Price Row */}
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Default Rate" required error={errors.defaultRate}>
             <input
-              className={`input w-full ${errors.productName ? "border-red-500" : ""}`}
-              value={form.productName}
-              onChange={(e) => setForm({ ...form, productName: e.target.value })}
+              type="number"
+              placeholder="0.00"
+              className={`input w-full ${errors.defaultRate ? "border-red-500" : ""}`}
+              value={form.defaultRate}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  defaultRate: e.target.value === "" ? "" : Number(e.target.value),
+                })
+              }
             />
           </Field>
 
-          <Field label="Category">
+          <Field label="Purchase Price" required error={errors.purchasePrice}>
             <input
+              type="number"
+              placeholder="0.00"
+              className={`input w-full ${errors.purchasePrice ? "border-red-500" : ""}`}
+              value={form.purchasePrice}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  purchasePrice: e.target.value === "" ? "" : Number(e.target.value),
+                })
+              }
+            />
+          </Field>
+        </div>
+
+        {/* HSN */}
+        <Field label="HSN Code">
+          <input
+            className="input w-full"
+            placeholder="Enter HSN code"
+            value={form.hsnCode}
+            onChange={(e) => setForm({ ...form, hsnCode: e.target.value })}
+          />
+        </Field>
+
+        {/* Tax Category */}
+        <Field label="Tax Category">
+          {taxLoading ? (
+            <div className="flex items-center gap-2 text-sm text-slate-400">
+              <Spinner /> Loading tax categories...
+            </div>
+          ) : (
+            <select
               className="input w-full"
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-            />
-          </Field>
+              value={form.taxCategoryID || ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  taxCategoryID: e.target.value || null,
+                })
+              }
+            >
+              <option value="">Select Tax Category</option>
 
-          <Field label="Unit Type" required error={errors.unitType}>
-            {unitLoading ? (
-              <div className="flex items-center gap-2 text-sm text-slate-400">
-                <Spinner /> Loading...
-              </div>
-            ) : (
-              <select
-                className={`input w-full ${errors.unitType ? "border-red-500" : ""}`}
-                value={form.unitType}
-                onChange={(e) => setForm({ ...form, unitType: e.target.value })}
-              >
-                <option value="">Select Unit Type</option>
-                {unitTypes.data.map((u: any) => (
-                  <option key={u.unitTypeID} value={u.unitTypeID}>
-                    {u.unitName}
-                  </option>
-                ))}
-              </select>
-            )}
-          </Field>
+              {taxCategories?.map((t: any) => (
+                <option key={t.taxCategoryID} value={t.taxCategoryID}>
+                  {t.taxName || t.categoryName}
+                </option>
+              ))}
 
-          {/* Remaining fields unchanged */}
-          {/* (Your original JSX preserved fully) */}
+            </select>
+          )}
+        </Field>
+
+        {/* Design Toggle */}
+        <Field label="Design By Us">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div className="relative">
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={form.isDesignByUs}
+                onChange={(e) =>
+                  setForm({ ...form, isDesignByUs: e.target.checked })
+                }
+              />
+              <div
+                className={`w-10 h-5 rounded-full transition ${
+                  form.isDesignByUs ? "bg-blue-600" : "bg-slate-300"
+                }`}
+              />
+              <div
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition ${
+                  form.isDesignByUs ? "translate-x-5" : ""
+                }`}
+              />
+            </div>
+            <span className="text-sm text-slate-600">
+              {form.isDesignByUs ? "Yes" : "No"}
+            </span>
+          </label>
+        </Field>
+
+        {/* Description */}
+        <Field label="Description">
+          <textarea
+            className="input w-full"
+            rows={3}
+            placeholder="Enter description..."
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
+        </Field>
+
+        {/* Status */}
+        <Field label="Status">
+          <select
+            className="input w-full"
+            value={form.status}
+            onChange={(e) =>
+              setForm({ ...form, status: Number(e.target.value) })
+            }
+          >
+            <option value={1}>Active</option>
+            <option value={0}>Inactive</option>
+          </select>
+        </Field>
 
         </div>
 
