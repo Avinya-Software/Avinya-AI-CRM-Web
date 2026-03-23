@@ -293,310 +293,296 @@ const LeadDetailSheet = ({
   ];
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/30 z-40 transition-opacity"
-        onClick={onClose}
-      />
+  <>
+    {/* Backdrop */}
+    <div
+      className="fixed inset-0 bg-black/30 z-40 transition-opacity"
+      onClick={onClose}
+    />
 
-      {/* Side Sheet */}
-      <div className="fixed right-0 top-0 h-screen w-[520px] max-w-full bg-white z-50 flex flex-col shadow-2xl border-l border-slate-100">
+    {/* Side Sheet */}
+    <div className="fixed right-0 top-0 h-screen w-1/2 max-w-[800px] sm:w-full bg-white z-50 flex flex-col shadow-2xl border-l border-slate-100">
 
-        {/* ── HEADER ── */}
-        <div className="px-5 pt-5 pb-4 border-b border-slate-100">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              {isLoading ? (
-                <div className="space-y-2">
-                  <div className="h-6 w-40 bg-slate-100 rounded animate-pulse" />
-                  <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
-                </div>
-              ) : (
-                <>
-                  <h2 className="text-xl font-semibold text-slate-900 leading-snug">
-                    {data?.contactPerson ?? lead?.contactPerson}
-                  </h2>
-                  {(data?.companyName ?? lead?.companyName) && (
-                    <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-1.5">
-                      <Building2 size={13} className="text-slate-400" />
-                      {data?.companyName ?? lead?.companyName}
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
+      {/* ── HEADER ── */}
+      <div className="px-6 pt-6 pb-5 border-b border-slate-100">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            {isLoading ? (
+              <div className="space-y-2">
+                <div className="h-6 w-44 bg-slate-100 rounded animate-pulse" />
+                <div className="h-4 w-36 bg-slate-100 rounded animate-pulse" />
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-semibold text-slate-900 leading-snug truncate">
+                  {data?.contactPerson ?? lead?.contactPerson}
+                </h2>
+                {(data?.companyName ?? lead?.companyName) && (
+                  <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5 truncate">
+                    <Building2 size={14} className="text-slate-400 shrink-0" />
+                    {data?.companyName ?? lead?.companyName}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
 
-            <div className="flex items-center gap-2 ml-3 shrink-0">
-              {(data?.statusName ?? lead?.statusName) && (
-                <span
-                  className={`text-xs font-medium px-2.5 py-1 rounded-full border ${statusClass}`}
-                >
-                  {data?.statusName ?? lead?.statusName}
-                </span>
-              )}
-              <button
-                onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-slate-100 transition text-slate-400 hover:text-slate-600"
+          <div className="flex items-center gap-2 ml-3 shrink-0">
+            {(data?.statusName ?? lead?.statusName) && (
+              <span
+                className={`text-xs font-medium px-2.5 py-1 rounded-full border ${statusClass}`}
               >
-                <X size={18} />
-              </button>
-            </div>
+                {data?.statusName ?? lead?.statusName}
+              </span>
+            )}
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-slate-100 transition text-slate-400 hover:text-slate-600"
+            >
+              <X size={18} />
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* ── TABS ── */}
-        <div className="flex border-b border-slate-100 px-5 bg-white">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`py-3 px-3 text-sm border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === tab.key
-                  ? "border-blue-600 text-blue-700 font-semibold"
-                  : "border-transparent text-slate-500 hover:text-slate-700 font-medium"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      {/* ── TABS ── */}
+      <div className="flex border-b border-slate-100 px-6 bg-white">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`py-3 px-4 text-sm border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === tab.key
+                ? "border-blue-600 text-blue-700 font-semibold"
+                : "border-transparent text-slate-500 hover:text-slate-700 font-medium"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {/* ── BODY ── */}
-        <div className="flex-1 overflow-y-auto">
-          {isLoading && (
-            <div className="flex justify-center items-center py-20">
-              <Loader2 size={26} className="animate-spin text-blue-500" />
-            </div>
-          )}
+      {/* ── BODY ── */}
+      <div className="flex-1 overflow-y-auto">
+        {isLoading && (
+          <div className="flex justify-center items-center py-24">
+            <Loader2 size={28} className="animate-spin text-blue-500" />
+          </div>
+        )}
 
-          {isError && (
-            <div className="text-center py-20 text-red-500 text-sm px-6">
-              Failed to load lead details. Please try again.
-            </div>
-          )}
+        {isError && (
+          <div className="text-center py-24 text-red-500 text-sm px-6">
+            Failed to load lead details. Please try again.
+          </div>
+        )}
 
-          {!isLoading && !isError && data && (
-            <>
-              {/* ── DETAILS TAB ── */}
-              {activeTab === "details" && (
-                <div className="px-5 py-4 space-y-5">
+        {!isLoading && !isError && data && (
+          <>
+            {/* ── DETAILS TAB ── */}
+            {activeTab === "details" && (
+              <div className="px-6 py-5 space-y-6">
 
-                  {/* Contact */}
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
-                      Contact
-                    </p>
-                    <div className="space-y-2">
-                      {data.mobile && (
-                        <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
-                          <Phone size={14} className="text-slate-400 shrink-0" />
-                          {data.mobile}
-                        </div>
-                      )}
-                      {data.email && (
-                        <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
-                          <Mail size={14} className="text-slate-400 shrink-0" />
-                          <span className="break-all">{data.email}</span>
-                        </div>
-                      )}
-                      {data.billingAddress && (
-                        <div className="flex items-start gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
-                          <MapPin size={14} className="text-slate-400 shrink-0 mt-0.5" />
-                          {data.billingAddress}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Lead Info */}
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
-                      Lead Info
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <InfoCard label="Source" value={data.leadSourceName} />
-                      <InfoCard label="Assigned To" value={data.assignToName} />
-                      <InfoCard label="Created Date" value={fmt(data.createdDate)} />
-                      <InfoCard label="Next Follow-up" value={fmt(data.nextFollowupDate)} />
-                      {data.clientTypeName && (
-                        <InfoCard label="Client Type" value={data.clientTypeName} />
-                      )}
-                      {data.gstNo && (
-                        <InfoCard label="GST No" value={data.gstNo} />
-                      )}
-                    </div>
-                    {data.createdbyName && (
-                      <div className="mt-2">
-                        <InfoCard label="Created By" value={data.createdbyName} />
+                {/* Contact Info */}
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+                    Contact
+                  </p>
+                  <div className="space-y-2">
+                    {data.mobile && (
+                      <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
+                        <Phone size={14} className="text-slate-400 shrink-0" />
+                        {data.mobile}
+                      </div>
+                    )}
+                    {data.email && (
+                      <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
+                        <Mail size={14} className="text-slate-400 shrink-0" />
+                        <span className="break-all">{data.email}</span>
+                      </div>
+                    )}
+                    {data.billingAddress && (
+                      <div className="flex items-start gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
+                        <MapPin size={14} className="text-slate-400 shrink-0 mt-0.5" />
+                        {data.billingAddress}
                       </div>
                     )}
                   </div>
+                </div>
 
-                  {/* Requirement */}
-                  {(data.requirementDetails || data.notes) && (
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
-                        Requirement
-                      </p>
-                      {data.requirementDetails && (
-                        <div className="border border-slate-100 rounded-xl px-3.5 py-3 bg-slate-50 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-                          {data.requirementDetails}
-                        </div>
-                      )}
+                {/* Lead Info */}
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+                    Lead Info
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <InfoCard label="Source" value={data.leadSourceName} />
+                    <InfoCard label="Assigned To" value={data.assignToName} />
+                    <InfoCard label="Created Date" value={fmt(data.createdDate)} />
+                    <InfoCard label="Next Follow-up" value={fmt(data.nextFollowupDate)} />
+                    {data.clientTypeName && (
+                      <InfoCard label="Client Type" value={data.clientTypeName} />
+                    )}
+                    {data.gstNo && (
+                      <InfoCard label="GST No" value={data.gstNo} />
+                    )}
+                  </div>
+                  {data.createdbyName && (
+                    <div className="mt-2">
+                      <InfoCard label="Created By" value={data.createdbyName} />
                     </div>
                   )}
                 </div>
-              )}
 
-              {/* ── FOLLOW-UPS TAB ── */}
-              {activeTab === "followups" && (
-                <div className="px-5 py-4">
-                  {/* Add button — only show if no form open */}
-                  {canAddFollowUp && !showAddForm && (
-                    <button
-                      onClick={() => setShowAddForm(true)}
-                      className="w-full mb-4 flex items-center justify-center gap-2 border border-slate-200 text-slate-700 rounded-xl py-2.5 text-sm font-medium hover:bg-slate-50 transition"
-                    >
-                      <Plus size={15} />
-                      Add Follow-up
-                    </button>
-                  )}
-
-                  {/* Inline add form */}
-                  {showAddForm && (
-                    <AddFollowUpForm
-                        leadId={data?.leadID ?? leadId}
-                        editData={editingFollowUp}
-                        onCancel={() => {
-                        setShowAddForm(false);
-                        setEditingFollowUp(null);
-                        }}
-                        onSuccess={() => {
-                        setShowAddForm(false);
-                        setEditingFollowUp(null);
-                        }}
-                    />
+                {/* Requirement */}
+                {(data.requirementDetails || data.notes) && (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+                      Requirement
+                    </p>
+                    {data.requirementDetails && (
+                      <div className="border border-slate-100 rounded-xl px-4 py-3 bg-slate-50 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                        {data.requirementDetails}
+                      </div>
                     )}
+                  </div>
+                )}
+              </div>
+            )}
 
-                  {/* Follow-up list */}
-                  {followups.length === 0 ? (
-                    <div className="text-center py-10 text-slate-400 text-sm">
-                      No follow-ups yet
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {followups.map((fu) => {
-                        const outcomeLower = (fu as any).outcome?.toLowerCase() ?? "neutral";
-                        const outcomeClass =
-                          OUTCOME_COLORS[outcomeLower] ?? OUTCOME_COLORS.neutral;
+            {/* ── FOLLOW-UPS TAB ── */}
+            {activeTab === "followups" && (
+              <div className="px-6 py-5 space-y-4">
+                {/* Add button */}
+                {canAddFollowUp && !showAddForm && (
+                  <button
+                    onClick={() => setShowAddForm(true)}
+                    className="w-full flex items-center justify-center gap-2 border border-slate-200 text-slate-700 rounded-xl py-2.5 text-sm font-medium hover:bg-slate-50 transition"
+                  >
+                    <Plus size={15} />
+                    Add Follow-up
+                  </button>
+                )}
 
-                        return (
-                            <div
-                              key={fu.followUpID}
-                              className="group border border-slate-200 rounded-xl px-4 py-3 bg-white shadow-sm hover:shadow-md transition-all"
-                            >
-                              {/* ── TOP ROW ── */}
-                              <div className="flex items-start justify-between mb-2">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  {/* Type Badge */}
-                                  <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full border">
-                                    {(fu as any).followUpType ?? (fu as any).type ?? "Follow-up"}
-                                  </span>
-                          
-                                  {/* Outcome Badge */}
-                                  {(fu as any).outcome && (
-                                    <span
-                                      className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium ${outcomeClass}`}
-                                    >
-                                      {outcomeLower}
-                                    </span>
-                                  )}
-                          
-                                  {/* Status Badge */}
-                                  {fu.statusName && !(fu as any).outcome && (
-                                    <span className="text-[11px] px-2.5 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700">
-                                      {fu.statusName}
-                                    </span>
-                                  )}
-                                </div>
-                          
-                                {/* Edit Icon Button */}
-                                {fu.statusName !== "Completed" && (
-                                <button
+                {/* Inline Add Form */}
+                {showAddForm && (
+                  <AddFollowUpForm
+                    leadId={data?.leadID ?? leadId}
+                    editData={editingFollowUp}
+                    onCancel={() => {
+                      setShowAddForm(false);
+                      setEditingFollowUp(null);
+                    }}
+                    onSuccess={() => {
+                      setShowAddForm(false);
+                      setEditingFollowUp(null);
+                    }}
+                  />
+                )}
+
+                {/* Follow-up List */}
+                {followups.length === 0 ? (
+                  <div className="text-center py-10 text-slate-400 text-sm">
+                    No follow-ups yet
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {followups.map((fu) => {
+                      const outcomeLower = (fu as any).outcome?.toLowerCase() ?? "neutral";
+                      const outcomeClass =
+                        OUTCOME_COLORS[outcomeLower] ?? OUTCOME_COLORS.neutral;
+
+                      return (
+                        <div
+                          key={fu.followUpID}
+                          className="group border border-slate-200 rounded-xl px-4 py-3 bg-white shadow-sm hover:shadow-md transition-all"
+                        >
+                          {/* ── TOP ROW ── */}
+                          <div className="flex items-start justify-between mb-2 flex-wrap gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full border">
+                                {(fu as any).followUpType ?? (fu as any).type ?? "Follow-up"}
+                              </span>
+                              {(fu as any).outcome && (
+                                <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium ${outcomeClass}`}>
+                                  {outcomeLower}
+                                </span>
+                              )}
+                              {fu.statusName && !(fu as any).outcome && (
+                                <span className="text-[11px] px-2.5 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700">
+                                  {fu.statusName}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Edit Icon */}
+                            {fu.statusName !== "Completed" && (
+                              <button
                                 onClick={() => {
-                                    setEditingFollowUp(fu);
-                                    setShowAddForm(true);
+                                  setEditingFollowUp(fu);
+                                  setShowAddForm(true);
                                 }}
                                 className="opacity-0 group-hover:opacity-100 transition text-slate-400 hover:text-blue-600"
                                 title="Edit"
-                                >
+                              >
                                 ✎
-                                </button>
-                                )}
-                              </div>
-                          
-                              {/* ── NOTES ── */}
-                              <p className="text-sm text-slate-700 leading-relaxed mb-2">
-                                {fu.notes || "—"}
-                              </p>
-                          
-                              {/* ── DATES ── */}
-                              <div className="flex items-center justify-between text-xs text-slate-400">
-                                <span className="flex items-center gap-1">
-                                  <Calendar size={12} />
-                                  {fmt((fu as any).followUpDate ?? fu.createdDate)}
-                                </span>
-                          
-                                {fu.nextFollowupDate && (
-                                  <span className="flex items-center gap-1 text-blue-500 font-medium">
-                                    <Calendar size={12} />
-                                    Next: {fmt(fu.nextFollowupDate)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
+                              </button>
+                            )}
+                          </div>
 
-              {/* ── QUOTATIONS TAB ── */}
-              {/* {activeTab === "quotations" && (
-                <div className="text-center py-16 text-slate-400 text-sm px-6">
-                  No quotations yet
-                </div>
-              )} */}
-            </>
-          )}
-        </div>
+                          {/* Notes */}
+                          <p className="text-sm text-slate-700 leading-relaxed mb-2">
+                            {fu.notes || "—"}
+                          </p>
 
-        {/* ── FOOTER ── */}
-        {activeTab === "details" && (
-          <div className="px-5 py-4 border-t border-slate-100 flex gap-3 bg-white">
-            {canEditLead && (
-              <button
-                className="flex-1 border border-slate-200 rounded-xl py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition flex items-center justify-center gap-2"
-                onClick={() => { onClose(); onEditLead?.(data ?? lead); }}
-              >
-                ✎ Edit Lead
-              </button>
+                          {/* Dates */}
+                          <div className="flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
+                            <span className="flex items-center gap-1">
+                              <Calendar size={12} />
+                              {fmt((fu as any).followUpDate ?? fu.createdDate)}
+                            </span>
+
+                            {fu.nextFollowupDate && (
+                              <span className="flex items-center gap-1 text-blue-500 font-medium">
+                                <Calendar size={12} />
+                                Next: {fmt(fu.nextFollowupDate)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             )}
-            {canAddQuotation && (
-              <button
-                className="flex-1 bg-blue-700 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-blue-800 transition flex items-center justify-center gap-2"
-                onClick={() => { onClose(); onCreateQuotation?.(data ?? lead); }}
-              >
-                Create Quotation
-              </button>
-            )}
-          </div>
+          </>
         )}
       </div>
-    </>
-  );
+
+      {/* ── FOOTER ── */}
+      {activeTab === "details" && (
+        <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white flex-wrap">
+          {canEditLead && (
+            <button
+              className="flex-1 border border-slate-200 rounded-xl py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition flex items-center justify-center gap-2"
+              onClick={() => { onClose(); onEditLead?.(data ?? lead); }}
+            >
+              ✎ Edit Lead
+            </button>
+          )}
+          {canAddQuotation && (
+            <button
+              className="flex-1 bg-blue-700 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-blue-800 transition flex items-center justify-center gap-2"
+              onClick={() => { onClose(); onCreateQuotation?.(data ?? lead); }}
+            >
+              Create Quotation
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  </>
+);
 };
 
 export default LeadDetailSheet;

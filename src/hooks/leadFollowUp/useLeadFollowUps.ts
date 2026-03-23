@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getFollowUpsByLeadId } from "../../api/leadFollowUp.api";
-import type { LeadFollowUp } from "../../interfaces/leadFollowUp.interface";
+import { LeadFollowUp } from "../../interfaces/lead.interface";
 
 export const useLeadFollowUps = (leadId: string | null) => {
   return useQuery<LeadFollowUp[]>({
