@@ -78,8 +78,11 @@ const FollowUpForm = ({ leadId, onSuccess }: Props) => {
       await createFollowUpApi({
         leadId,
         followUpDate,
-        nextFollowUpDate,
+        nextFollowupDate: nextFollowUpDate || null,
         remark,
+        status: 1, 
+        followUpBy: "", 
+        notes: remark, 
       });
 
       toast.success("Follow up created successfully", {

@@ -1,6 +1,7 @@
 // src/api/lead.api.ts
 import api from "./axios";
 import type {
+  LeadDetail,
   LeadFilters,
   LeadListResponse,
 } from "../interfaces/lead.interface";
@@ -37,6 +38,12 @@ export const getLeadSourcesApi = async (): Promise<any[]> => {
     "/lead/source-dropdown"
   );
 
+  return res.data.data;
+};
+
+/*   GET LEAD BY ID   */
+export const getLeadByIdApi = async (leadId: string): Promise<LeadDetail> => {
+  const res = await api.get<ApiResponse<LeadDetail>>(`/Lead/${leadId}`);
   return res.data.data;
 };
 

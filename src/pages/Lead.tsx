@@ -11,11 +11,11 @@ import LeadFilterSheet from "../components/leads/LeadFilterSheet";
 import LeadUpsertSheet from "../components/leads/LeadUpsertSheet";
 import LeadFollowUpCreateSheet from "../components/followups/LeadFollowUpCreateSheet";
 import CustomerUpsertSheet from "../components/customer/CustomerUpsertSheet";
-import LeadDetailsModal from "../components/leads/Leaddetailsmodal";
 import { usePermissions } from "../context/PermissionContext";
 
 import type { RootState } from "../store";
 import QuotationUpsertSheet from "../components/quotation/Quotationupsertsheet ";
+import LeadDetailSheet from "../components/leads/LeadDetailsModal";
 
 const DEFAULT_FILTERS = {
   pageNumber: 1,
@@ -198,7 +198,7 @@ const Leads = () => {
             loading={isLoading || isFetching}
             onAdd={canAddLead ? handleAddLead : undefined}
             onEdit={canEditLead ? handleEditLead : undefined}
-            onRowClick={openViewFollowUps}
+            onRowClick={handleViewLeadDetails}
             onViewFollowUps={openViewFollowUps}
             onViewDetails={handleViewLeadDetails}
             onCreateQuotation={
@@ -278,10 +278,12 @@ const Leads = () => {
 
       {/* DETAILS MODAL */}
       {viewLeadDetails && (
-        <LeadDetailsModal
-          lead={viewLeadDetails}
-          onClose={() => setViewLeadDetails(null)}
-        />
+        <LeadDetailSheet
+        lead={viewLeadDetails}
+        onClose={() => setViewLeadDetails(null)}
+        onEditLead={canEditLead ? handleEditLead : undefined}
+        onCreateQuotation={canAddQuotation ? handleCreateQuotation : undefined}
+      />
       )}
 
       {/* QUOTATION SHEET */}

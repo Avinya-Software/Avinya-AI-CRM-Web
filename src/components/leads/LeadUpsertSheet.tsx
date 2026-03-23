@@ -101,8 +101,8 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       requirementDetails: lead.requirementDetails ?? "",
       links: lead.links ?? "",
       nextFollowupDate: lead.nextFollowupDate ? lead.nextFollowupDate.slice(0, 16) : "",
-      leadStatusId: lead.status ?? "",
       leadSourceId: lead.leadSourceID ?? "",
+      leadStatusId: lead.status ?? "",
       notes: lead.notes ?? "",
       cityId: lead.cityID?.toString() ?? "",
     });
@@ -196,8 +196,6 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
   const handleSave = () => {
     if (!validate()) return;
 
-    const selectedStatus = statuses?.find((s: any) => s.leadStatusID === form.leadStatusId);
-    const selectedSource = sources?.find((s: any) => s.leadSourceID === form.leadSourceId);
 
     const payload = {
       LeadID: lead?.leadID ?? null,
@@ -212,8 +210,8 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       Links: form.links,
       Notes: form.notes,
       NextFollowupDate: form.nextFollowupDate ? new Date(form.nextFollowupDate) : null,
-      Status: selectedStatus?.name,
-      LeadSource: selectedSource?.name,
+      Status: form.leadStatusId,
+      LeadSource: form.leadSourceId,
       AssignedTo: form.assignedTo || advisorId,
     };
 
@@ -348,23 +346,23 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             disabled={isReadOnly}
           />
 
-          <Select
-            label="Lead Status"
-            required
-            value={form.leadStatusId}
-            options={(statuses ?? []).map((s: any) => ({ id: s.id, name: s.name }))}
-            error={errors.leadStatusId}
-            onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
-            disabled={isReadOnly}
-          />
+<Select
+  label="Lead Status"
+  required
+  value={form.leadStatusId}
+  options={statuses ?? []} // ✅ already normalized
+  error={errors.leadStatusId}
+  onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
+  disabled={isReadOnly}
+/>
 
-          <Select
-            label="Lead Source"
-            value={form.leadSourceId}
-            options={sources}
-            onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
-            disabled={isReadOnly}
-          />
+<Select
+  label="Lead Source"
+  value={form.leadSourceId}
+  options={sources ?? []} // ✅ already normalized
+  onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
+  disabled={isReadOnly}
+/>
 
           {!isEdit && (
             <Input

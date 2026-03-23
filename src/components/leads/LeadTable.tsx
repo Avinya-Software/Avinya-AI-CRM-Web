@@ -11,11 +11,20 @@ import { usePermissions } from "../../context/PermissionContext";
 
 const leadStatusStyles: Record<string, string> = {
   New: "bg-slate-100 text-slate-700 border-slate-200",
-  Contacted: "bg-blue-100 text-blue-700 border-blue-200",
-  Qualified: "bg-purple-100 text-purple-700 border-purple-200",
-  "Follow Up": "bg-amber-100 text-amber-700 border-amber-200",
+  "Quotation Sent": "bg-blue-100 text-blue-700 border-blue-200",
   Converted: "bg-green-100 text-green-700 border-green-200",
+  "JobWork In Process": "bg-purple-100 text-purple-700 border-purple-200",
+  "Dispatched To Customer": "bg-indigo-100 text-indigo-700 border-indigo-200",
+  "Delivered/Done": "bg-emerald-100 text-emerald-700 border-emerald-200",
   Lost: "bg-red-100 text-red-700 border-red-200",
+};
+
+const leadSourceStyles: Record<string, string> = {
+  Call: "bg-blue-100 text-blue-700 border-blue-200",
+  "Walk-in": "bg-green-100 text-green-700 border-green-200",
+  WhatsApp: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  Referral: "bg-purple-100 text-purple-700 border-purple-200",
+  "Other Sources": "bg-slate-100 text-slate-700 border-slate-200",
 };
 
 const DROPDOWN_HEIGHT = 350;
@@ -115,7 +124,6 @@ const LeadTable = ({
     if (!canAddFollowUp) return;
 
     if (!(lead as any).createFollowup) {
-      toast.error("Please complete the previous follow-up first.");
       navigate(`/LeadFollowup/${lead.leadID}`);
       return;
     }
@@ -161,6 +169,7 @@ const LeadTable = ({
                 <tr
                   key={lead.leadID}
                   className="border-t h-[52px] hover:bg-slate-50 cursor-pointer"
+                  onClick={() => onRowClick?.(lead)}
                 >
                   <Td>{lead.leadNo}</Td>
                   <Td>{lead.contactPerson}</Td>
@@ -176,8 +185,14 @@ const LeadTable = ({
                     </span>
                   </Td>
 
-                  <Td>{lead.leadSourceName}</Td>
-
+                  <Td>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${leadSourceStyles[lead.leadSourceName]
+                        }`}
+                    >
+                      {lead.leadSourceName || "—"}
+                    </span>
+                  </Td>
                   <Td>
                     {lead.createdDate
                       ? new Date(lead.createdDate).toLocaleDateString()

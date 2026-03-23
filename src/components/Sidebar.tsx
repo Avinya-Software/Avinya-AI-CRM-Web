@@ -38,6 +38,7 @@ const getUserFromToken = (token: string | null) => {
 
     return {
       fullName: decoded.FullName,
+      UserId: decoded.UserId,
       role:
         decoded[
           "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"

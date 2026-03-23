@@ -1,3 +1,4 @@
+
 export interface CreateLeadRequest {
   leadId?: string;
   fullName: string;
@@ -50,4 +51,53 @@ export interface LeadListResponse {
   pageSize: number;
   totalPages: number;
   data: Lead[];
+}
+
+
+export interface LeadDetail {
+  leadID: string;
+  leadNo: string;
+  clientID: string;
+  contactPerson: string;
+  mobile: string;
+  email: string;
+  stateID: number;
+  cityID: number;
+  date: string;
+  requirementDetails: string;
+  leadSourceID: string | null;
+  leadSourceName: string | null;
+  otherSources: string | null;
+  status: string;
+  statusName: string;
+  notes: string;
+  links: string;
+  createdBy: string;
+  createdbyName: string;
+  assignedTo: string | null;
+  assignToName: string | null;
+  createdDate: string;
+  clientType: number;
+  clientTypeName: string;
+  companyName: string;
+  gstNo: string;
+  billingAddress: string;
+  followupCount: number;
+  latestLeadFollowupId: string | null;
+  latestFollowupStatus: string | null;
+  nextFollowupDate: string | null;
+  followups: LeadFollowUp[];
+}
+
+export interface LeadFollowUp {
+  followUpID: string;
+  leadID: string;
+  notes: string;
+  nextFollowupDate: string | null;
+  status: number;
+  statusName: string;
+  followUpBy: string | null;
+  followUpByName: string | null;
+  createdDate: string;
+  updatedDate: string | null;
 }
