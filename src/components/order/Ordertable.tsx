@@ -14,32 +14,20 @@ interface Props {
     onAdd: () => void;
 }
 
-const STATUS_LABEL: Record<number, string> = {
-    0: "Pending",
-    1: "Processing",
-    2: "Completed",
-    3: "Cancelled",
-};
-
 const STATUS_STYLE: Record<number, string> = {
-    0: "bg-yellow-100 text-yellow-700",
-    1: "bg-blue-100 text-blue-700",
-    2: "bg-green-100 text-green-700",
-    3: "bg-red-100 text-red-700",
+    1: "bg-yellow-100 text-yellow-700",
+    2: "bg-blue-100 text-blue-700",
+    3: "bg-green-100 text-green-700",
+    4: "bg-red-100 text-red-700",
+    5: "bg-purple-100 text-red-700"
 };
 
-const DESIGN_STATUS_LABEL: Record<number, string> = {
-    0: "Pending",
-    1: "In Progress",
-    2: "Approved by Client",
-    3: "Rejected",
-};
 
 const DESIGN_STATUS_STYLE: Record<number, string> = {
-    0: "bg-yellow-100 text-yellow-700",
-    1: "bg-blue-100 text-blue-700",
-    2: "bg-green-100 text-green-700",
-    3: "bg-red-100 text-red-700",
+    1: "bg-yellow-100 text-yellow-700",
+    2: "bg-blue-100 text-blue-700",
+    3: "bg-green-100 text-green-700",
+    4: "bg-red-100 text-red-700",
 };
 
 /* ================= ACTION MENU ================= */
@@ -228,13 +216,13 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
 
                                 <td className="px-4 py-3">
                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[order.status ?? 0]}`}>
-                                        {STATUS_LABEL[order.status ?? 0]}
+                                        {order.statusName}
                                     </span>
                                 </td>
 
                                 <td className="px-4 py-3">
                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${DESIGN_STATUS_STYLE[order.designStatus ?? 0]}`}>
-                                        {DESIGN_STATUS_LABEL[order.designStatus ?? 0]}
+                                        {order.designStatusName}
                                     </span>
                                 </td>
 

@@ -9,6 +9,7 @@ import Pagination from "../components/leads/Pagination";
 
 import type { Product } from "../interfaces/product.interface";
 import { usePermissions } from "../context/PermissionContext"; // ✅ ADDED
+import { useDebounce } from "../components/common/CommonHelper";
 
 const Products = () => {
   const { hasPermission } = usePermissions(); // ✅ ADDED
@@ -23,12 +24,13 @@ const Products = () => {
 
   const [openSheet, setOpenSheet] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const debouncedSearchTerm = useDebounce(search, 500);
 
   const { data, isLoading, isFetching, refetch } = useProducts({
     pageNumber,
     pageSize,
     status,
-    search,
+    search: debouncedSearchTerm,
   });
 
   const products: Product[] = data?.data?.data ?? [];

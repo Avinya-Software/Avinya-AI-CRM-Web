@@ -43,7 +43,7 @@ export const getQuotationDropdown = async (): Promise<
   ApiWrapper<QuotationDropdownItem[]>
 > => {
   const response = await api.get("/Quotation/get-quotation-dropdown-list");
-  return response.data;
+  return response.data.data;
 };
 
 // ── POST: Create new quotation ─────────────────────────────────────

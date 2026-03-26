@@ -13,6 +13,7 @@ import QuotationTable from "../components/quotation/Quotationtable";
 import OrderUpsertSheet from "../components/order/OrderUpsertSheet";
 
 import { usePermissions } from "../context/PermissionContext"; // ✅ ADDED
+import { useDebounce } from "../components/common/CommonHelper";
 
 const DEFAULT_FILTERS: QuotationFilters = {
     page: 1,
@@ -41,13 +42,19 @@ const Quotations = () => {
     const [orderFromQuotation, setOrderFromQuotation] = useState<any>(null);
     const [openOrderSheet, setOpenOrderSheet] = useState(false);
 
-    // Debounced search
+    const debouncedSearchTerm = useDebounce(searchInput, 500);
+
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setFilters(prev => ({ ...prev, search: searchInput, page: 1 }));
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchInput]);
+        setFilters(prev => {
+            if (prev.search === debouncedSearchTerm) return prev;
+
+            return {
+                ...prev,
+                search: debouncedSearchTerm,
+                page: 1,
+            };
+        });
+    }, [debouncedSearchTerm]);
 
     const { data, isLoading, isFetching } = useQuotations(filters);
 

@@ -1,5 +1,5 @@
 // src/pages/Leads.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Filter, X } from "lucide-react";
 import { useSelector } from "react-redux";
 import { Toaster } from "react-hot-toast";
@@ -15,7 +15,8 @@ import { usePermissions } from "../context/PermissionContext";
 
 import type { RootState } from "../store";
 import QuotationUpsertSheet from "../components/quotation/Quotationupsertsheet ";
-import LeadDetailSheet from "../components/leads/LeadDetailsModal";
+import LeadDetailSheet from "../components/leads/Leaddetailsmodal";
+import { useDebounce } from "../components/common/CommonHelper";
 
 const DEFAULT_FILTERS = {
   pageNumber: 1,
@@ -42,7 +43,7 @@ const Leads = () => {
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
   const [openQuotationSheet, setOpenQuotationSheet] = useState(false);
   const [leadForQuotation, setLeadForQuotation] = useState<any>(null);
-
+  const [search, setSearch] = useState("");
   const [viewFollowUpLead, setViewFollowUpLead] = useState<{
     leadId: string;
     leadName?: string;
@@ -61,6 +62,20 @@ const Leads = () => {
 
   const { data, isLoading, isFetching } = useLeads(filters);
 
+  const debouncedSearchTerm = useDebounce(search, 500);
+
+  useEffect(() => {
+    setFilters(prev => {
+      if (prev.search === debouncedSearchTerm) return prev;
+
+      return {
+        ...prev,
+        search: debouncedSearchTerm,
+        page: 1,
+      };
+    });
+  }, [debouncedSearchTerm]);
+
   // 🔐 Page Guard
   if (!canViewLead) {
     return (
@@ -71,7 +86,7 @@ const Leads = () => {
   }
 
   const hasActiveFilters =
-    filters.search || filters.status || filters.startDate || filters.endDate;
+    filters.status || filters.startDate || filters.endDate;
 
   const clearAllFilters = () => {
     setFilters(DEFAULT_FILTERS);
@@ -161,13 +176,9 @@ const Leads = () => {
                   <input
                     type="text"
                     placeholder="Search leads by name, email, or phone..."
-                    value={filters.search}
+                    value={search}
                     onChange={(e) =>
-                      setFilters({
-                        ...filters,
-                        search: e.target.value,
-                        pageNumber: 1,
-                      })
+                      setSearch(e.target.value)
                     }
                     className="w-full h-10 pl-10 pr-3 border rounded text-sm"
                   />
@@ -279,11 +290,11 @@ const Leads = () => {
       {/* DETAILS MODAL */}
       {viewLeadDetails && (
         <LeadDetailSheet
-        lead={viewLeadDetails}
-        onClose={() => setViewLeadDetails(null)}
-        onEditLead={canEditLead ? handleEditLead : undefined}
-        onCreateQuotation={canAddQuotation ? handleCreateQuotation : undefined}
-      />
+          lead={viewLeadDetails}
+          onClose={() => setViewLeadDetails(null)}
+          onEditLead={canEditLead ? handleEditLead : undefined}
+          onCreateQuotation={canAddQuotation ? handleCreateQuotation : undefined}
+        />
       )}
 
       {/* QUOTATION SHEET */}

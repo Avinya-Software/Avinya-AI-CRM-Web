@@ -3,13 +3,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { OrderFilters } from "../../interfaces/order.interface";
-import { createOrder, deleteOrder, getOrderById, getOrderDropdown, getOrders, updateOrder } from "../../api/order.api";
+import { createOrder, deleteOrder, getDesignStatusDropdown, getOrderById, getOrderDropdown, getOrders, getOrderStatusDropdown, updateOrder } from "../../api/order.api";
 
 
 // ── Fetch orders with filters ──────────────────────────────────────
 export const useOrders = (filters: OrderFilters) => {
   return useQuery({
-    queryKey: ["orders", filters],
+    queryKey:  ['orders', filters.search, filters.page, filters.pageSize, filters.status],
     queryFn: () => getOrders(filters),
     staleTime: 30000,
   });
@@ -77,5 +77,23 @@ export const useDeleteOrder = () => {
     onError: () => {
       toast.error("Failed to delete order.");
     },
+  });
+};
+
+// ── Fetch order status dropdown list ──────────────────────────────────────
+export const useOrderStatusDropdown = () => {
+  return useQuery({
+    queryKey: ["order-status-dropdown"],
+    queryFn: getOrderStatusDropdown,
+    staleTime: 60000,
+  });
+};
+
+// ── Fetch design status dropdown list ──────────────────────────────────────
+export const useDesignStatusDropdown = () => {
+  return useQuery({
+    queryKey: ["design-status-dropdown"],
+    queryFn: getDesignStatusDropdown,
+    staleTime: 60000,
   });
 };

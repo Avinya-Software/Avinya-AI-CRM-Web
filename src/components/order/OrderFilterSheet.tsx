@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { OrderFilters } from "../../interfaces/order.interface";
+import { useOrderStatusDropdown } from "../../hooks/order/useOrders";
 
 interface Props {
     open: boolean;
@@ -16,6 +17,7 @@ const ORDER_STATUSES = ["Pending", "Processing", "Completed", "Cancelled"];
 
 const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) => {
     const [local, setLocal] = useState<OrderFilters>(filters);
+    const { data: orderStatusData = [] } = useOrderStatusDropdown();
 
     // Sync when parent filters change (e.g. external clear)
     useEffect(() => {
@@ -78,9 +80,9 @@ const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) =
                             className="w-full h-10 px-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                         >
                             <option value="">Select option...</option>
-                            {ORDER_STATUSES.map((s) => (
-                                <option key={s} value={s}>
-                                    {s}
+                            {(orderStatusData as any[]).map((o) => (
+                                <option key={o.statusID} value={o.statusID}>
+                                    {o.statusName || "Unknown"}
                                 </option>
                             ))}
                         </select>

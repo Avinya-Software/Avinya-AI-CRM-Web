@@ -11,6 +11,7 @@ import OrderFilterSheet from "../components/order/OrderFilterSheet";
 import OrderUpsertSheet from "../components/order/OrderUpsertSheet";
 import OrderViewSheet from "../components/order/OrderViewSheet";
 import { usePermissions } from "../context/PermissionContext"; // ✅ PERMISSION
+import { useDebounce } from "../components/common/CommonHelper";
 
 const DEFAULT_FILTERS: OrderFilters = {
   page: 1,
@@ -41,16 +42,21 @@ const Orders = () => {
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
 
   const deleteMutation = useDeleteOrder();
+  const debouncedSearchTerm = useDebounce(searchInput, 500);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setFilters((prev) => ({ ...prev, search: searchInput, page: 1 }));
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchInput]);
+    setFilters(prev => {
+      if (prev.search === debouncedSearchTerm) return prev;
+
+      return {
+        ...prev,
+        search: debouncedSearchTerm,
+        page: 1,
+      };
+    });
+  }, [debouncedSearchTerm]);
 
   const { data, isLoading, isFetching } = useOrders(filters);
-
   const hasActiveFilters =
     filters.status || filters.startDate || filters.endDate;
 

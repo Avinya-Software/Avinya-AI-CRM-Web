@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "../../store";
 import { useCreateQuotation, useUpdateQuotation } from "../../hooks/quotation/Usequotationmutations ";
 import { usePermissions } from "../../context/PermissionContext";
+import { useQuotationDropdown } from "../../hooks/quotation/useQuotations";
 
 interface QuotationUpsertSheetProps {
     open: boolean;
@@ -31,13 +32,6 @@ interface ProductItem {
     unitType: string;
 }
 
-// Status options — map display name → UUID from your API
-const STATUS_OPTIONS = [
-    { label: "Draft", value: "7A0A702A-FCA4-4950-B897-DD1E863D8FB6" },
-    { label: "Sent", value: "SENT-UUID-HERE" },
-    { label: "Accepted", value: "ACCEPTED-UUID-HERE" },
-    { label: "Rejected", value: "REJECTED-UUID-HERE" },
-];
 
 const QuotationUpsertSheet = ({
     open,
@@ -49,7 +43,7 @@ const QuotationUpsertSheet = ({
 
     const canAddQuotation = hasPermission("quotation", "add");
     const canEditQuotation = hasPermission("quotation", "edit");
-
+    const { data: quatationStatusData = [] } = useQuotationDropdown();
     const isEdit = !!quotation;
 
     // 🔐 Block unauthorized access
@@ -65,7 +59,7 @@ const QuotationUpsertSheet = ({
         leadID: null as string | null,
         quotationDate: new Date().toISOString().substring(0, 10),
         validTill: "",
-        status: STATUS_OPTIONS[0].value,
+        status: "",
         firmID: 1,
         rejectedNotes: "",
         termsAndConditions: "",
@@ -107,7 +101,6 @@ const QuotationUpsertSheet = ({
     // ---------- Populate form on open ----------
     useEffect(() => {
         if (!open) return;
-
         if (quotation) {
             // EDIT MODE — map existing quotation to form
             setFormData({
@@ -119,7 +112,7 @@ const QuotationUpsertSheet = ({
                 validTill: quotation.validTill
                     ? new Date(quotation.validTill).toISOString().substring(0, 10)
                     : "",
-                status: quotation.status || STATUS_OPTIONS[0].value,
+                status: quotation.status || "",
                 firmID: quotation.firmID || 1,
                 rejectedNotes: quotation.rejectedNotes || "",
                 termsAndConditions: quotation.termsAndConditions || "",
@@ -128,16 +121,22 @@ const QuotationUpsertSheet = ({
 
             if (quotation.items && quotation.items.length > 0) {
                 setProductItems(
-                    quotation.items.map((item: any, idx: number) => ({
-                        id: String(idx + 1),
-                        quotationItemID: item.quotationItemID || null,
-                        productID: item.productID || "",
-                        description: item.description || "",
-                        quantity: item.quantity || 1,
-                        unitPrice: item.unitPrice || 0,
-                        taxCategoryID: item.taxCategoryID || "",
-                        unitType: item.unitType || "",
-                    }))
+                    quotation.items.map((item: any, idx: number) => {
+                        const matchedProduct = products.find(
+                            p => p.productID === item.productID
+                        );
+
+                        return {
+                            id: String(idx + 1),
+                            quotationItemID: item.quotationItemID || null,
+                            productID: item.productID || "",
+                            description: item.description || "",
+                            quantity: item.quantity || 1,
+                            unitPrice: item.unitPrice || 0,
+                            taxCategoryID: item.taxCategoryID || "",
+                            unitType: matchedProduct?.unitName || "", // ✅ FIX HERE
+                        };
+                    })
                 );
             }
         } else {
@@ -151,7 +150,7 @@ const QuotationUpsertSheet = ({
                 leadID: null,
                 quotationDate: new Date().toISOString().substring(0, 10),
                 validTill: validTill.toISOString().substring(0, 10),
-                status: STATUS_OPTIONS[0].value,
+                status: "",
                 firmID: 1,
                 rejectedNotes: "",
                 enableTax: true,
@@ -201,7 +200,7 @@ const QuotationUpsertSheet = ({
             leadID: formData.leadID,
             quotationDate: new Date(formData.quotationDate).toISOString(),
             validTill: new Date(formData.validTill).toISOString(),
-            status: formData.status,
+            status: formData.status != "" ? formData.status : null,
             firmID: formData.firmID,
             rejectedNotes: formData.rejectedNotes,
             termsAndConditions: formData.termsAndConditions,
@@ -567,9 +566,9 @@ const QuotationUpsertSheet = ({
                                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                 className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             >
-                                {STATUS_OPTIONS.map((s) => (
-                                    <option key={s.value} value={s.value}>
-                                        {s.label}
+                                {(quatationStatusData as any[]).map((o) => (
+                                    <option key={o.quotationStatusID} value={o.quotationStatusID}>
+                                        {o.statusName || "Unknown"}
                                     </option>
                                 ))}
                             </select>
@@ -577,7 +576,7 @@ const QuotationUpsertSheet = ({
                     )}
 
                     {/* Rejected Notes — shown only when status is Rejected */}
-                    {isEdit && formData.status === STATUS_OPTIONS.find(s => s.label === "Rejected")?.value && (
+                    {isEdit && formData.status === (quatationStatusData as any[]).find(s => s.statusName === "Rejected")?.value && (
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Rejected Notes

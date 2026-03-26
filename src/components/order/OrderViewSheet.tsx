@@ -18,10 +18,11 @@ const STATUS_LABEL: Record<number, string> = {
 };
 
 const STATUS_STYLE: Record<number, string> = {
-  0: "bg-yellow-100 text-yellow-700",
-  1: "bg-blue-100 text-blue-700",
-  2: "bg-green-100 text-green-700",
-  3: "bg-red-100 text-red-700",
+  1: "bg-yellow-100 text-yellow-700",
+  2: "bg-blue-100 text-blue-700",
+  3: "bg-green-100 text-green-700",
+  4: "bg-red-100 text-red-700",
+  5: "bg-purple-100 text-red-700"
 };
 
 const DESIGN_STATUS_LABEL: Record<number, string> = {
@@ -32,10 +33,10 @@ const DESIGN_STATUS_LABEL: Record<number, string> = {
 };
 
 const DESIGN_STATUS_STYLE: Record<number, string> = {
-  0: "bg-yellow-100 text-yellow-700",
-  1: "bg-blue-100 text-blue-700",
-  2: "bg-green-100 text-green-700",
-  3: "bg-red-100 text-red-700",
+  1: "bg-yellow-100 text-yellow-700",
+  2: "bg-blue-100 text-blue-700",
+  3: "bg-green-100 text-green-700",
+  4: "bg-red-100 text-red-700",
 };
 
 const Field = ({ label, value }: { label: string; value?: React.ReactNode }) => (
@@ -87,10 +88,10 @@ const OrderViewSheet = ({ open, onClose, order, onEdit }: Props) => {
                   <h3 className="text-xl font-bold text-slate-800">{order.orderNo ?? "—"}</h3>
                   <div className="flex flex-col gap-1 items-end">
                     <span className={`px-3 py-0.5 rounded text-xs font-medium ${STATUS_STYLE[order.status ?? 0]}`}>
-                      Order: {STATUS_LABEL[order.status ?? 0]}
+                      Order: {order.statusName}
                     </span>
                     <span className={`px-3 py-0.5 rounded text-xs font-medium ${DESIGN_STATUS_STYLE[order.designStatus ?? 0]}`}>
-                      Design: {DESIGN_STATUS_LABEL[order.designStatus ?? 0]}
+                      Design: {order.designStatusName}
                     </span>
                   </div>
                 </div>

@@ -5,7 +5,7 @@ import type { Order, CreateOrderDto, OrderItemDto } from "../../interfaces/order
 import { ProductDropdown } from "../../interfaces/product.interface";
 import { useClientsDropdown } from "../../hooks/client/useClients";
 import { useProductDropdown } from "../../hooks/product/useProductDropdown";
-import { useCreateOrder, useUpdateOrder } from "../../hooks/order/useOrders";
+import { useCreateOrder, useDesignStatusDropdown, useOrderStatusDropdown, useUpdateOrder } from "../../hooks/order/useOrders";
 import { useCities } from "../../hooks/city/useCities";
 import { useStates } from "../../hooks/state/useStates";
 import { usePermissions } from "../../context/PermissionContext";
@@ -51,6 +51,8 @@ const OrderUpsertSheet = ({
         shippingAddress: "",
         stateID: "" as string,
         cityID: "" as string,
+        orderStatusID: "",
+        designStatusID: "",
     });
 
     const [productItems, setProductItems] = useState<ProductItem[]>([{
@@ -71,7 +73,8 @@ const OrderUpsertSheet = ({
     const { data: cities = [] } = useCities(
         formData.stateID ? Number(formData.stateID) : null
     );
-
+    const { data: orderStatusData = [] } = useOrderStatusDropdown();
+    const { data: designStatusData = [] } = useDesignStatusDropdown();
     const createOrder = useCreateOrder();
     const updateOrder = useUpdateOrder();
 
@@ -81,7 +84,6 @@ const OrderUpsertSheet = ({
 
     useEffect(() => {
         if (!open) return;
-
         if (order) {
             const sourceItems = order.orderItems ?? (order as any).items ?? [];
             setFormData({
@@ -96,20 +98,34 @@ const OrderUpsertSheet = ({
                 shippingAddress: order.shippingAddress || "",
                 stateID: order.stateID != null ? String(order.stateID) : "",
                 cityID: order.cityID != null ? String(order.cityID) : "",
+                orderStatusID: order.status ? String(order.status) : "",
+                designStatusID: order.status ? String(order.status) : "",
             });
 
             setProductItems(
                 sourceItems.length > 0
-                    ? sourceItems.map((item: any, idx: number) => ({
-                        id: String(idx + 1),
-                        orderItemId: item.orderItemID || null,
-                        productID: item.productID || "",
-                        description: item.description || "",
-                        unitType: item.unitType || "",
-                        unitPrice: item.unitPrice || 0,
-                        quantity: item.quantity || 1,
-                    }))
-                    : [{ id: "1", orderItemId: null, productID: "", description: "", unitType: "", unitPrice: 0, quantity: 1 }]
+                    ? sourceItems.map((item: any, idx: number) => {
+                        const matchedProduct = products.find(p => p.productID === item.productID);
+
+                        return {
+                            id: String(idx + 1),
+                            orderItemId: item.orderItemID || null,
+                            productID: item.productID || "",
+                            description: item.description || "",
+                            unitType: matchedProduct?.unitName || "", // ✅ lookup here
+                            unitPrice: item.unitPrice || 0,
+                            quantity: item.quantity || 1,
+                        };
+                    })
+                    : [{
+                        id: "1",
+                        orderItemId: null,
+                        productID: "",
+                        description: "",
+                        unitName: "",
+                        unitPrice: 0,
+                        quantity: 1
+                    }]
             );
 
         } else if (sourceQuotation) {
@@ -124,6 +140,8 @@ const OrderUpsertSheet = ({
                 shippingAddress: "",
                 stateID: "",
                 cityID: "",
+                designStatusID: "",
+                orderStatusID: ""
             });
 
             const quotationItems = sourceQuotation.quotationItems
@@ -157,6 +175,8 @@ const OrderUpsertSheet = ({
                 shippingAddress: "",
                 stateID: "",
                 cityID: "",
+                designStatusID: "",
+                orderStatusID: ""
             });
 
             setProductItems([{
@@ -186,9 +206,9 @@ const OrderUpsertSheet = ({
         expectedDeliveryDate: new Date(formData.expectedDeliveryDate).toISOString(),
         isDesignByUs: false,
         designingCharge: 0,
-        status: isEdit ? order!.status ?? 0 : 0,
+        status: Number(formData.orderStatusID),
         firmID: sourceQuotation?.firmID ?? 1,
-        designStatus: isEdit ? order!.designStatus ?? 0 : 0,
+        designStatus: Number(formData.designStatusID),
         assignedDesignTo: null,
         enableTax: false,
         taxCategoryID: null,
@@ -523,6 +543,55 @@ const OrderUpsertSheet = ({
                             </table>
                         </div>
                     </div>
+
+                    {isEdit && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                    Order Status <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={formData.orderStatusID}
+                                    onChange={(e) => setFormData({ ...formData, orderStatusID: e.target.value })}
+                                    className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.orderStatusID
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-slate-300 focus:ring-blue-500"
+                                        } disabled:bg-slate-50 disabled:text-slate-500`}
+                                >
+                                    <option value="">Select Order Status</option>
+                                    {(orderStatusData as any[]).map((o) => (
+                                        <option key={o.statusID} value={o.statusID}>
+                                            {o.statusName || "Unknown"}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.designStatusID && <p className="text-red-500 text-xs mt-1">{errors.designStatusID}</p>}
+                            </div>
+
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                    Design Status <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={formData.designStatusID}
+                                    onChange={(e) => setFormData({ ...formData, designStatusID: e.target.value })}
+                                    className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.designStatusID
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-slate-300 focus:ring-blue-500"
+                                        } disabled:bg-slate-50 disabled:text-slate-500`}
+                                >
+                                    <option value="">Select Design Status</option>
+                                    {(designStatusData as any[]).map((o) => (
+                                        <option key={o.designStatusID} value={o.designStatusID}>
+                                            {o.designStatusName || "Unknown"}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.designStatusID && <p className="text-red-500 text-xs mt-1">{errors.designStatusID}</p>}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Totals */}
                     <div className="bg-slate-50 rounded-lg p-4 space-y-2">

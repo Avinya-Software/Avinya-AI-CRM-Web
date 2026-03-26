@@ -3,7 +3,7 @@
 import api from "./axios";
 
 import { ApiWrapper } from "../interfaces/admin.interface";
-import { CreateOrderDto, Order, OrderDropdownItem, OrderFilters, UpdateOrderDto } from "../interfaces/order.interface";
+import { CreateOrderDto, DesignStatusDropdown, Order, OrderDropdownItem, OrderFilters, OrderStatusDropdown, UpdateOrderDto } from "../interfaces/order.interface";
 import { PaginatedResponse } from "../interfaces/quotation.interface";
 
 // ── GET: Fetch orders with filters ─────────────────────────────────
@@ -55,4 +55,20 @@ export const updateOrder = async (id: string, data: UpdateOrderDto) => {
 export const deleteOrder = async (id: string) => {
   const response = await api.delete(`/Order/${id}`);
   return response.data;
+};
+
+// ── GET: Fetch order dropdown list ─────────────────────────────────
+export const getOrderStatusDropdown = async (): Promise<
+  ApiWrapper<OrderStatusDropdown[]>
+> => {
+  const response = await api.get("/Order/get-OrderStatus-dropdown");
+  return response.data.data;
+};
+
+// ── GET: Fetch order dropdown list ─────────────────────────────────
+export const getDesignStatusDropdown = async (): Promise<
+  ApiWrapper<DesignStatusDropdown[]>
+> => {
+  const response = await api.get("/Order/get-DesignStatus-dropdown");
+  return response.data.data;
 };

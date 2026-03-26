@@ -10,6 +10,7 @@ import ProjectTable from "../components/project/ProjectTable";
 import ProjectUpsertSheet from "../components/project/ProjectUpsertSheet";
 import ProjectViewSheet from "../components/project/ProjectViewSheet";
 import { usePermissions } from "../context/PermissionContext"; // ✅ ADDED
+import { useDebounce } from "../components/common/CommonHelper";
 
 const STATUS_LABEL: Record<number, string> = {
   0: "Planning",
@@ -183,11 +184,11 @@ const Projects = () => {
       setViewProjectId(null);
     }
   }, [canView]);
-
+  const debouncedSearchTerm = useDebounce(search, 500);
   const { data, isLoading, isFetching, refetch } = useProjects({
     pageNumber,
     pageSize,
-    search,
+    search: debouncedSearchTerm,
     statusFilter,
   });
 

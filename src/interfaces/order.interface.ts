@@ -1,8 +1,8 @@
 // src/interfaces/order.interface.ts
 
 // ── Enums (numeric — matches backend int enums) ────────────────────
-export type OrderStatus = 0 | 1 | 2 | 3;    // 0=Pending 1=Processing 2=Completed 3=Cancelled
-export type DesignStatus = 0 | 1 | 2 | 3;   // adjust to your backend values
+export type OrderStatus =  1 | 2 | 3 | 4 | 5;    // 0=Pending 1=Processing 2=Completed 3=Cancelled
+export type DesignStatus =  1 | 2 | 3 | 4 ;   // adjust to your backend values
 
 // ── Order Item (read from API) ─────────────────────────────────────
 export interface OrderItemResponseDto {
@@ -148,3 +148,15 @@ export interface PaginatedResponse<T> {
   totalPages: number;
   data: T[];
 }
+
+// ── Order Status Dropdown ───────────────────────────────────────────────────────
+export interface OrderStatusDropdown {
+  statusID: number;
+  statusName: string;
+}
+
+export interface DesignStatusDropdown {
+  designStatusID: number;
+  designStatusName: string;
+}
+

@@ -8,6 +8,7 @@ import Pagination from "../components/leads/Pagination";
 import type { Client } from "../interfaces/client.interface";
 import ClientTable from "../components/clients/Clienttable";
 import ClientUpsertSheet from "../components/clients/Clientupsertsheet";
+import { useDebounce } from "../components/common/CommonHelper";
 
 const Clients = () => {
     const { hasPermission } = usePermissions();
@@ -22,6 +23,7 @@ const Clients = () => {
 
     const [openClientSheet, setOpenClientSheet] = useState(false);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+    const debouncedSearchTerm = useDebounce(search, 500);
 
     // 🔐 Block entire page if no view permission
     if (!canViewClient) {
@@ -35,7 +37,7 @@ const Clients = () => {
     const { data, isLoading, isFetching, refetch } = useClients(
         pageNumber,
         pageSize,
-        search
+        debouncedSearchTerm
     );
 
     const handleAddClient = () => {
