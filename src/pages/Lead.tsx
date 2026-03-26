@@ -15,8 +15,9 @@ import { usePermissions } from "../context/PermissionContext";
 
 import type { RootState } from "../store";
 import QuotationUpsertSheet from "../components/quotation/Quotationupsertsheet ";
-import LeadDetailSheet from "../components/leads/Leaddetailsmodal";
+
 import { useDebounce } from "../components/common/CommonHelper";
+import LeadDetailSheet from "../components/leads/LeadDetailsModal";
 
 const DEFAULT_FILTERS = {
   pageNumber: 1,

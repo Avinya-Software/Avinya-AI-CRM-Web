@@ -174,7 +174,7 @@ const Sidebar = () => {
     );
 
     setOpenGroups(availableGroups);
-  }, [groupedMenu]);
+  }, [menuItems]);
 
   const toggleGroup = (group: string) => {
     setOpenGroups((prev) =>
