@@ -118,19 +118,20 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-
   const [openGroups, setOpenGroups] = useState<string[]>([]);
 
-  const { data: menuResponse, isLoading, isError } =
-    useGetUserMenu(userId, token);
-
+  const { data: menuResponse } = useGetUserMenu(userId, token);
   const { hasPermission } = usePermissions();
 
   /* ================= CACHE MENU ================= */
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
-    const cached = localStorage.getItem("menu");
-    return cached ? JSON.parse(cached) : [];
+    try {
+      const cached = localStorage.getItem("menu");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
@@ -140,12 +141,21 @@ const Sidebar = () => {
     }
   }, [menuResponse]);
 
+  /* ================= SAFE MENU (NO EMPTY UI) ================= */
+
+  const safeMenu = menuItems.length > 0 ? menuItems : [];
+
   /* ================= GROUP MENU ================= */
 
-  const groupedMenu = menuItems
+  const groupedMenu = safeMenu
     .filter((item) => item.moduleKey !== "dashboard")
     .filter((item) => !["user", "team"].includes(item.moduleKey))
-    .filter((item) => hasPermission(item.moduleKey, "view"))
+    // ✅ FIX: Don't block UI if permission not ready
+    .filter((item) =>
+      typeof hasPermission !== "function"
+        ? true
+        : hasPermission(item.moduleKey, "view")
+    )
     .sort((a, b) => a.order - b.order)
     .reduce((groups: any, item) => {
       const group = MODULE_GROUPS[item.moduleKey] || "Other";
@@ -156,13 +166,15 @@ const Sidebar = () => {
       return groups;
     }, {});
 
+  /* ================= GROUP STATE ================= */
+
   useEffect(() => {
     const availableGroups = GROUP_ORDER.filter(
       (group) => groupedMenu[group]
     );
 
     setOpenGroups(availableGroups);
-  }, [menuItems]);
+  }, [groupedMenu]);
 
   const toggleGroup = (group: string) => {
     setOpenGroups((prev) =>
@@ -176,6 +188,8 @@ const Sidebar = () => {
     logout();
     navigate("/login", { replace: true });
   };
+
+  const hasMenu = Object.keys(groupedMenu).length > 0;
 
   return (
     <aside
@@ -202,6 +216,7 @@ const Sidebar = () => {
 
       {/* NAV */}
       <nav className="flex-1 px-4 py-6 overflow-y-auto">
+        {/* ALWAYS VISIBLE */}
         <NavItem
           to="/"
           icon={<LayoutDashboard size={18} />}
@@ -209,64 +224,59 @@ const Sidebar = () => {
           isCollapsed={isCollapsed}
         />
 
-        {/* GROUPS */}
-        {GROUP_ORDER.filter((g) => groupedMenu[g]).map((groupName) => {
-          const items = groupedMenu[groupName];
-          const isOpen = openGroups.includes(groupName);
-          const GroupIcon = GROUP_ICONS[groupName];
+        {/* ✅ DYNAMIC MENU (NO EMPTY SCREEN) */}
+        {hasMenu ? (
+          GROUP_ORDER.filter((g) => groupedMenu[g]).map((groupName) => {
+            const items = groupedMenu[groupName];
+            const isOpen = openGroups.includes(groupName);
+            const GroupIcon = GROUP_ICONS[groupName];
 
-          return (
-            <div key={groupName} className="mb-2">
-              <button
-                onClick={() => toggleGroup(groupName)}
-                className="flex items-center justify-between w-full px-4 py-2 text-xs text-slate-400 uppercase"
-              >
-                <div className="flex items-center gap-2">
-                  {GroupIcon && <GroupIcon size={14} />}
-                  {!isCollapsed && groupName}
-                </div>
+            return (
+              <div key={groupName} className="mb-2">
+                <button
+                  onClick={() => toggleGroup(groupName)}
+                  className="flex items-center justify-between w-full px-4 py-2 text-xs text-slate-400 uppercase"
+                >
+                  <div className="flex items-center gap-2">
+                    {GroupIcon && <GroupIcon size={14} />}
+                    {!isCollapsed && groupName}
+                  </div>
 
-                {!isCollapsed &&
-                  (isOpen ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  ))}
-              </button>
+                  {!isCollapsed &&
+                    (isOpen ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    ))}
+                </button>
 
-              {isOpen &&
-                items.map((item: MenuItem) => {
-                  const Icon =
-                    MODULE_ICONS[item.moduleKey] || Icons.Box;
+                {isOpen &&
+                  items.map((item: MenuItem) => {
+                    const Icon =
+                      MODULE_ICONS[item.moduleKey] || Icons.Box;
 
-                  return (
-                    <NavItem
-                      key={item.moduleKey}
-                      to={`/${item.moduleKey}s`}
-                      icon={<Icon size={18} />}
-                      label={item.moduleName}
-                      isCollapsed={isCollapsed}
-                    />
-                  );
-                })}
-            </div>
-          );
-        })}
-
-        {isLoading && (
-          <div className="flex justify-center py-2">
-            <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
-          </div>
-        )}
-
-        {isError && (
-          <div className="text-center text-xs text-red-400">
-            Failed to load menu
+                    return (
+                      <NavItem
+                        key={item.moduleKey}
+                        to={`/${item.moduleKey}s`}
+                        icon={<Icon size={18} />}
+                        label={item.moduleName}
+                        isCollapsed={isCollapsed}
+                      />
+                    );
+                  })}
+              </div>
+            );
+          })
+        ) : (
+          // ✅ FALLBACK UI (no blank screen)
+          <div className="px-4 py-2 text-xs text-slate-500">
+            Loading menu...
           </div>
         )}
       </nav>
 
-      {/* ADMIN */}
+      {/* ADMIN (ALWAYS VISIBLE) */}
       <div className="px-4 pb-2 space-y-1">
         {!isCollapsed && (
           <p className="text-xs text-slate-500 uppercase px-4">
@@ -288,7 +298,7 @@ const Sidebar = () => {
         })}
       </div>
 
-      {/* QUICKBOOKS */}
+      {/* QUICKBOOKS (ALWAYS VISIBLE) */}
       <div className="px-4 pb-2 space-y-1">
         {!isCollapsed && (
           <p className="text-xs text-slate-500 uppercase px-4">

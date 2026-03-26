@@ -39,17 +39,23 @@ const Tasks = () => {
 
   const getDateRange = () => {
     const today = new Date();
+  
     switch (view) {
       case "today":
         return {
-          from: format(today, "yyyy-MM-dd"),
-          to: format(today, "yyyy-MM-dd"),
+          from: new Date(today.setHours(0, 0, 0, 0)).toISOString(),
+          to: new Date(today.setHours(23, 59, 59, 999)).toISOString(),
         };
+  
       case "week":
+        const start = startOfWeek(new Date());
+        const end = endOfWeek(new Date());
+  
         return {
-          from: format(startOfWeek(today), "yyyy-MM-dd"),
-          to: format(endOfWeek(today), "yyyy-MM-dd"),
+          from: new Date(start.setHours(0, 0, 0, 0)).toISOString(),
+          to: new Date(end.setHours(23, 59, 59, 999)).toISOString(),
         };
+  
       default:
         return { from: undefined, to: undefined };
     }
