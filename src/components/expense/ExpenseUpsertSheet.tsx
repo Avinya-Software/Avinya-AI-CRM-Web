@@ -258,7 +258,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
 
                     <button
                         disabled={isPending || !hasAccess}
-                        className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50"
+                        className="flex-1 bg-blue-900 text-white rounded-lg py-2 text-sm font-medium flex items-center justify-center gap-2 hover:bg-blue-800 transition disabled:opacity-50"
                         onClick={handleSave}
                     >
                         {isPending && <Spinner />}

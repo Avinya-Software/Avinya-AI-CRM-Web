@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Link as LinkIcon } from "lucide-react";
 import {
+  Menu,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -41,7 +42,7 @@ const getUserFromToken = (token: string | null) => {
       UserId: decoded.UserId,
       role:
         decoded[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         ],
     };
   } catch {
@@ -193,24 +194,27 @@ const Sidebar = () => {
 
   return (
     <aside
-      className={`bg-slate-900 text-white h-screen flex flex-col ${
-        isCollapsed ? "w-20" : "w-64"
-      }`}
+      className={`bg-slate-900 text-white h-screen flex flex-col ${isCollapsed ? "w-20" : "w-64"
+        }`}
     >
       {/* HEADER */}
       <div className="px-6 py-5 border-b border-slate-800 flex justify-between">
         {!isCollapsed && (
-          <div>
-            <p className="text-xl font-bold">Avinya</p>
-            <p className="text-xs text-slate-400">AI CRM</p>
+          <div className="transition-all duration-300">
+            <p className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+              Avinya
+            </p>
+            <p className="text-[10px] text-emerald-500 font-bold tracking-widest uppercase">
+              AI CRM
+            </p>
           </div>
         )}
 
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-lg hover:bg-slate-800"
+          className="p-2 rounded-lg hover:bg-slate-800 transition-colors bg-slate-800/40"
         >
-          {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
+          <Menu size={20} className="text-emerald-400" />
         </button>
       </div>
 
@@ -297,7 +301,11 @@ const Sidebar = () => {
                             key={item.moduleKey}
                             to={`/${item.moduleKey}s`}
                             icon={<Icon size={18} />}
-                            label={item.moduleName}
+                            label={
+                              item.moduleKey === "client"
+                                ? "Customers"
+                                : item.moduleName
+                            }
                             isCollapsed={isCollapsed}
                           />
                         );
@@ -370,27 +378,15 @@ const Sidebar = () => {
         )}
       </nav>
 
-      {/* LOGOUT (STATIC BOTTOM) */}
-      <button
-        onClick={handleLogout}
-        className="flex items-center gap-3 px-4 py-2 mx-4 my-3 hover:bg-red-600 rounded-lg text-sm transition-colors text-slate-300"
-      >
-        <LogOut size={18} />
-        {!isCollapsed && "Logout"}
-      </button>
-
-      {/* USER */}
-      <div className="px-6 py-4 border-t border-slate-800 text-sm">
-        {!isCollapsed ? (
-          <>
-            <p>{user?.fullName}</p>
-            <p className="text-slate-400">{user?.role}</p>
-          </>
-        ) : (
-          <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
-            {user?.fullName?.charAt(0)}
-          </div>
-        )}
+      {/* LOGOUT (FIXED BOTTOM) */}
+      <div className="border-t border-slate-800 bg-slate-900">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-6 py-4 w-full hover:bg-red-600 transition-colors text-slate-300"
+        >
+          <LogOut size={18} />
+          {!isCollapsed && "Logout"}
+        </button>
       </div>
     </aside>
   );
@@ -401,17 +397,24 @@ const NavItem = ({ to, icon, label, isCollapsed }: any) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
-      `flex items-center gap-3 px-4 py-2 rounded-lg text-sm ${
-        isCollapsed ? "justify-center" : ""
-      } ${
-        isActive
-          ? "bg-slate-800 text-white"
-          : "text-slate-300 hover:bg-slate-800"
+      `relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-300 ${isCollapsed ? "justify-center" : ""
+      } ${isActive
+        ? "bg-slate-800/60 text-emerald-400 font-semibold shadow-sm"
+        : "text-slate-400 hover:text-emerald-500 hover:bg-slate-800/30"
       }`
     }
   >
-    {icon}
-    {!isCollapsed && label}
+    {({ isActive }) => (
+      <>
+        {isActive && (
+          <div className="absolute left-0 top-2 bottom-2 w-1 bg-emerald-500 rounded-r-lg" />
+        )}
+        <div className={`transition-colors duration-300 ${isActive ? "text-emerald-400" : ""}`}>
+          {icon}
+        </div>
+        {!isCollapsed && <span>{label}</span>}
+      </>
+    )}
   </NavLink>
 );
 

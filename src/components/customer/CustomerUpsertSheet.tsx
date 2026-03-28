@@ -342,7 +342,7 @@ const CustomerUpsertSheet = ({
           {!isReadOnly && (
             <button
               disabled={saving}
-              className="flex-1 bg-blue-600 text-white rounded-lg py-2 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-1 bg-blue-900 text-white rounded-lg py-2 flex items-center justify-center gap-2 hover:bg-blue-800 transition disabled:opacity-50"
               onClick={handleSave}
             >
               {saving && <Spinner />}

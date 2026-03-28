@@ -160,7 +160,7 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
 
     const columns = [
         "Order No",
-        "Client Name",
+        "Customer Name",
         "Order Date",
         "Expected Delivery",
         "Total Amount",

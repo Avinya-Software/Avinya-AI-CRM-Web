@@ -101,7 +101,7 @@ const ClientTable = ({
                         {data.length === 0 ? (
                             <tr>
                                 <td colSpan={8} className="text-center py-12 text-slate-500">
-                                    No clients found
+                                    No customers found
                                 </td>
                             </tr>
                         ) : (
@@ -153,12 +153,12 @@ const ClientTable = ({
                     onClick={(e) => e.stopPropagation()}
                 >
                     {canEditClient && (
-                        <MenuItem label="Edit Client" onClick={handleEdit} />
+                        <MenuItem label="Edit Customer" onClick={handleEdit} />
                     )}
 
                     {canDeleteClient && (
                         <MenuItem
-                            label="Delete Client"
+                            label="Delete Customer"
                             danger
                             onClick={() => setConfirmDelete(openClient)}
                         />
@@ -171,7 +171,7 @@ const ClientTable = ({
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
                     <div className="bg-white rounded-lg w-[420px] p-6 shadow-lg">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold">Delete Client</h3>
+                            <h3 className="text-lg font-semibold">Delete Customer</h3>
                             <button onClick={() => setConfirmDelete(null)}>
                                 <X size={18} />
                             </button>

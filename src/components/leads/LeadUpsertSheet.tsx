@@ -406,7 +406,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
           {!isReadOnly && (
             <button
               disabled={isPending}
-              className="flex-1 bg-blue-600 text-white rounded disabled:opacity-50 flex items-center justify-center"
+              className="flex-1 bg-blue-900 text-white rounded hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center font-medium py-2"
               onClick={handleSave}
             >
               {isPending ? <Spinner /> : isEdit ? "Update" : "Save"}

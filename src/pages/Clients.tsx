@@ -29,7 +29,7 @@ const Clients = () => {
     if (!canViewClient) {
         return (
             <div className="p-10 text-center text-slate-500">
-                You don’t have permission to view clients.
+                You don’t have permission to view customers.
             </div>
         );
     }
@@ -55,7 +55,7 @@ const Clients = () => {
     const handleClientSuccess = () => {
         setOpenClientSheet(false);
         refetch();
-        toast.success("Client saved successfully!");
+        toast.success("Customer saved successfully!");
     };
 
     return (
@@ -68,10 +68,10 @@ const Clients = () => {
                     <div className="grid grid-cols-2 gap-y-4 items-start">
                         <div>
                             <h1 className="text-4xl font-serif font-semibold text-slate-900">
-                                Clients
+                                Customers
                             </h1>
                             <p className="mt-1 text-sm text-slate-600">
-                                {data?.totalRecords ?? 0} total clients
+                                {data?.totalRecords ?? 0} total customers
                             </p>
                         </div>
 
@@ -82,7 +82,7 @@ const Clients = () => {
                                     onClick={handleAddClient}
                                 >
                                     <span className="text-lg leading-none">+</span>
-                                    Add Client
+                                    Add Customer
                                 </button>
                             )}
                         </div>
@@ -92,7 +92,7 @@ const Clients = () => {
                             <div className="relative w-[360px]">
                                 <input
                                     type="text"
-                                    placeholder="Search Clients..."
+                                    placeholder="Search Customers..."
                                     value={search}
                                     onChange={(e) => {
                                         setSearch(e.target.value);

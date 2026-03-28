@@ -36,11 +36,12 @@ const AVATAR_COLORS = [
 
 interface Props {
   projectId: string;
+  initialData?: Project | null;
   onClose: () => void;
   onEdit: (project: Project) => void;
 }
 
-const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
+const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit }: Props) => {
   const [tab, setTab] = useState<"overview" | "tasks">("overview");
   const [showAddTask, setShowAddTask] = useState(false);
 
@@ -55,9 +56,11 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
   const canEditProject = hasPermission("project", "edit");
   const canAddTask = hasPermission("task", "add");
 
-  const { data: project, isLoading } = useProjectById(projectId);
+  const { data: projectFetch, isLoading } = useProjectById(projectId);
   const { mutate: addTask, isPending: addingTask } = useCreateTask();
   const { data: teamResponse } = useGetTeamsDropdown();
+
+  const project = projectFetch || initialData;
 
   const projectTeamName = project?.teamId
     ? teamResponse?.data?.find((t: any) => t.id === Number(project.teamId))?.name
@@ -79,8 +82,8 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
         description: taskForm.description,
         dueDateTime: new Date(taskForm.dueDate).toISOString(),
         isRecurring: false,
-        scope: project.teamId ? "Team" : "Personal",
-        teamId: project.teamId ? String(project.teamId) : undefined,
+        scope: project?.teamId ? "Team" : "Personal",
+        teamId: project?.teamId ? String(project.teamId) : undefined,
         recurrenceStartDate: null,
         recurrenceEndDate: null,
         reminderAt: undefined,
@@ -98,7 +101,7 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
     );
   };
 
-  if (isLoading || !project) {
+  if (isLoading && !project) {
     return (
       <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
         <div className="bg-white rounded-xl p-8 flex items-center gap-3 shadow-2xl">
@@ -109,7 +112,12 @@ const ProjectViewSheet = ({ projectId, onClose, onEdit }: Props) => {
     );
   }
 
-  const tasks = project.tasks ?? [];
+  if (!project) return null;
+
+  const tasks = (projectFetch?.tasks && projectFetch.tasks.length > 0)
+    ? projectFetch.tasks
+    : (initialData?.tasks ?? []);
+
   const taskStats = {
     total: tasks.length,
     todo: tasks.filter(t => t.status === "Pending").length,
