@@ -120,7 +120,7 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
 
-  const { data: menuResponse } = useGetUserMenu(userId, token);
+  const { data: menuResponse, isLoading } = useGetUserMenu(userId, token);
   const { hasPermission } = usePermissions();
 
   /* ================= CACHE MENU ================= */
@@ -215,124 +215,165 @@ const Sidebar = () => {
       </div>
 
       {/* NAV */}
-      <nav className="flex-1 px-4 py-6 overflow-y-auto">
-        {/* ALWAYS VISIBLE */}
-        <NavItem
-          to="/"
-          icon={<LayoutDashboard size={18} />}
-          label="Dashboard"
-          isCollapsed={isCollapsed}
-        />
+      <nav className="flex-1 px-4 py-6 overflow-y-auto sidebar-scroll">
+        <style>{`
+          .sidebar-scroll::-webkit-scrollbar {
+            width: 5px;
+          }
+          .sidebar-scroll::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: #10b981; /* emerald-500 */
+            border-radius: 10px;
+          }
+          .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+            background: #059669; /* emerald-600 */
+          }
+          @keyframes skeleton-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+          }
+          .animate-skeleton {
+            animation: skeleton-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          }
+        `}</style>
 
-        {/* ✅ DYNAMIC MENU (NO EMPTY SCREEN) */}
-        {hasMenu ? (
-          GROUP_ORDER.filter((g) => groupedMenu[g]).map((groupName) => {
-            const items = groupedMenu[groupName];
-            const isOpen = openGroups.includes(groupName);
-            const GroupIcon = GROUP_ICONS[groupName];
-
-            return (
-              <div key={groupName} className="mb-2">
-                <button
-                  onClick={() => toggleGroup(groupName)}
-                  className="flex items-center justify-between w-full px-4 py-2 text-xs text-slate-400 uppercase"
-                >
-                  <div className="flex items-center gap-2">
-                    {GroupIcon && <GroupIcon size={14} />}
-                    {!isCollapsed && groupName}
-                  </div>
-
-                  {!isCollapsed &&
-                    (isOpen ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
-                    ))}
-                </button>
-
-                {isOpen &&
-                  items.map((item: MenuItem) => {
-                    const Icon =
-                      MODULE_ICONS[item.moduleKey] || Icons.Box;
-
-                    return (
-                      <NavItem
-                        key={item.moduleKey}
-                        to={`/${item.moduleKey}s`}
-                        icon={<Icon size={18} />}
-                        label={item.moduleName}
-                        isCollapsed={isCollapsed}
-                      />
-                    );
-                  })}
+        {isLoading ? (
+          <div className="space-y-6 animate-skeleton">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="space-y-3 px-4">
+                <div className="h-2 w-16 bg-slate-800 rounded-full" />
+                <div className="space-y-2">
+                  <div className="h-9 w-full bg-slate-800/50 rounded-lg" />
+                  <div className="h-9 w-full bg-slate-800/50 rounded-lg" />
+                </div>
               </div>
-            );
-          })
-        ) : (
-          // ✅ FALLBACK UI (no blank screen)
-          <div className="px-4 py-2 text-xs text-slate-500">
-            Loading menu...
+            ))}
           </div>
+        ) : (
+          <>
+            {/* ALWAYS VISIBLE */}
+            <NavItem
+              to="/"
+              icon={<LayoutDashboard size={18} />}
+              label="Dashboard"
+              isCollapsed={isCollapsed}
+            />
+
+            {/* ✅ DYNAMIC MENU (NO EMPTY SCREEN) */}
+            {hasMenu ? (
+              GROUP_ORDER.filter((g) => groupedMenu[g]).map((groupName) => {
+                const items = groupedMenu[groupName];
+                const isOpen = openGroups.includes(groupName);
+                const GroupIcon = GROUP_ICONS[groupName];
+
+                return (
+                  <div key={groupName} className="mb-2">
+                    <button
+                      onClick={() => toggleGroup(groupName)}
+                      className="flex items-center justify-between w-full px-4 py-2 text-xs text-slate-400 uppercase"
+                    >
+                      <div className="flex items-center gap-2">
+                        {GroupIcon && <GroupIcon size={14} />}
+                        {!isCollapsed && groupName}
+                      </div>
+
+                      {!isCollapsed &&
+                        (isOpen ? (
+                          <ChevronUp size={16} />
+                        ) : (
+                          <ChevronDown size={16} />
+                        ))}
+                    </button>
+
+                    {isOpen &&
+                      items.map((item: MenuItem) => {
+                        const Icon =
+                          MODULE_ICONS[item.moduleKey] || Icons.Box;
+
+                        return (
+                          <NavItem
+                            key={item.moduleKey}
+                            to={`/${item.moduleKey}s`}
+                            icon={<Icon size={18} />}
+                            label={item.moduleName}
+                            isCollapsed={isCollapsed}
+                          />
+                        );
+                      })}
+                  </div>
+                );
+              })
+            ) : (
+              // ✅ FALLBACK UI (no blank screen)
+              <div className="px-4 py-2 text-xs text-slate-500">
+                Loading menu...
+              </div>
+            )}
+
+            <div className="border-t border-slate-800 my-4 pt-4" />
+
+            {/* ADMIN (INSIDE SCROLL) */}
+            <div className="pb-2 space-y-1">
+              {!isCollapsed && (
+                <p className="text-xs text-slate-500 uppercase px-4 mb-2">
+                  Administration
+                </p>
+              )}
+
+              {ADMIN_MENU.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavItem
+                    key={item.key}
+                    to={item.path}
+                    icon={<Icon size={18} />}
+                    label={item.label}
+                    isCollapsed={isCollapsed}
+                  />
+                );
+              })}
+            </div>
+
+            {/* QUICKBOOKS (INSIDE SCROLL) */}
+            {/* <div className="pb-2 space-y-1">
+              {!isCollapsed && (
+                <p className="text-xs text-slate-500 uppercase px-4 mb-2">
+                  QuickBooks
+                </p>
+              )}
+
+              <button
+                onClick={connectQuickBooks}
+                className="flex items-center gap-3 px-4 py-2 w-full hover:bg-slate-800 rounded-lg text-sm transition-colors text-slate-300"
+              >
+                <LinkIcon size={18} />
+                {!isCollapsed && "Connect QuickBooks"}
+              </button>
+
+              <NavItem
+                to="/quickbook-customers"
+                icon={<Users size={18} />}
+                label="QB Customers"
+                isCollapsed={isCollapsed}
+              />
+
+              <NavItem
+                to="/quickbook-invoices"
+                icon={<FileText size={18} />}
+                label="QB Invoices"
+                isCollapsed={isCollapsed}
+              />
+            </div> */}
+          </>
         )}
       </nav>
 
-      {/* ADMIN (ALWAYS VISIBLE) */}
-      <div className="px-4 pb-2 space-y-1">
-        {!isCollapsed && (
-          <p className="text-xs text-slate-500 uppercase px-4">
-            Administration
-          </p>
-        )}
-
-        {ADMIN_MENU.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavItem
-              key={item.key}
-              to={item.path}
-              icon={<Icon size={18} />}
-              label={item.label}
-              isCollapsed={isCollapsed}
-            />
-          );
-        })}
-      </div>
-
-      {/* QUICKBOOKS (ALWAYS VISIBLE) */}
-      <div className="px-4 pb-2 space-y-1">
-        {!isCollapsed && (
-          <p className="text-xs text-slate-500 uppercase px-4">
-            QuickBooks
-          </p>
-        )}
-
-        <button
-          onClick={connectQuickBooks}
-          className="flex items-center gap-3 px-4 py-2 hover:bg-slate-800"
-        >
-          <LinkIcon size={18} />
-          {!isCollapsed && "Connect QuickBooks"}
-        </button>
-
-        <NavItem
-          to="/quickbook-customers"
-          icon={<Users size={18} />}
-          label="QB Customers"
-          isCollapsed={isCollapsed}
-        />
-
-        <NavItem
-          to="/quickbook-invoices"
-          icon={<FileText size={18} />}
-          label="QB Invoices"
-          isCollapsed={isCollapsed}
-        />
-      </div>
-
-      {/* LOGOUT */}
+      {/* LOGOUT (STATIC BOTTOM) */}
       <button
         onClick={handleLogout}
-        className="flex items-center gap-3 px-4 py-2 mx-4 mb-3 hover:bg-red-600"
+        className="flex items-center gap-3 px-4 py-2 mx-4 my-3 hover:bg-red-600 rounded-lg text-sm transition-colors text-slate-300"
       >
         <LogOut size={18} />
         {!isCollapsed && "Logout"}

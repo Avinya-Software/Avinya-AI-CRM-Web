@@ -17,7 +17,7 @@ import type { RootState } from "../store";
 import QuotationUpsertSheet from "../components/quotation/Quotationupsertsheet ";
 
 import { useDebounce } from "../components/common/CommonHelper";
-import LeadDetailSheet from "../components/leads/LeadDetailsModal";
+import LeadDetailSheet from "../components/leads/Leaddetailsmodal";
 
 const DEFAULT_FILTERS = {
   pageNumber: 1,
@@ -301,6 +301,8 @@ const Leads = () => {
       {/* QUOTATION SHEET */}
       <QuotationUpsertSheet
         open={openQuotationSheet}
+        leadID={leadForQuotation?.leadID}
+        clientID={leadForQuotation?.clientID ?? leadForQuotation?.customerId}
         quotation={null}
         onClose={() => {
           setOpenQuotationSheet(false);

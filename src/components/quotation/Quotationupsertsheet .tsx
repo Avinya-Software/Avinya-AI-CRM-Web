@@ -18,6 +18,8 @@ interface QuotationUpsertSheetProps {
     onClose: () => void;
     quotation: Quotation | null;
     onSuccess?: () => void;
+    leadID?: string | null;
+    clientID?: string;
 }
 
 interface ProductItem {
@@ -38,6 +40,8 @@ const QuotationUpsertSheet = ({
     onClose,
     quotation,
     onSuccess,
+    leadID,
+    clientID,
 }: QuotationUpsertSheetProps) => {
     const { hasPermission } = usePermissions();
 
@@ -146,8 +150,8 @@ const QuotationUpsertSheet = ({
 
             setFormData(prev => ({
                 ...prev,
-                clientID: "",
-                leadID: null,
+                clientID: clientID || "",
+                leadID: leadID || null,
                 quotationDate: new Date().toISOString().substring(0, 10),
                 validTill: validTill.toISOString().substring(0, 10),
                 status: "",
@@ -169,7 +173,7 @@ const QuotationUpsertSheet = ({
         }
 
         setErrors({});
-    }, [quotation, open]);
+    }, [quotation, open, leadID, clientID]);
 
     // ---------- Validation ----------
     const validate = () => {
