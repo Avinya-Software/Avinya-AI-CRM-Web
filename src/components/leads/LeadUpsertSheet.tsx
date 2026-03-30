@@ -211,7 +211,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       Notes: form.notes,
       NextFollowupDate: form.nextFollowupDate ? new Date(form.nextFollowupDate) : null,
       LeadStatusID: form.leadStatusId,
-      LeadSource: form.leadSourceId,
+      LeadSourceID: form.leadSourceId,
       AssignedTo: form.assignedTo || advisorId,
     };
 
