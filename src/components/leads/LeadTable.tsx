@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { MoreVertical, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import type { Lead } from "../../interfaces/lead.interface";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { useDeleteLead } from "../../hooks/lead/useDeleteLead";
@@ -27,7 +28,7 @@ const leadSourceStyles: Record<string, string> = {
   "Other Sources": "bg-slate-100 text-slate-700 border-slate-200",
 };
 
-const DROPDOWN_HEIGHT = 350;
+// Constants removed for dynamic calculation
 const DROPDOWN_WIDTH = 230;
 
 interface LeadTableProps {
@@ -66,10 +67,7 @@ const LeadTable = ({
   const [confirmDelete, setConfirmDelete] = useState<Lead | null>(null);
   const navigate = useNavigate();
 
-  const [style, setStyle] = useState<{ top: number; left: number }>({
-    top: 0,
-    left: 0,
-  });
+  const [style, setStyle] = useState<React.CSSProperties>({});
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   useOutsideClick(dropdownRef, () => setOpenLead(null));
@@ -82,25 +80,46 @@ const LeadTable = ({
   ) => {
     e.stopPropagation();
 
-    // 🔐 If no action permissions, don't open dropdown
-    if (
-      !canEditLead &&
-      !canDeleteLead &&
-      !canAddFollowUp &&
-      !canAddQuotation
-    ) return;
+    if (!canEditLead && !canDeleteLead && !canAddFollowUp && !canAddQuotation) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const headerHeight = 64; // UserHeader h-16
 
+    const spaceAbove = rect.top;
     const spaceBelow = viewportHeight - rect.bottom;
-    const openUpwards = spaceBelow < DROPDOWN_HEIGHT;
+    
+    // Determine direction
+    const openUpwards = spaceBelow < 250 && spaceAbove > spaceBelow;
 
-    setStyle({
-      top: openUpwards ? rect.top - DROPDOWN_HEIGHT - 6 : rect.bottom + 6,
-      left: rect.right - DROPDOWN_WIDTH,
-    });
+    const newStyle: React.CSSProperties = {
+      position: "fixed",
+      zIndex: 9999,
+      width: `${DROPDOWN_WIDTH}px`,
+    };
 
+    if (openUpwards) {
+      newStyle.bottom = viewportHeight - rect.top + 6;
+      newStyle.maxHeight = Math.max(100, rect.top - headerHeight - 12);
+    } else {
+      newStyle.top = rect.bottom + 6;
+      newStyle.maxHeight = Math.max(100, viewportHeight - rect.bottom - 12);
+    }
+
+    // Horizontal positioning
+    let left = rect.right - DROPDOWN_WIDTH;
+    if (viewportWidth < 640) {
+      left = Math.max(8, Math.min(viewportWidth - DROPDOWN_WIDTH - 8, rect.left));
+    } else {
+      if (left < 8) left = 8;
+      if (left + DROPDOWN_WIDTH > viewportWidth - 8) {
+        left = viewportWidth - DROPDOWN_WIDTH - 8;
+      }
+    }
+    newStyle.left = left;
+
+    setStyle(newStyle);
     setOpenLead(lead);
   };
 
@@ -137,6 +156,7 @@ const LeadTable = ({
     }
     onViewFollowUps?.(lead);
   };
+  
 
   return (
     <div className="relative overflow-x-auto">
@@ -220,12 +240,12 @@ const LeadTable = ({
       </table>
 
       {/* ACTION DROPDOWN */}
-      {openLead && (
+      {openLead && createPortal(
         <div
           ref={dropdownRef}
           onClick={(e) => e.stopPropagation()}
-          className="fixed z-50 w-[230px] bg-white border rounded-lg shadow-lg overflow-hidden"
-          style={{ top: style.top, left: style.left }}
+          className="bg-white border rounded-lg shadow-lg overflow-y-auto"
+          style={style}
         >
           {/* Edit */}
           {canEditLead &&
@@ -288,7 +308,8 @@ const LeadTable = ({
               onClick={() => setConfirmDelete(openLead)}
             />
           )}
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* CONFIRM DELETE */}

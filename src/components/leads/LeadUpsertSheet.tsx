@@ -346,23 +346,24 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             disabled={isReadOnly}
           />
 
-<Select
-  label="Lead Status"
-  required
-  value={form.leadStatusId}
-  options={statuses ?? []} // ✅ already normalized
-  error={errors.leadStatusId}
-  onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
-  disabled={isReadOnly}
-/>
+          <Select
+            label="Lead Status"
+            required
+            value={form.leadStatusId}
+            options={statuses ?? []} 
+            error={errors.leadStatusId}
+            onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
+            disabled={isReadOnly}
+          />
 
-<Select
-  label="Lead Source"
-  value={form.leadSourceId}
-  options={sources ?? []} // ✅ already normalized
-  onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
-  disabled={isReadOnly}
-/>
+          <Select
+            label="Lead Source"
+            required
+            value={form.leadSourceId}
+            options={sources ?? []} 
+            onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
+            disabled={isReadOnly}
+          />
 
           {!isEdit && (
             <Input
