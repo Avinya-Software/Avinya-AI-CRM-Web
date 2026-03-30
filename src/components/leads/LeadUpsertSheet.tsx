@@ -102,7 +102,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       links: lead.links ?? "",
       nextFollowupDate: lead.nextFollowupDate ? lead.nextFollowupDate.slice(0, 16) : "",
       leadSourceId: lead.leadSourceID ?? "",
-      leadStatusId: lead.status ?? "",
+      leadStatusId: lead.leadStatusID ?? lead.status ?? "",
       notes: lead.notes ?? "",
       cityId: lead.cityID?.toString() ?? "",
     });
@@ -210,7 +210,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       Links: form.links,
       Notes: form.notes,
       NextFollowupDate: form.nextFollowupDate ? new Date(form.nextFollowupDate) : null,
-      Status: form.leadStatusId,
+      LeadStatusID: form.leadStatusId,
       LeadSource: form.leadSourceId,
       AssignedTo: form.assignedTo || advisorId,
     };
