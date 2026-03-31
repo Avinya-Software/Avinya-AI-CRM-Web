@@ -192,6 +192,9 @@ const OrderUpsertSheet = ({
         const newErrors: Record<string, string> = {};
         if (!formData.clientID) newErrors.clientID = "Company is required";
         if (!formData.expectedDeliveryDate) newErrors.expectedDeliveryDate = "Expected delivery date is required";
+        if (!formData.isUseBillingAddress && !formData.shippingAddress.trim()) {
+            newErrors.shippingAddress = "Shipping address is required";
+        }
         if (productItems.some(i => !i.productID)) newErrors.items = "All product rows must have a product selected";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -393,15 +396,21 @@ const OrderUpsertSheet = ({
                     {!formData.isUseBillingAddress && (
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1.5">Shipping Address</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                    Shipping Address <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.shippingAddress}
                                     onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
                                     placeholder="Enter shipping address"
                                     disabled={isFormReadOnly}
-                                    className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-50 disabled:text-slate-500"
+                                    className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.shippingAddress
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-slate-300 focus:ring-blue-500"
+                                        } disabled:bg-slate-50 disabled:text-slate-500`}
                                 />
+                                {errors.shippingAddress && <p className="text-red-500 text-xs mt-1">{errors.shippingAddress}</p>}
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
