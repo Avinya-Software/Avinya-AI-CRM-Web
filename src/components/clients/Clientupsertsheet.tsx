@@ -8,6 +8,7 @@ import type { Client } from "../../interfaces/client.interface";
 import { useStates } from "../../hooks/state/useStates";
 import { useCities } from "../../hooks/city/useCities";
 import { usePermissions } from "../../context/PermissionContext";
+import { Select } from "@radix-ui/react-select";
 
 interface Props {
     open: boolean;

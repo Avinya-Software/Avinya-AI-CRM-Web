@@ -1,5 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Bot, Send, ExternalLink, X } from "lucide-react";
+import { Bot, Send, ExternalLink, X, TrendingUp } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Sheet,
@@ -101,7 +103,11 @@ export const ChatPanel = () => {
                     : "bg-white text-slate-800 rounded-tl-none border border-slate-100"
                 )}
               >
-                {msg.content}
+                <div className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-headings:mb-2 prose-headings:mt-0 prose-ul:my-2">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
               </div>
 
               {msg.data && msg.data.length > 0 && (msg.data.length > 1 || Object.keys(msg.data[0]).length > 1) && (
@@ -145,10 +151,76 @@ export const ChatPanel = () => {
   );
 };
 
+const formatLabel = (label: string) => {
+  return label
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (str) => str.toUpperCase())
+    .trim();
+};
+
+const formatValue = (key: string, value: any) => {
+  if (value === null || value === undefined) return "-";
+
+  const lowerKey = key.toLowerCase();
+
+  // Currency
+  if (
+    typeof value === "number" || 
+    (!isNaN(Number(value)) && typeof value === "string" && value.length > 0 && !lowerKey.includes("id") && !lowerKey.includes("no"))
+  ) {
+    const num = Number(value);
+    if (
+      lowerKey.includes("revenue") || 
+      lowerKey.includes("amount") || 
+      lowerKey.includes("price") || 
+      lowerKey.includes("total") ||
+      lowerKey.includes("charge")
+    ) {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
+    }
+    return num.toLocaleString();
+  }
+
+  // Date
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    try {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      }
+    } catch (e) { }
+  }
+
+  return String(value);
+};
+
 const DataTable = ({ data }: { data: any[] }) => {
   if (!data || data.length === 0) return null;
 
+  const isSingleRow = data.length === 1;
   const columns = Object.keys(data[0]);
+  const hasManyColumns = columns.length > 3;
+
+  // Single row dashboard view
+  if (isSingleRow && hasManyColumns) {
+    return (
+      <div className="p-4 grid grid-cols-2 gap-3 bg-slate-50/50">
+        {columns.map((col) => (
+          <div key={col} className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider font-sans">
+              {formatLabel(col)}
+            </span>
+            <span className={cn(
+              "text-sm font-semibold text-slate-900 truncate",
+              col.toLowerCase().includes("revenue") || col.toLowerCase().includes("total") ? "text-emerald-600" : ""
+            )}>
+              {formatValue(col, data[0][col])}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto max-h-[400px]">
@@ -157,7 +229,7 @@ const DataTable = ({ data }: { data: any[] }) => {
           <TableRow className="bg-slate-50 hover:bg-slate-50">
             {columns.map((col) => (
               <TableHead key={col} className="text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap py-2 px-3 border-r last:border-r-0">
-                {col.replace(/([A-Z])/g, ' $1').trim()}
+                {formatLabel(col)}
               </TableHead>
             ))}
           </TableRow>
@@ -167,7 +239,7 @@ const DataTable = ({ data }: { data: any[] }) => {
             <TableRow key={i} className="hover:bg-slate-50/50">
               {columns.map((col) => (
                 <TableCell key={col} className="text-[11px] py-1.5 px-3 whitespace-nowrap border-r last:border-r-0 border-slate-100">
-                  {row[col] === null || row[col] === undefined ? "-" : String(row[col])}
+                  {formatValue(col, row[col])}
                 </TableCell>
               ))}
             </TableRow>

@@ -50,7 +50,7 @@ const QuotationUpsertSheet = ({
     const { data: quatationStatusData = [] } = useQuotationDropdown();
     const isEdit = !!quotation;
 
-    // 🔐 Block unauthorized access
+    //  Block unauthorized access
     if (open && isEdit && !canEditQuotation) return null;
     if (open && !isEdit && !canAddQuotation) return null;
 

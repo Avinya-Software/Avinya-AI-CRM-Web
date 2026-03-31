@@ -20,6 +20,11 @@ interface Props {
   advisorId: string | null;
 }
 
+const CLIENT_TYPES = [
+  { value: 1, label: "Company" },
+  { value: 2, label: "Individual" },
+];
+
 const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
   const { mutate, isPending } = useUpsertLead();
   const { data: statuses } = useLeadStatuses();
@@ -75,6 +80,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     leadSourceId: "",
     notes: "",
     cityId: "",
+    clientType: 1,
   };
 
   const [form, setForm] = useState(initialForm);
@@ -105,6 +111,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       leadStatusId: lead.leadStatusID ?? lead.status ?? "",
       notes: lead.notes ?? "",
       cityId: lead.cityID?.toString() ?? "",
+      clientType: lead.clientType ?? 1,
     });
     setSelectedCustomerId(lead.clientID ?? "");
   }, [lead, open]);
@@ -213,6 +220,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       LeadStatusID: form.leadStatusId,
       LeadSourceID: form.leadSourceId,
       AssignedTo: form.assignedTo || advisorId,
+      ClientType: form.clientType,
     };
 
     mutate(payload, { onSuccess: onClose });
@@ -266,6 +274,21 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             disabled={isReadOnly || !!form.customerId}
           />
 
+          {/* CLIENT TYPE */}
+          <div>
+            <label className="text-sm font-medium">Customer Type</label>
+            <select
+              className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
+              value={form.clientType}
+              onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
+              disabled={isReadOnly}
+            >
+              {CLIENT_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+
           <Input
             label="Mobile"
             required
@@ -288,6 +311,8 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             onChange={(v: any) => setForm({ ...form, address: v })}
             disabled={isReadOnly || !!form.customerId}
           />
+
+          
 
           {/* EMPLOYEE */}
           <div>
@@ -361,6 +386,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             required
             value={form.leadSourceId}
             options={sources ?? []} 
+            error={errors.leadStatusId}
             onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
             disabled={isReadOnly}
           />

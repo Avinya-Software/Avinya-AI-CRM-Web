@@ -22,6 +22,7 @@ export const useCreateFollowUp = () => {
     mutationFn: (data: CreateFollowUpDto) => createFollowUp(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
       toast.success("Follow-up created successfully");
     },
     onError: (error: any) => {
@@ -46,6 +47,7 @@ export const useUpdateFollowUp = () => {
     }) => updateFollowUp(followUpId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
       toast.success("Follow-up updated successfully");
     },
     onError: (error: any) => {
@@ -88,6 +90,7 @@ export const useDeleteFollowUp = () => {
     mutationFn: (followUpId: string) => deleteFollowUp(followUpId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
       toast.success("Follow-up deleted successfully");
     },
     onError: (error: any) => {
