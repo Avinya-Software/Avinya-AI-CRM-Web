@@ -23,6 +23,7 @@ import AdminAdvisorsByStatusPage from "./pages/AdminAdvisorsByStatusPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import Unauthorized from "./pages/Unauthorized";
 import Users from "./pages/Users";
+import AIAssistant from "./pages/AIAssistant";
 
 /* -------- RBAC -------- */
 import { ProtectedRoute as RBACProtectedRoute } from "./components/ProtectedRoute";
@@ -242,6 +243,7 @@ function App() {
               element={<QuickBookInvoices />}
             />
             <Route path="/quickbooks-success" element={<QuickBooksSuccess />} />
+            <Route path="/ai-assistant" element={<AIAssistant />} />
 
             {/* -------- ADMIN ROUTES -------- */}
             <Route path="/admin" element={<AdminDashboard />} />

@@ -223,7 +223,7 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <SearchableComboBox
-                                label="Client Name"
+                                label="Customer Name"
                                 items={customers.map((c) => ({
                                     value: c.clientID,
                                     label: c.companyName || c.contactPerson || c.clientID,

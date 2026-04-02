@@ -60,7 +60,7 @@ const Dashboard = () => {
       {/* KPI ROW */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <KpiCard
-          title="Clients"
+          title="Customers"
           value={counts.clients}
           icon={<Users className="text-blue-500" />}
           subInfo={[
@@ -109,7 +109,7 @@ const Dashboard = () => {
             <thead>
               <tr className="text-slate-400 border-b">
                 <th className="text-left py-2 font-medium">Order No</th>
-                <th className="text-left py-2 font-medium">Client</th>
+                <th className="text-left py-2 font-medium">Customer</th>
                 <th className="text-right py-2 font-medium">Total</th>
               </tr>
             </thead>
@@ -131,7 +131,7 @@ const Dashboard = () => {
             <thead>
               <tr className="text-slate-400 border-b">
                 <th className="text-left py-2 font-medium">Quo No</th>
-                <th className="text-left py-2 font-medium">Client</th>
+                <th className="text-left py-2 font-medium">Customer</th>
                 <th className="text-right py-2 font-medium">Total</th>
               </tr>
             </thead>

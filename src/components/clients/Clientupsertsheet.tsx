@@ -8,6 +8,7 @@ import type { Client } from "../../interfaces/client.interface";
 import { useStates } from "../../hooks/state/useStates";
 import { useCities } from "../../hooks/city/useCities";
 import { usePermissions } from "../../context/PermissionContext";
+import { Select } from "@radix-ui/react-select";
 
 interface Props {
     open: boolean;
@@ -167,7 +168,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                 {/* HEADER */}
                 <div className="px-6 py-4 border-b flex justify-between items-center">
                     <h2 className="font-semibold text-lg">
-                        {client ? "Edit Client" : "Add Client"}
+                        {client ? "Edit Customer" : "Add Customer"}
                     </h2>
                     <button onClick={onClose} disabled={saving}>
                         <X size={20} />
@@ -268,7 +269,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
 
                     {/* CLIENT TYPE */}
                     <div>
-                        <label className="text-sm font-medium">Client Type</label>
+                        <label className="text-sm font-medium">Customer Type</label>
                         <select
                             className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
                             value={form.clientType}
@@ -282,24 +283,26 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                     </div>
 
                     {/* STATUS */}
-                    <div className="flex items-center gap-3">
-                        <label className="text-sm font-medium">Status</label>
-                        <button
-                            type="button"
-                            onClick={() => !isReadOnly && setForm({ ...form, status: !form.status })}
-                            disabled={isReadOnly}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${form.status ? "bg-blue-600" : "bg-gray-300"
-                                }`}
-                        >
-                            <span
-                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? "translate-x-6" : "translate-x-1"
+                    {isEdit && (
+                        <div className="flex items-center gap-3">
+                            <label className="text-sm font-medium">Status</label>
+                            <button
+                                type="button"
+                                onClick={() => !isReadOnly && setForm({ ...form, status: !form.status })}
+                                disabled={isReadOnly}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${form.status ? "bg-blue-900" : "bg-gray-300"
                                     }`}
-                            />
-                        </button>
-                        <span className="text-sm text-gray-600">
-                            {form.status ? "Active" : "Inactive"}
-                        </span>
-                    </div>
+                            >
+                                <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? "translate-x-6" : "translate-x-1"
+                                        }`}
+                                />
+                            </button>
+                            <span className="text-sm text-gray-600">
+                                {form.status ? "Active" : "Inactive"}
+                            </span>
+                        </div>
+                    )}
 
                     <Textarea
                         label="Notes"
@@ -323,7 +326,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                     {!isReadOnly && (
                         <button
                             disabled={saving}
-                            className="flex-1 bg-blue-600 text-white rounded-lg py-2 flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="flex-1 bg-blue-900 text-white rounded-lg py-2 flex items-center justify-center gap-2 hover:bg-blue-800 disabled:opacity-50"
                             onClick={handleSave}
                         >
                             {saving && <Spinner />}

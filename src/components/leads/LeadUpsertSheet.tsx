@@ -20,6 +20,11 @@ interface Props {
   advisorId: string | null;
 }
 
+const CLIENT_TYPES = [
+  { value: 1, label: "Company" },
+  { value: 2, label: "Individual" },
+];
+
 const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
   const { mutate, isPending } = useUpsertLead();
   const { data: statuses } = useLeadStatuses();
@@ -75,6 +80,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     leadSourceId: "",
     notes: "",
     cityId: "",
+    clientType: 1,
   };
 
   const [form, setForm] = useState(initialForm);
@@ -102,9 +108,10 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       links: lead.links ?? "",
       nextFollowupDate: lead.nextFollowupDate ? lead.nextFollowupDate.slice(0, 16) : "",
       leadSourceId: lead.leadSourceID ?? "",
-      leadStatusId: lead.status ?? "",
+      leadStatusId: lead.leadStatusID ?? lead.status ?? "",
       notes: lead.notes ?? "",
       cityId: lead.cityID?.toString() ?? "",
+      clientType: lead.clientType ?? 1,
     });
     setSelectedCustomerId(lead.clientID ?? "");
   }, [lead, open]);
@@ -210,9 +217,10 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       Links: form.links,
       Notes: form.notes,
       NextFollowupDate: form.nextFollowupDate ? new Date(form.nextFollowupDate) : null,
-      Status: form.leadStatusId,
-      LeadSource: form.leadSourceId,
+      LeadStatusID: form.leadStatusId,
+      LeadSourceID: form.leadSourceId,
       AssignedTo: form.assignedTo || advisorId,
+      ClientType: form.clientType,
     };
 
     mutate(payload, { onSuccess: onClose });
@@ -266,6 +274,21 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             disabled={isReadOnly || !!form.customerId}
           />
 
+          {/* CLIENT TYPE */}
+          <div>
+            <label className="text-sm font-medium">Customer Type</label>
+            <select
+              className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
+              value={form.clientType}
+              onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
+              disabled={isReadOnly}
+            >
+              {CLIENT_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+
           <Input
             label="Mobile"
             required
@@ -288,6 +311,8 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             onChange={(v: any) => setForm({ ...form, address: v })}
             disabled={isReadOnly || !!form.customerId}
           />
+
+          
 
           {/* EMPLOYEE */}
           <div>
@@ -346,23 +371,25 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             disabled={isReadOnly}
           />
 
-<Select
-  label="Lead Status"
-  required
-  value={form.leadStatusId}
-  options={statuses ?? []} // ✅ already normalized
-  error={errors.leadStatusId}
-  onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
-  disabled={isReadOnly}
-/>
+          <Select
+            label="Lead Status"
+            required
+            value={form.leadStatusId}
+            options={statuses ?? []} 
+            error={errors.leadStatusId}
+            onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
+            disabled={isReadOnly}
+          />
 
-<Select
-  label="Lead Source"
-  value={form.leadSourceId}
-  options={sources ?? []} // ✅ already normalized
-  onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
-  disabled={isReadOnly}
-/>
+          <Select
+            label="Lead Source"
+            required
+            value={form.leadSourceId}
+            options={sources ?? []} 
+            error={errors.leadStatusId}
+            onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
+            disabled={isReadOnly}
+          />
 
           {!isEdit && (
             <Input
@@ -406,7 +433,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
           {!isReadOnly && (
             <button
               disabled={isPending}
-              className="flex-1 bg-blue-600 text-white rounded disabled:opacity-50 flex items-center justify-center"
+              className="flex-1 bg-blue-900 text-white rounded hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center font-medium py-2"
               onClick={handleSave}
             >
               {isPending ? <Spinner /> : isEdit ? "Update" : "Save"}

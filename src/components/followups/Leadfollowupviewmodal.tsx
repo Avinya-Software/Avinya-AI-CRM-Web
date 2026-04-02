@@ -97,7 +97,7 @@ const LeadFollowUpViewModal = ({ followUp, onClose }: LeadFollowUpViewModalProps
                             </p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-slate-700">Client Name :</p>
+                            <p className="text-sm font-medium text-slate-700">Customer Name :</p>
                             <p className="text-sm text-slate-600 mt-0.5">
                                 {followUp.clientName || "-"}
                             </p>

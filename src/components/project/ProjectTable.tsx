@@ -120,7 +120,7 @@ const ProjectTable = ({
         <thead className="bg-slate-100 sticky top-0 z-10">
           <tr>
             <Th>Project Name</Th>
-            <Th>Client</Th>
+            <Th>Customer</Th>
             <Th>Progress</Th>
             <Th>Status</Th>
             <Th>Priority</Th>

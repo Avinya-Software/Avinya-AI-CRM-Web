@@ -152,7 +152,7 @@ const QuotationFilterSheet = ({
                     </button>
                     <button
                         onClick={handleApply}
-                        className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                        className="flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition text-sm font-medium"
                     >
                         Apply Filters
                     </button>

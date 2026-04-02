@@ -192,6 +192,9 @@ const OrderUpsertSheet = ({
         const newErrors: Record<string, string> = {};
         if (!formData.clientID) newErrors.clientID = "Company is required";
         if (!formData.expectedDeliveryDate) newErrors.expectedDeliveryDate = "Expected delivery date is required";
+        if (!formData.isUseBillingAddress && !formData.shippingAddress.trim()) {
+            newErrors.shippingAddress = "Shipping address is required";
+        }
         if (productItems.some(i => !i.productID)) newErrors.items = "All product rows must have a product selected";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -383,7 +386,7 @@ const OrderUpsertSheet = ({
                             type="button"
                             disabled={isFormReadOnly}
                             onClick={() => setFormData({ ...formData, isUseBillingAddress: !formData.isUseBillingAddress })}
-                            className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.isUseBillingAddress ? "bg-blue-600" : "bg-slate-300"}`}
+                            className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.isUseBillingAddress ? "bg-blue-900" : "bg-slate-300"}`}
                         >
                             <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition transform shadow-sm ${formData.isUseBillingAddress ? "translate-x-6" : "translate-x-0"}`} />
                         </button>
@@ -393,15 +396,21 @@ const OrderUpsertSheet = ({
                     {!formData.isUseBillingAddress && (
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1.5">Shipping Address</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                    Shipping Address <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.shippingAddress}
                                     onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
                                     placeholder="Enter shipping address"
                                     disabled={isFormReadOnly}
-                                    className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-50 disabled:text-slate-500"
+                                    className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.shippingAddress
+                                        ? "border-red-500 focus:ring-red-500"
+                                        : "border-slate-300 focus:ring-blue-500"
+                                        } disabled:bg-slate-50 disabled:text-slate-500`}
                                 />
+                                {errors.shippingAddress && <p className="text-red-500 text-xs mt-1">{errors.shippingAddress}</p>}
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -446,7 +455,7 @@ const OrderUpsertSheet = ({
                                 <button
                                     type="button"
                                     onClick={addProductItem}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-900 text-white rounded-lg text-xs font-medium hover:bg-blue-800 transition"
                                 >
                                     <Plus size={14} /> Add Product
                                 </button>
@@ -621,7 +630,7 @@ const OrderUpsertSheet = ({
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
+                                className="flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
                             >
                                 {isLoading ? (
                                     <><Loader2 size={16} className="animate-spin" /> Saving...</>

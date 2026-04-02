@@ -9,7 +9,7 @@ import { Project } from "../interfaces/project.interface";
 import ProjectTable from "../components/project/ProjectTable";
 import ProjectUpsertSheet from "../components/project/ProjectUpsertSheet";
 import ProjectViewSheet from "../components/project/ProjectViewSheet";
-import { usePermissions } from "../context/PermissionContext"; // ✅ ADDED
+import { usePermissions } from "../context/PermissionContext"; //  ADDED
 import { useDebounce } from "../components/common/CommonHelper";
 
 const STATUS_LABEL: Record<number, string> = {
@@ -177,6 +177,7 @@ const Projects = () => {
     useState<Project | null>(null);
   const [viewProjectId, setViewProjectId] =
     useState<string | null>(null);
+  const [viewProjectData, setViewProjectData] = useState<Project | null>(null);
 
   useEffect(() => {
     if (!canView) {
@@ -215,6 +216,7 @@ const Projects = () => {
 
   const handleView = (project: Project) => {
     if (!canView) return;
+    setViewProjectData(project);
     setViewProjectId(project.projectID);
   };
 
@@ -405,9 +407,14 @@ const Projects = () => {
       {viewProjectId && (
         <ProjectViewSheet
           projectId={viewProjectId}
-          onClose={() => setViewProjectId(null)}
+          initialData={viewProjectData}
+          onClose={() => {
+            setViewProjectId(null);
+            setViewProjectData(null);
+          }}
           onEdit={(p) => {
             setViewProjectId(null);
+            setViewProjectData(null);
             handleEdit(p);
           }}
         />

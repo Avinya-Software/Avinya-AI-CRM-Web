@@ -1,24 +1,39 @@
 // src/layout/AppLayout.tsx
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import { ChatPanel } from "../components/common/ChatPanel";
+import { UserHeader } from "../components/common/UserHeader";
+import { ChatProvider } from "../context/ChatContext";
+import { cn } from "../lib/utils";
 
 const AppLayout = () => {
+  const location = useLocation();
+  const isAIPage = location.pathname === "/ai-assistant";
+
   return (
-    <div className="flex h-screen bg-slate-100">
-      {/* Sidebar */}
-      <Sidebar />
+    <ChatProvider>
+      <div className="flex h-screen bg-slate-100 overflow-hidden">
+        {/* Sidebar */}
+        <Sidebar />
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        {/* Top Bar */}
-        
+        {/* Workspace Root */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Top Navigation / Claims Header */}
+          <UserHeader />
 
-        {/* Page Content */}
-        <div className="p-6">
-          <Outlet />
+          {/* Main Workspace (Outlet + Side Panel) */}
+          <div className="flex-1 flex overflow-hidden relative">
+            {/* Main Scrollable Content */}
+            <main className={cn("flex-1 overflow-y-auto relative", !isAIPage && "p-6")}>
+              <Outlet />
+            </main>
+
+            {/* AI Chat Panel (Copilot-style) */}
+            <ChatPanel />
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </ChatProvider>
   );
 };
 

@@ -28,7 +28,7 @@ const STATUS_STYLE: Record<number, string> = {
 const DESIGN_STATUS_LABEL: Record<number, string> = {
   0: "Pending",
   1: "In Progress",
-  2: "Approved by Client",
+  2: "Approved by Customer",
   3: "Rejected",
 };
 
@@ -99,7 +99,7 @@ const OrderViewSheet = ({ open, onClose, order, onEdit }: Props) => {
                 {/* Order Details Section */}
                 <div className="border rounded-lg p-4">
                   <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                    <Field label="Client" value={order.clientName} />
+                    <Field label="Customer" value={order.clientName} />
                     <Field label="Company" value={order.companyName} />
                     <Field label="GST Number" value={order.gstNo ?? "-"} />
                     <Field label="Quotation No" value={order.quotationNo ?? "N/A"} />

@@ -291,7 +291,7 @@ const LeadFollowUpCreateSheet = ({
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
             >
               {isPending ? (
                 <><Loader2 size={16} className="animate-spin" />Saving...</>
