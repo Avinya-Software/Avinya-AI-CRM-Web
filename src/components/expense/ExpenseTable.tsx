@@ -100,7 +100,7 @@ const ExpenseTable = ({ data = [], loading = false, onEdit }: Props) => {
                             </tr>
                         ) : (
                             data.map((exp) => {
-                                const statusKey = exp.status ?? "pending";
+                                const statusKey = exp.status ? exp.status.toLowerCase() : "pending";
 
                                 return (
                                     <tr
@@ -115,7 +115,7 @@ const ExpenseTable = ({ data = [], loading = false, onEdit }: Props) => {
 
                                         <Td>
                                             <span className="font-medium text-slate-800">
-                                                {exp.expenseType || "-"}
+                                                {exp.expenseCategory?.categoryName || "-"}
                                             </span>
                                         </Td>
 
@@ -132,9 +132,9 @@ const ExpenseTable = ({ data = [], loading = false, onEdit }: Props) => {
                                         </Td>
 
                                         <Td>
-                                            {exp.receiptUrl ? (
+                                            {exp.receiptPath ? (
                                                 <a
-                                                    href={exp.receiptUrl}
+                                                    href={exp.receiptPath.startsWith('http') ? exp.receiptPath : `${import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "")}${exp.receiptPath}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-blue-600 hover:underline text-xs"
@@ -225,7 +225,7 @@ const ExpenseTable = ({ data = [], loading = false, onEdit }: Props) => {
                         <p className="text-sm text-gray-600 mb-1">
                             Are you sure you want to delete this{" "}
                             <span className="font-semibold text-slate-800">
-                                {confirmDelete.expenseType}
+                                {confirmDelete.expenseCategory?.categoryName}
                             </span>{" "}
                             expense of{" "}
                             <span className="font-semibold text-slate-800">

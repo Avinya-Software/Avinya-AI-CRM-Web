@@ -189,6 +189,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     if (!mobileRegex.test(form.mobile)) e.mobile = "Invalid mobile number";
     if (!form.leadStatusId) e.leadStatusId = "Status required";
     if (!form.leadSourceId) e.leadSourceId = "Source required";
+    if (!form.nextFollowupDate) e.nextFollowupDate = "Next Followup Date required";
 
     setErrors(e);
 
@@ -312,7 +313,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             disabled={isReadOnly}
           />
 
-          
+
 
           {/* EMPLOYEE */}
           <div>
@@ -375,7 +376,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             label="Lead Status"
             required
             value={form.leadStatusId}
-            options={statuses ?? []} 
+            options={statuses ?? []}
             error={errors.leadStatusId}
             onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
             disabled={isReadOnly}
@@ -385,7 +386,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             label="Lead Source"
             required
             value={form.leadSourceId}
-            options={sources ?? []} 
+            options={sources ?? []}
             error={errors.leadStatusId}
             onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
             disabled={isReadOnly}
@@ -412,8 +413,10 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
           {!isEdit && (
             <Input
               label="Next Follow-up Date"
+              required
               type="datetime-local"
               value={form.nextFollowupDate}
+              error={errors.nextFollowupDate}
               onChange={(v: any) => setForm({ ...form, nextFollowupDate: v })}
               disabled={isReadOnly}
             />

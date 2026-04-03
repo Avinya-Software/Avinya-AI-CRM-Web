@@ -183,7 +183,6 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
         "Expected Delivery",
         "Total Amount",
         "Status",
-        "Design Status",
         "Actions",
     ];
 
@@ -239,12 +238,6 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
                                 <td className="px-4 py-3">
                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[order.status ?? 0]}`}>
                                         {order.statusName}
-                                    </span>
-                                </td>
-
-                                <td className="px-4 py-3">
-                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${DESIGN_STATUS_STYLE[order.designStatus ?? 0]}`}>
-                                        {order.designStatusName}
                                     </span>
                                 </td>
 

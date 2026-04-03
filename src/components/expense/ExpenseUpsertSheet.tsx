@@ -1,16 +1,13 @@
 // src/components/expense/ExpenseUpsertSheet.tsx
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { X, Upload, FileText, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
-
 import Spinner from "../common/Spinner";
-
 import { usePermissions } from "../../context/PermissionContext";
 import { Expense } from "../../interfaces/expense.interface";
 import { useUpsertExpense } from "../../hooks/expense/useUpsertExpense";
 
-// Expense type options (adjust to match your backend enums/dropdown)
 const EXPENSE_TYPES = [
     "Travel",
     "Food & Beverage",
@@ -22,6 +19,9 @@ const EXPENSE_TYPES = [
     "Other",
 ];
 
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
+const MAX_SIZE_MB = 5;
+
 interface Props {
     open: boolean;
     onClose: () => void;
@@ -31,14 +31,15 @@ interface Props {
 
 const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
     const { mutateAsync, isPending } = useUpsertExpense();
-
     const { hasPermission } = usePermissions();
+
     const isEdit = !!expense;
     const canCreate = hasPermission("expense", "add");
     const canUpdate = hasPermission("expense", "edit");
     const hasAccess = isEdit ? canUpdate : canCreate;
 
     const today = new Date().toISOString().split("T")[0];
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const initialForm = {
         expenseID: null as string | null,
@@ -46,13 +47,15 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
         expenseType: "",
         amount: "" as number | string,
         description: "",
-        receiptUrl: "",
         status: "pending",
         remarks: "",
     };
 
     const [form, setForm] = useState(initialForm);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [receiptFile, setReceiptFile] = useState<File | null>(null);
+    const [existingReceiptUrl, setExistingReceiptUrl] = useState<string>("");
+    const [dragOver, setDragOver] = useState(false);
 
     // Close if no permission
     useEffect(() => {
@@ -71,30 +74,34 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                 expenseDate: expense.expenseDate
                     ? expense.expenseDate.split("T")[0]
                     : today,
-                expenseType: expense.expenseType ?? "",
+                expenseType: expense.expenseCategory?.categoryName ?? "",
                 amount: expense.amount ?? "",
                 description: expense.description ?? "",
-                receiptUrl: expense.receiptUrl ?? "",
-                status: expense.status ?? "pending",
+                status: expense.status ? expense.status.toLowerCase() : "pending",
                 remarks: expense.remarks ?? "",
             });
+            
+            const baseUrl = import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "");
+            const fileUrl = expense.receiptPath 
+                ? (expense.receiptPath.startsWith('http') ? expense.receiptPath : `${baseUrl}${expense.receiptPath}`)
+                : "";
+            setExistingReceiptUrl(fileUrl);
         } else {
             setForm(initialForm);
+            setExistingReceiptUrl("");
         }
 
+        setReceiptFile(null);
         setErrors({});
     }, [open, expense]);
 
     const validate = () => {
         const e: Record<string, string> = {};
-
         if (!form.expenseDate) e.expenseDate = "Date is required";
         if (!form.expenseType) e.expenseType = "Expense type is required";
         if (form.amount === "" || Number(form.amount) <= 0)
             e.amount = "Amount is required and must be greater than 0";
-
         setErrors(e);
-
         if (Object.keys(e).length) {
             toast.error("Please fix validation errors");
             return false;
@@ -102,11 +109,36 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
         return true;
     };
 
-    const handleSave = async () => {
-        if (!hasAccess) {
-            toast.error("Permission denied");
+    const handleFileChange = (file: File | null) => {
+        if (!file) return;
+
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            toast.error("Only JPG, PNG, or PDF files are allowed");
             return;
         }
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+            toast.error(`File size must be under ${MAX_SIZE_MB}MB`);
+            return;
+        }
+        setReceiptFile(file);
+        setExistingReceiptUrl("");
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(false);
+        const file = e.dataTransfer.files?.[0] ?? null;
+        handleFileChange(file);
+    };
+
+    const handleRemoveFile = () => {
+        setReceiptFile(null);
+        setExistingReceiptUrl("");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    const handleSave = async () => {
+        if (!hasAccess) { toast.error("Permission denied"); return; }
         if (!validate()) return;
 
         const payload = {
@@ -114,19 +146,22 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
             expenseDate: form.expenseDate,
             expenseType: form.expenseType,
             amount: Number(form.amount),
-            description: form.description.trim() || null,
-            receiptUrl: form.receiptUrl.trim() || null,
+            description: form.description.trim(),
             status: form.status,
-            remarks: form.remarks.trim() || null,
+            remarks: form.remarks.trim(),
+            receiptFile: receiptFile || null,
+            receiptUrl: !receiptFile ? existingReceiptUrl : null,
         };
 
-        await mutateAsync(payload);
+        await mutateAsync(payload as any);
         toast.success(`Expense ${expense ? "updated" : "added"} successfully`);
         onClose();
         onSuccess();
     };
 
     if (!open || !hasAccess) return null;
+
+    const hasReceipt = receiptFile || existingReceiptUrl;
 
     return (
         <>
@@ -153,7 +188,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                 {/* BODY */}
                 <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
 
-                    {/* Date + Type (side by side) */}
+                    {/* Date + Type */}
                     <div className="grid grid-cols-2 gap-4">
                         <Field label="Expense Date" required error={errors.expenseDate}>
                             <input
@@ -202,21 +237,81 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                         />
                     </Field>
 
-                    {/* Receipt URL */}
-                    <Field label="Receipt / Bill URL">
-                        <input
-                            type="text"
-                            placeholder="Paste receipt link (optional)"
-                            className="input w-full"
-                            value={form.receiptUrl}
-                            onChange={(e) => setForm({ ...form, receiptUrl: e.target.value })}
-                        />
-                        <p className="text-xs text-slate-400 mt-1">
-                            Paste a URL to the uploaded receipt (JPG, PNG, or PDF)
-                        </p>
+                    {/* Receipt Upload */}
+                    <Field label="Receipt / Bill">
+                        {!hasReceipt ? (
+                            <div
+                                className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors ${dragOver
+                                    ? "border-blue-400 bg-blue-50"
+                                    : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
+                                    }`}
+                                onClick={() => fileInputRef.current?.click()}
+                                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                                onDragLeave={() => setDragOver(false)}
+                                onDrop={handleDrop}
+                            >
+                                <Upload size={22} className="mx-auto text-slate-400 mb-2" />
+                                <p className="text-sm font-medium text-slate-600">
+                                    Click to upload or drag & drop
+                                </p>
+                                <p className="text-xs text-slate-400 mt-1">
+                                    JPG, PNG, PDF — max {MAX_SIZE_MB}MB
+                                </p>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.pdf"
+                                    className="hidden"
+                                    onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="border rounded-lg px-4 py-3 flex items-center justify-between bg-slate-50">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="shrink-0 w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <FileText size={18} className="text-blue-700" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        {receiptFile ? (
+                                            <>
+                                                <p className="text-sm font-medium text-slate-700 truncate">
+                                                    {receiptFile.name}
+                                                </p>
+                                                <p className="text-xs text-slate-400">
+                                                    {(receiptFile.size / 1024).toFixed(1)} KB
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="text-sm font-medium text-slate-700 truncate">
+                                                    Existing receipt
+                                                </p>
+                                                <a
+                                                    href={existingReceiptUrl}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="text-xs text-blue-600 hover:underline"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    View file
+                                                </a>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveFile}
+                                    className="shrink-0 ml-2 text-slate-400 hover:text-red-500 transition-colors"
+                                    title="Remove file"
+                                >
+                                    <XCircle size={20} />
+                                </button>
+                            </div>
+                        )}
                     </Field>
 
-                    {/* Status (only show on edit) */}
+                    {/* Status (edit only) */}
                     {isEdit && (
                         <Field label="Status">
                             <select
@@ -232,7 +327,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                         </Field>
                     )}
 
-                    {/* Remarks (only show on edit) */}
+                    {/* Remarks (edit only) */}
                     {isEdit && (
                         <Field label="Remarks">
                             <textarea
@@ -255,7 +350,6 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                     >
                         Cancel
                     </button>
-
                     <button
                         disabled={isPending || !hasAccess}
                         className="flex-1 bg-blue-900 text-white rounded-lg py-2 text-sm font-medium flex items-center justify-center gap-2 hover:bg-blue-800 transition disabled:opacity-50"

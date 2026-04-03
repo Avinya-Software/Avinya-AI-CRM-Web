@@ -209,7 +209,7 @@ const OrderUpsertSheet = ({
         expectedDeliveryDate: new Date(formData.expectedDeliveryDate).toISOString(),
         isDesignByUs: false,
         designingCharge: 0,
-        status: Number(formData.orderStatusID),
+        status: Number(formData.orderStatusID != "" ? formData.orderStatusID : (isEdit ? order!.status : 1) ?? 1),
         firmID: sourceQuotation?.firmID ?? 1,
         designStatus: Number(formData.designStatusID),
         assignedDesignTo: null,
@@ -578,7 +578,7 @@ const OrderUpsertSheet = ({
                             </div>
 
 
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                     Design Status <span className="text-red-500">*</span>
                                 </label>
@@ -598,7 +598,7 @@ const OrderUpsertSheet = ({
                                     ))}
                                 </select>
                                 {errors.designStatusID && <p className="text-red-500 text-xs mt-1">{errors.designStatusID}</p>}
-                            </div>
+                            </div> */}
                         </div>
                     )}
 

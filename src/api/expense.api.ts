@@ -5,13 +5,43 @@ import api from "./axios";
 
 /* CREATE EXPENSE */
 export const createExpenseApi = async (payload: ExpenseUpsertPayload) => {
-  const res = await api.post("/Expense", payload);
+  const formData = new FormData();
+
+  formData.append("ExpenseDate", payload.expenseDate);
+  // C# DTO Expects CategoryId and PaymentMode instead of ExpenseType
+  formData.append("CategoryId", "1");
+  formData.append("PaymentMode", "UPI");
+  formData.append("Amount", String(payload.amount));
+  formData.append("Description", payload.description || "");
+
+  if (payload.receiptFile instanceof File) {
+    formData.append("ReceiptFile", payload.receiptFile, payload.receiptFile.name);
+  }
+
+  const res = await api.post("/Expense", formData);
   return res.data;
 };
 
 /* UPDATE EXPENSE */
 export const updateExpenseApi = async (id: string, payload: ExpenseUpsertPayload) => {
-  const res = await api.patch(`/Expense/${id}`, payload);
+  const formData = new FormData();
+
+  const expenseId = payload.expenseID || id;
+  formData.append("ExpenseId", expenseId);
+  formData.append("ExpenseDate", payload.expenseDate);
+
+  // C# DTO Expects CategoryId and PaymentMode instead of ExpenseType
+  formData.append("CategoryId", "1");
+  formData.append("PaymentMode", "Online");
+
+  formData.append("Amount", String(payload.amount));
+  formData.append("Description", payload.description || "");
+
+  if (payload.receiptFile instanceof File) {
+    formData.append("ReceiptFile", payload.receiptFile, payload.receiptFile.name);
+  }
+
+  const res = await api.put("/Expense", formData);
   return res.data;
 };
 

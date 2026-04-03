@@ -2,16 +2,21 @@
 
 export interface Expense {
   expenseId: string;
-  expenseDate: string;           // ISO date string
-  expenseType: string;           // e.g. "Travel", "Food", "Utilities", "Other"
+  expenseDate: string;           
+  categoryId: number;           
   amount: number;
+  paymentMode: string;
   description?: string | null;
-  receiptUrl?: string | null;    // URL or file path of uploaded receipt
-  status: "pending" | "approved" | "rejected" | "paid";
-  remarks?: string | null;       // Admin remarks on approval/rejection
+  receiptPath?: string | null;   
+  status: string;
+  remarks?: string | null;       
   createdBy?: string | null;
   createdDate?: string | null;
   updatedDate?: string | null;
+  expenseCategory?: {
+    categoryId: number;
+    categoryName: string;
+  };
 }
 
 export interface ExpenseUpsertPayload {
@@ -21,6 +26,7 @@ export interface ExpenseUpsertPayload {
   amount: number;
   description?: string | null;
   receiptUrl?: string | null;
+  receiptFile?: File | null;
   status?: string;
   remarks?: string | null;
   createdBy?: string | null;
