@@ -8,6 +8,8 @@ import type { User, UserUpsertRequest } from "../../interfaces/user.interface";
 import { useCompanies } from "../../hooks/users/Useusers";
 import { usePermissions as useUserPermissions } from "../../hooks/users/usePermissions";
 import { usePermissions } from "../../context/PermissionContext";
+import { useAuth } from "../../auth/useAuth";
+import { decodeUserToken } from "../../lib/auth.utils";
 
 interface UserUpsertSheetProps {
     open: boolean;
@@ -25,6 +27,10 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
     const canEdit = hasPermission("user", "edit");
     const isReadOnly = isEdit ? !canEdit : !canAdd;
 
+    const { token } = useAuth();
+    const currentUser = decodeUserToken(token);
+    const isSuperAdmin = currentUser?.role === "SuperAdmin";
+
     const { data: permissionModules = [] } = useUserPermissions();
 
     const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
@@ -33,7 +39,7 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
         fullName: "",
         email: "",
         role: "User",
-        tenantId: "",
+        tenantId: isSuperAdmin ? "" : (currentUser?.tenantId || ""),
         isActive: true,
         password: "Default@123",
         permissionIds: selectedPermissions,
@@ -60,7 +66,7 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                 fullName: "",
                 email: "",
                 role: "User",
-                tenantId: "",
+                tenantId: isSuperAdmin ? "" : (currentUser?.tenantId || ""),
                 isActive: true,
                 password: "Default@123",
                 permissionIds: [],
@@ -121,7 +127,7 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
             fullName: "",
             email: "",
             role: "User",
-            tenantId: "",
+            tenantId: isSuperAdmin ? "" : (currentUser?.tenantId || ""),
             isActive: true,
             password: "Default@123",
             permissionIds: [],
@@ -188,24 +194,26 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
 
                         {!isEdit && (
                             <>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Company <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        value={formData.tenantId}
-                                        onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                                        disabled={isReadOnly}
-                                        className="w-full px-3 py-2 border rounded text-sm disabled:bg-slate-50 disabled:text-slate-500"
-                                    >
-                                        <option value="">Select Company</option>
-                                        {companies.map((company) => (
-                                            <option key={company.tenantId} value={company.tenantId}>
-                                                {company.companyName}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                {isSuperAdmin && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            Company <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            value={formData.tenantId}
+                                            onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
+                                            disabled={isReadOnly}
+                                            className="w-full px-3 py-2 border rounded text-sm disabled:bg-slate-50 disabled:text-slate-500"
+                                        >
+                                            <option value="">Select Company</option>
+                                            {companies.map((company) => (
+                                                <option key={company.tenantId} value={company.tenantId}>
+                                                    {company.companyName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -220,11 +228,12 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                                         <option value="User">User</option>
                                         <option value="Manager">Manager</option>
                                         <option value="Admin">Admin</option>
-                                        <option value="SuperAdmin">SuperAdmin</option>
+                                        {isSuperAdmin && <option value="SuperAdmin">SuperAdmin</option>}
                                     </select>
                                 </div>
                             </>
                         )}
+
 
                         {/* Status */}
                         <div>

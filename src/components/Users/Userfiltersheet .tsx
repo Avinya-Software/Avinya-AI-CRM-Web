@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import type { UserFilters } from "../../interfaces/user.interface";
+import { useAuth } from "../../auth/useAuth";
+import { decodeUserToken } from "../../lib/auth.utils";
 
 interface UserFilterSheetProps {
     open: boolean;
@@ -18,6 +20,10 @@ const UserFilterSheet = ({
     onApply,
     onClear,
 }: UserFilterSheetProps) => {
+    const { token } = useAuth();
+    const currentUser = decodeUserToken(token);
+    const isSuperAdmin = currentUser?.role === "SuperAdmin";
+
     const [localFilters, setLocalFilters] = useState<UserFilters>(filters);
 
     useEffect(() => {
@@ -115,7 +121,7 @@ const UserFilterSheet = ({
                             className="w-full px-3 py-2 border rounded text-sm"
                         >
                             <option value="">All Roles</option>
-                            <option value="SuperAdmin">SuperAdmin</option>
+                            {isSuperAdmin && <option value="SuperAdmin">SuperAdmin</option>}
                             <option value="Admin">Admin</option>
                             <option value="Manager">Manager</option>
                             <option value="User">User</option>
