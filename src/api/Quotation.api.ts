@@ -70,3 +70,11 @@ export const deleteQuotation = async (id: string) => {
   const response = await api.delete(`/Quotation/${id}`);
   return response.data;
 };
+
+// ── GET: Download Quotation PDF ───────────────────────────────────
+export const downloadQuotationPdf = async (id: string): Promise<Blob> => {
+  const response = await api.get(`/Quotation/download-pdf/${id}`, {
+    responseType: "blob",
+  });
+  return response.data;
+};

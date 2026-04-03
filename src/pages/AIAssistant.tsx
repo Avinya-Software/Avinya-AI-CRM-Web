@@ -52,7 +52,7 @@ const AIAssistant = () => {
             <div
               key={msg.id}
               className={cn(
-                "flex flex-col w-full animate-in fade-in slide-in-from-bottom-2 duration-300",
+                "flex flex-col w-full animate-slideUp",
                 msg.role === "user" ? "items-end" : "items-start"
               )}
             >
@@ -74,11 +74,34 @@ const AIAssistant = () => {
                     : "bg-slate-50 text-slate-800 rounded-tl-none border border-slate-100"
                 )}
               >
-                <div className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-headings:mb-2 prose-headings:mt-0 prose-ul:my-2">
+                <div className={cn(
+                  "prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-headings:mb-2 prose-headings:mt-0 prose-ul:my-2",
+                  msg.role === "user" ? "prose-invert" : ""
+                )}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {msg.content}
                   </ReactMarkdown>
                 </div>
+
+                {/* BREAKDOWN (if exists) */}
+                {msg.breakdown && (
+                  <div className="mt-4">
+                    <ReportBreakdown breakdown={msg.breakdown} />
+                  </div>
+                )}
+
+                {/* INSIGHTS (if exists) */}
+                {msg.insights && (
+                  <div className="mt-4 border-t pt-4 flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-emerald-50 shrink-0">
+                      <TrendingUp className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <div className="text-xs leading-relaxed text-slate-600 italic">
+                      <span className="font-bold text-slate-900 not-italic mr-1 text-sm block mb-1">AI Insights</span>
+                      {msg.insights}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {msg.data && msg.data.length > 0 && (msg.data.length > 1 || Object.keys(msg.data[0]).length > 1) && (
@@ -86,10 +109,19 @@ const AIAssistant = () => {
                   <DataTable data={msg.data} />
                 </div>
               )}
-
               <span className="text-[10px] text-slate-400 mt-1 px-1">
                 {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
+
+              {/* SUGGESTIONS (if exists) */}
+              {msg.role === "ai" && msg.suggestions && msg.suggestions.length > 0 && (
+                <div className="mt-4 w-full animate-slideUp">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">
+                    You might want to ask:
+                  </p>
+                  <SuggestionChips suggestions={msg.suggestions} onSelect={setInput} />
+                </div>
+              )}
             </div>
           ))}
           {isPending && (
@@ -139,14 +171,14 @@ const formatValue = (key: string, value: any) => {
 
   // Currency
   if (
-    typeof value === "number" || 
+    typeof value === "number" ||
     (!isNaN(Number(value)) && typeof value === "string" && value.length > 0 && !lowerKey.includes("id") && !lowerKey.includes("no"))
   ) {
     const num = Number(value);
     if (
-      lowerKey.includes("revenue") || 
-      lowerKey.includes("amount") || 
-      lowerKey.includes("price") || 
+      lowerKey.includes("revenue") ||
+      lowerKey.includes("amount") ||
+      lowerKey.includes("price") ||
       lowerKey.includes("total") ||
       lowerKey.includes("charge")
     ) {
@@ -225,6 +257,49 @@ const DataTable = ({ data }: { data: any[] }) => {
           ))}
         </TableBody>
       </Table>
+    </div>
+  );
+};
+
+const ReportBreakdown = ({ breakdown }: { breakdown: Record<string, Record<string, any>> }) => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {Object.entries(breakdown).map(([category, items]) => {
+        if (!items || Object.keys(items).length === 0) return null;
+
+        return (
+          <div key={category} className="space-y-3">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-2 border-l-4 border-emerald-500 flex items-center gap-2">
+              {category}
+            </h4>
+            <div className="grid grid-cols-1 gap-2">
+              {Object.entries(items).map(([label, value]) => (
+                <div key={label} className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between group hover:border-emerald-200 transition-colors">
+                  <span className="text-xs text-slate-600 font-medium">{label}</span>
+                  <span className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">{String(value)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const SuggestionChips = ({ suggestions, onSelect }: { suggestions: string[], onSelect: (s: string) => void }) => {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {suggestions.map((s, i) => (
+        <button
+          key={i}
+          onClick={() => onSelect(s)}
+          className="px-4 py-2.5 bg-white border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-xl text-xs font-semibold transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center gap-2 group"
+        >
+          <div className="h-2 w-2 rounded-full bg-emerald-400 group-hover:bg-emerald-600 transition-colors" />
+          {s}
+        </button>
+      ))}
     </div>
   );
 };

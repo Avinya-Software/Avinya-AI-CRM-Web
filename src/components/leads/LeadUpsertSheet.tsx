@@ -271,7 +271,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             value={form.fullName}
             error={errors.fullName}
             onChange={(v: any) => setForm({ ...form, fullName: v })}
-            disabled={isReadOnly || !!form.customerId}
+            disabled={isReadOnly}
           />
 
           {/* CLIENT TYPE */}
@@ -295,21 +295,21 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             value={form.mobile}
             error={errors.mobile}
             onChange={(v: any) => setForm({ ...form, mobile: v })}
-            disabled={isReadOnly || !!form.customerId}
+            disabled={isReadOnly}
           />
 
           <Input
             label="Email"
             value={form.email}
             onChange={(v: any) => setForm({ ...form, email: v })}
-            disabled={isReadOnly || !!form.customerId}
+            disabled={isReadOnly}
           />
 
           <Textarea
             label="Billing Address"
             value={form.address}
             onChange={(v: any) => setForm({ ...form, address: v })}
-            disabled={isReadOnly || !!form.customerId}
+            disabled={isReadOnly}
           />
 
           
@@ -337,7 +337,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
               className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
               value={selectedStateId}
               onChange={(e) => handleStateChange(e.target.value)}
-              disabled={isReadOnly || !!form.customerId}
+              disabled={isReadOnly}
             >
               <option value="">Select State</option>
               {(states as any[]).map((s) => (
@@ -352,7 +352,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             <select
               className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-400"
               value={form.cityId}
-              disabled={!selectedStateId || isReadOnly || !!form.customerId}
+              disabled={!selectedStateId || isReadOnly}
               onChange={(e) => setForm({ ...form, cityId: e.target.value })}
             >
               <option value="">

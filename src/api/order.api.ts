@@ -72,3 +72,11 @@ export const getDesignStatusDropdown = async (): Promise<
   const response = await api.get("/Order/get-DesignStatus-dropdown");
   return response.data.data;
 };
+
+// ── GET: Download Order PDF ───────────────────────────────────────
+export const downloadOrderPdf = async (id: string): Promise<Blob> => {
+  const response = await api.get(`/Order/download-pdf/${id}`, {
+    responseType: "blob",
+  });
+  return response.data;
+};

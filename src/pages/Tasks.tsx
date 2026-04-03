@@ -20,7 +20,7 @@ const Tasks = () => {
   const [openTaskSheet, setOpenTaskSheet] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
-  const [view, setView] = useState<"today" | "week" | "all">("today");
+  const [view, setView] = useState<"today" | "week" | "all">("week");
   const [openVoice, setOpenVoice] = useState(false);
   const [scope, setScope] = useState<TaskScope>("Personal");
 

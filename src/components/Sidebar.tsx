@@ -157,7 +157,21 @@ const Sidebar = () => {
         ? true
         : hasPermission(item.moduleKey, "view")
     )
-    .sort((a, b) => a.order - b.order)
+    .sort((a, b) => {
+      const fixedOrder: Record<string, number> = {
+        client: 1,
+        lead: 2,
+        quotation: 3,
+        order: 4,
+        product: 5,
+        project: 6,
+        task: 7,
+        expense: 8,
+      };
+      const orderA = fixedOrder[a.moduleKey] ?? (a.order + 10);
+      const orderB = fixedOrder[b.moduleKey] ?? (b.order + 10);
+      return orderA - orderB;
+    })
     .reduce((groups: any, item) => {
       const group = MODULE_GROUPS[item.moduleKey] || "Other";
 

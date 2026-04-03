@@ -33,7 +33,7 @@ export const UserHeader = () => {
             isOpen ? "rotate-[360deg] scale-110" : "group-hover:scale-110"
           )} />
           <span>
-            {isOpen ? "Close AI Copilot" : "Ask Avinya AI"}
+            {isOpen ? "Close Avinya AI" : "Ask Avinya AI"}
           </span>
           <div className={cn(
             "h-1.5 w-1.5 rounded-full absolute top-2 right-2",

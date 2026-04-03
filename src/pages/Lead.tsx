@@ -20,7 +20,7 @@ import { useDebounce } from "../components/common/CommonHelper";
 import LeadDetailSheet from "../components/leads/Leaddetailsmodal";
 
 const DEFAULT_FILTERS = {
-  pageNumber: 1,
+  page: 1,
   pageSize: 10,
   search: "",
   status: "",
@@ -232,10 +232,10 @@ const Leads = () => {
           {/* PAGINATION */}
           <div className="border-t px-4 py-3">
             <Pagination
-              page={filters.pageNumber}
+              page={filters.page}
               totalPages={data?.totalPages || 1}
               onChange={(page) =>
-                setFilters({ ...filters, pageNumber: page })
+                setFilters({ ...filters, page: page })
               }
             />
           </div>
@@ -247,7 +247,7 @@ const Leads = () => {
         open={openFilterSheet}
         onClose={() => setOpenFilterSheet(false)}
         filters={filters}
-        onApply={(f) => setFilters({ ...f, pageNumber: 1 })}
+        onApply={(f) => setFilters({ ...f, page: 1 })}
         onClear={clearAllFilters}
       />
 

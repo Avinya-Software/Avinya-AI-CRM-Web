@@ -23,6 +23,23 @@ import {
 import { useChat } from "../../context/ChatContext";
 import { cn } from "../../lib/utils";
 
+const SuggestionChips = ({ suggestions, onSelect }: { suggestions: string[], onSelect: (s: string) => void }) => {
+  return (
+    <div className="flex flex-wrap gap-2 px-1">
+      {suggestions.map((s, i) => (
+        <button
+          key={i}
+          onClick={() => onSelect(s)}
+          className="px-3.5 py-2 bg-white border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-xl text-[11px] font-semibold transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center gap-1.5 group"
+        >
+          <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 group-hover:bg-emerald-600 transition-colors" />
+          {s}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 export const ChatPanel = () => {
   const { messages, input, setInput, isPending, sendMessage, isOpen, setIsOpen } = useChat();
   const navigate = useNavigate();
@@ -91,7 +108,7 @@ export const ChatPanel = () => {
             <div
               key={msg.id}
               className={cn(
-                "flex flex-col w-full animate-in fade-in slide-in-from-bottom-2 duration-300",
+                "flex flex-col w-full animate-slideUp",
                 msg.role === "user" ? "items-end" : "items-start"
               )}
             >
@@ -103,11 +120,34 @@ export const ChatPanel = () => {
                     : "bg-white text-slate-800 rounded-tl-none border border-slate-100"
                 )}
               >
-                <div className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-headings:mb-2 prose-headings:mt-0 prose-ul:my-2">
+                <div className={cn(
+                  "prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-headings:mb-2 prose-headings:mt-0 prose-ul:my-2",
+                  msg.role === "user" ? "prose-invert" : ""
+                )}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {msg.content}
                   </ReactMarkdown>
                 </div>
+
+                {/* BREAKDOWN (if exists) */}
+                {msg.breakdown && (
+                  <div className="mt-3 space-y-3">
+                    <ReportBreakdown breakdown={msg.breakdown} />
+                  </div>
+                )}
+
+                {/* INSIGHTS (if exists) */}
+                {msg.insights && (
+                  <div className="mt-3 border-t pt-3 flex items-start gap-2">
+                    <div className="p-1.5 rounded-lg bg-emerald-50 shrink-0">
+                      <TrendingUp className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <div className="text-[11px] leading-relaxed text-slate-600 italic">
+                      <span className="font-bold text-slate-900 not-italic mr-1">Insights:</span>
+                      {msg.insights}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {msg.data && msg.data.length > 0 && (msg.data.length > 1 || Object.keys(msg.data[0]).length > 1) && (
@@ -119,6 +159,13 @@ export const ChatPanel = () => {
               <span className="text-[10px] text-slate-400 mt-1 px-1 font-medium opacity-70">
                 {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
+
+              {/* SUGGESTIONS (if exists) */}
+              {msg.role === "ai" && msg.suggestions && msg.suggestions.length > 0 && (
+                <div className="mt-3 w-full animate-slideUp">
+                  <SuggestionChips suggestions={msg.suggestions} onSelect={setInput} />
+                </div>
+              )}
             </div>
           ))}
           {isPending && (
@@ -246,6 +293,32 @@ const DataTable = ({ data }: { data: any[] }) => {
           ))}
         </TableBody>
       </Table>
+    </div>
+  );
+};
+
+const ReportBreakdown = ({ breakdown }: { breakdown: Record<string, Record<string, any>> }) => {
+  return (
+    <div className="space-y-4">
+      {Object.entries(breakdown).map(([category, items]) => {
+        if (!items || Object.keys(items).length === 0) return null;
+        
+        return (
+          <div key={category} className="space-y-2">
+            <h4 className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest pl-1 border-l-2 border-emerald-500">
+              {category}
+            </h4>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(items).map(([label, value]) => (
+                <div key={label} className="bg-slate-50/80 p-2 rounded-lg border border-slate-100/50 flex flex-col gap-0.5">
+                  <span className="text-[9px] text-slate-400 font-medium uppercase truncate">{label}</span>
+                  <span className="text-xs font-bold text-slate-800">{String(value)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

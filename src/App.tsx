@@ -65,9 +65,7 @@ function App() {
             <Route
               path="/"
               element={
-                <RBACProtectedRoute module="dashboard" action="view">
-                  <Dashboard />
-                </RBACProtectedRoute>
+                <Dashboard />
               }
             />
 

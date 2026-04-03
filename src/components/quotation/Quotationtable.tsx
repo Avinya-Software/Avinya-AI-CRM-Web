@@ -1,14 +1,17 @@
 // src/components/quotations/QuotationTable.tsx
 import { useState, useRef } from "react";
-import { MoreVertical, X } from "lucide-react";
+import { MoreVertical, X, Eye, FileText, Loader2 } from "lucide-react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import TableSkeleton from "../common/TableSkeleton";
 import type { Quotation } from "../../interfaces/quotation.interface";
 import { useDeleteQuotation } from "../../hooks/quotation/Usequotationmutations ";
-import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
+import { usePermissions } from "../../context/PermissionContext";
+import { downloadQuotationPdf } from "../../api/Quotation.api";
+import { toast } from "react-hot-toast";
 
-const DROPDOWN_HEIGHT = 280;
-const DROPDOWN_WIDTH = 230;
+// Re-calculate based on fewer items (4 items + divider)
+const DROPDOWN_HEIGHT = 180;
+const DROPDOWN_WIDTH = 220;
 
 interface QuotationTableProps {
   data: Quotation[];
@@ -42,6 +45,7 @@ const QuotationTable = ({
 
   const [openQuotation, setOpenQuotation] = useState<Quotation | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Quotation | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [style, setStyle] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -55,9 +59,13 @@ const QuotationTable = ({
     const spaceBelow = window.innerHeight - rect.bottom;
     const openUpwards = spaceBelow < DROPDOWN_HEIGHT;
 
+    const topPos = openUpwards 
+      ? Math.max(10, rect.top - DROPDOWN_HEIGHT - 6) 
+      : rect.bottom + 6;
+
     setStyle({
-      top: openUpwards ? rect.top - DROPDOWN_HEIGHT - 6 : rect.bottom + 6,
-      left: rect.right - DROPDOWN_WIDTH,
+      top: topPos,
+      left: Math.min(window.innerWidth - DROPDOWN_WIDTH - 20, rect.right - DROPDOWN_WIDTH),
     });
 
     setOpenQuotation(quotation);
@@ -77,6 +85,28 @@ const QuotationTable = ({
         setOpenQuotation(null);
       },
     });
+  };
+
+  const handleDownloadPdf = async (e: React.MouseEvent, quotation: Quotation) => {
+    e.stopPropagation();
+    setDownloadingId(quotation.quotationID);
+    try {
+      const blob = await downloadQuotationPdf(quotation.quotationID);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Quotation_${quotation.quotationNo || 'Draft'}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF Downloaded successfully");
+    } catch (error) {
+      console.error("PDF download error:", error);
+      toast.error("Failed to download PDF");
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   return (
@@ -127,12 +157,35 @@ const QuotationTable = ({
                     </span>
                   </Td>
                   <Td className="text-left">
-                    <button
-                      onClick={(e) => openDropdown(e, quotation)}
-                      className="p-2 rounded hover:bg-slate-200"
-                    >
-                      <MoreVertical size={16} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onView(quotation); }}
+                        className="p-1.5 rounded-full hover:bg-emerald-100 text-slate-600 hover:text-emerald-600 transition-colors"
+                        title="View"
+                      >
+                        <Eye size={16} />
+                      </button>
+
+                      <button
+                        onClick={(e) => handleDownloadPdf(e, quotation)}
+                        disabled={downloadingId === quotation.quotationID}
+                        className="p-1.5 rounded-full hover:bg-blue-100 text-slate-600 hover:text-blue-600 transition-colors disabled:opacity-50"
+                        title="Download PDF"
+                      >
+                        {downloadingId === quotation.quotationID ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <FileText size={16} />
+                        )}
+                      </button>
+
+                      <button
+                        onClick={(e) => openDropdown(e, quotation)}
+                        className="p-1.5 rounded-full hover:bg-slate-200 text-slate-600 transition-colors"
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+                    </div>
                   </Td>
                 </tr>
               ))
@@ -149,11 +202,6 @@ const QuotationTable = ({
           className="fixed z-50 w-[230px] bg-white border rounded-lg shadow-lg overflow-hidden"
           style={{ top: style.top, left: style.left }}
         >
-          <MenuItem
-            label="View Details"
-            onClick={() => handleAction(() => onView(openQuotation))}
-          />
-
           {canEdit && (
             <MenuItem
               label="Edit"
@@ -173,11 +221,6 @@ const QuotationTable = ({
           <MenuItem
             label="Reject"
             onClick={() => handleAction(() => console.log("Reject"))}
-          />
-
-          <MenuItem
-            label="Generate PDF"
-            onClick={() => handleAction(() => console.log("Generate PDF"))}
           />
 
           {canDelete && (

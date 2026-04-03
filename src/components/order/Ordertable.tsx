@@ -1,9 +1,11 @@
 // src/components/order/OrderTable.tsx
 
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Eye, Pencil, Trash2, PackageOpen, X } from "lucide-react";
+import { MoreVertical, Eye, Pencil, Trash2, PackageOpen, X, FileText, Loader2 } from "lucide-react";
 import type { Order } from "../../interfaces/order.interface";
-import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
+import { usePermissions } from "../../context/PermissionContext";
+import { downloadOrderPdf } from "../../api/order.api";
+import { toast } from "react-hot-toast";
 
 interface Props {
     data: Order[];
@@ -33,11 +35,9 @@ const DESIGN_STATUS_STYLE: Record<number, string> = {
 /* ================= ACTION MENU ================= */
 
 const ActionMenu = ({
-    onView,
     onEdit,
     onDeleteClick,
 }: {
-    onView: () => void;
     onEdit: () => void;
     onDeleteClick: () => void;
 }) => {
@@ -45,7 +45,8 @@ const ActionMenu = ({
     const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
     const btnRef = useRef<HTMLButtonElement>(null);
 
-    const handleOpen = () => {
+    const handleOpen = (e: React.MouseEvent) => {
+        e.stopPropagation();
         if (btnRef.current) {
             const rect = btnRef.current.getBoundingClientRect();
             setMenuPos({
@@ -68,9 +69,9 @@ const ActionMenu = ({
                 <button
                     ref={btnRef}
                     onClick={handleOpen}
-                    className="p-1 rounded hover:bg-slate-100"
+                    className="p-1.5 rounded-full hover:bg-slate-200 text-slate-600 transition-colors"
                 >
-                    <MoreVertical size={16} className="text-slate-500" />
+                    <MoreVertical size={16} />
                 </button>
             </div>
 
@@ -82,12 +83,6 @@ const ActionMenu = ({
                         className="fixed z-50 w-36 bg-white rounded-lg shadow-lg border py-1 text-sm"
                         style={{ top: menuPos.top, left: menuPos.left }}
                     >
-                        <button
-                            onClick={() => { setOpen(false); onView(); }}
-                            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-slate-50 text-slate-700"
-                        >
-                            <Eye size={14} /> View
-                        </button>
 
                         <button
                             onClick={() => { setOpen(false); onEdit(); }}
@@ -121,6 +116,29 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
     const canDeleteOrder = hasPermission("order", "delete");
 
     const [confirmDelete, setConfirmDelete] = useState<Order | null>(null);
+    const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+    const handleDownloadPdf = async (e: React.MouseEvent, order: Order) => {
+        e.stopPropagation();
+        setDownloadingId(order.orderID);
+        try {
+            const blob = await downloadOrderPdf(order.orderID);
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Order_${order.orderNo || 'Order'}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success("PDF Downloaded successfully");
+        } catch (error) {
+            console.error("PDF download error:", error);
+            toast.error("Failed to download PDF");
+        } finally {
+            setDownloadingId(null);
+        }
+    };
 
     const handleDeleteConfirmed = () => {
         if (!confirmDelete || !canDeleteOrder) return;
@@ -188,7 +206,11 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
 
                     <tbody className="divide-y divide-slate-100">
                         {data.map((order) => (
-                            <tr key={order.orderID} className="hover:bg-slate-50 transition-colors">
+                            <tr 
+                                key={order.orderID} 
+                                className="hover:bg-slate-50 transition-colors cursor-pointer h-[52px]"
+                                onClick={() => canViewOrder && onView(order)}
+                            >
 
                                 <td className="px-4 py-3 font-medium text-slate-800">
                                     {order.orderNo ?? "—"}
@@ -227,13 +249,35 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
                                 </td>
 
                                 <td className="px-4 py-3 text-center">
-                                    <ActionMenu
-                                        onView={() => canViewOrder && onView(order)}
-                                        onEdit={() => canEditOrder && onEdit(order)}
-                                        onDeleteClick={() =>
-                                            canDeleteOrder && setConfirmDelete(order)
-                                        }
-                                    />
+                                    <div className="flex items-center justify-center gap-1">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onView(order); }}
+                                            className="p-1.5 rounded-full hover:bg-emerald-100 text-slate-600 hover:text-emerald-600 transition-colors"
+                                            title="View"
+                                        >
+                                            <Eye size={16} />
+                                        </button>
+
+                                        <button
+                                            onClick={(e) => handleDownloadPdf(e, order)}
+                                            disabled={downloadingId === order.orderID}
+                                            className="p-1.5 rounded-full hover:bg-blue-100 text-slate-600 hover:text-blue-600 transition-colors disabled:opacity-50"
+                                            title="Download PDF"
+                                        >
+                                            {downloadingId === order.orderID ? (
+                                                <Loader2 size={16} className="animate-spin" />
+                                            ) : (
+                                                <FileText size={16} />
+                                            )}
+                                        </button>
+
+                                        <ActionMenu
+                                            onEdit={() => canEditOrder && onEdit(order)}
+                                            onDeleteClick={() =>
+                                                canDeleteOrder && setConfirmDelete(order)
+                                            }
+                                        />
+                                    </div>
                                 </td>
                             </tr>
                         ))}

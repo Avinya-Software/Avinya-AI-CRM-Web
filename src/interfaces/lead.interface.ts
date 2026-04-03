@@ -37,7 +37,7 @@ export interface Lead {
 }
 
 export interface LeadFilters {
-  pageNumber: number;
+  page: number;
   pageSize: number;
   search?: string;
   status?: string;

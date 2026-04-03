@@ -1,6 +1,6 @@
 // src/components/leads/LeadTable.tsx
 import { useState, useRef } from "react";
-import { MoreVertical, X } from "lucide-react";
+import { MoreVertical, X, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
@@ -220,17 +220,27 @@ const LeadTable = ({
                   </Td>
 
                   <Td className="text-left">
-                    {(canEditLead ||
-                      canDeleteLead ||
-                      canAddFollowUp ||
-                      canAddQuotation) && (
-                        <button
-                          onClick={(e) => openDropdown(e, lead)}
-                          className="p-2 rounded hover:bg-slate-200"
-                        >
-                          <MoreVertical size={16} />
-                        </button>
-                      )}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onViewDetails?.(lead); }}
+                        className="p-1.5 rounded-full hover:bg-emerald-100 text-slate-600 hover:text-emerald-600 transition-colors"
+                        title="View Details"
+                      >
+                        <Eye size={16} />
+                      </button>
+
+                      {(canEditLead ||
+                        canDeleteLead ||
+                        canAddFollowUp ||
+                        canAddQuotation) && (
+                          <button
+                            onClick={(e) => openDropdown(e, lead)}
+                            className="p-1.5 rounded-full hover:bg-slate-200 text-slate-600 transition-colors"
+                          >
+                            <MoreVertical size={16} />
+                          </button>
+                        )}
+                    </div>
                   </Td>
                 </tr>
               ))

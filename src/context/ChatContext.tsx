@@ -20,7 +20,14 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     {
       id: "1",
       role: "ai",
-      content: "Hello! I'm your Avinya AI CRM assistant. How can I help you today?",
+      content: "Hello! I'm your Avinya AI CRM assistant. I can provide you with information and insights across all your data, though currently I can only create Leads and Tasks. How can I help you today?",
+      suggestions: [
+        "Show my leads",
+        "How is my business doing?",
+        "Show my followups for today",
+        "Add a new lead",
+        "Show latest leads"
+      ],
       timestamp: new Date(),
     },
   ]);
@@ -44,12 +51,19 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     mutateChat(
       { message: content },
       {
-        onSuccess: (data) => {
+        onSuccess: (data: AIResponse) => {
+          // If Breakdown, Summary, or Insights are present
+          const isSummaryReport = data.Summary || data.Breakdown || data.Insights;
+
           const aiMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
             role: "ai",
-            content: data.message || (data.count > 0 ? `I found ${data.count} results:` : "Here is what I found:"),
+            content: data.Summary || data.message || (data.count !== undefined && data.count > 0 ? `I found ${data.count} results:` : "No records found."),
             data: data.data,
+            summary: data.Summary,
+            breakdown: data.Breakdown,
+            insights: data.Insights,
+            suggestions: data.suggestions,
             timestamp: new Date(),
           };
           setMessages((prev) => [...prev, aiMessage]);
