@@ -40,61 +40,98 @@ const VoiceTaskModal = ({ open, onClose, onSendText }: Props) => {
             return;
         }
 
-        const recognition = new SpeechRecognition();
-        recognitionRef.current = recognition;
+        let finalTranscript = "";
+        let isStopped = false;
 
-        recognition.lang = "en-IN";
-        recognition.continuous = true;
-        recognition.interimResults = true;
+        const startRecognition = () => {
+            if (isStopped) return;
 
-        recognition.onstart = () => {
-            setStatus("listening");
-            setLiveText("");
-            setFinalText("");
-            setMessage("");
-        };
+            const recognition = new SpeechRecognition();
+            recognitionRef.current = recognition;
 
-        recognition.onresult = (event: any) => {
-            let transcript = "";
+            recognition.lang = "en-IN";
+            recognition.continuous = false;   // ← restart per utterance, avoids drift
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 3;  // ← pick best alternative below
 
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                transcript += event.results[i][0].transcript;
-            }
-
-            setLiveText(transcript);
-
-            clearTimeout(silenceTimerRef.current);
-
-            silenceTimerRef.current = setTimeout(async () => {
-                recognition.stop();
-
-                setFinalText(transcript);
-                setStatus("processing");
-                if (!canAddTask) return;
-
-                try {
-                    await onSendText(transcript);
-
-                    setStatus("success");
-                    setMessage("Task created successfully 🎉");
-
-                    setTimeout(() => onClose(), 2500);
-                } catch {
-                    setStatus("error");
-                    setMessage("Something went wrong 😕");
+            recognition.onstart = () => {
+                if (finalTranscript === "") {
+                    setStatus("listening");
+                    setLiveText("");
+                    setFinalText("");
+                    setMessage("");
                 }
-            }, SILENCE_DELAY);
+            };
+
+            recognition.onresult = (event: any) => {
+                let interimTranscript = "";
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const result = event.results[i];
+
+                    if (result.isFinal) {
+                        // Pick the alternative with the highest confidence
+                        let best = result[0];
+                        for (let a = 1; a < result.length; a++) {
+                            if (result[a].confidence > best.confidence) {
+                                best = result[a];
+                            }
+                        }
+                        finalTranscript += best.transcript + " ";
+                    } else {
+                        interimTranscript += result[0].transcript;
+                    }
+                }
+
+                setLiveText(finalTranscript + interimTranscript);
+
+                clearTimeout(silenceTimerRef.current);
+                silenceTimerRef.current = setTimeout(async () => {
+                    isStopped = true;
+                    recognition.stop();
+
+                    const text = finalTranscript.trim();
+                    if (!text) return;
+
+                    setFinalText(text);
+                    setStatus("processing");
+                    if (!canAddTask) return;
+
+                    try {
+                        await onSendText(text);
+                        setStatus("success");
+                        setMessage("Task created successfully 🎉");
+                        setTimeout(() => onClose(), 2500);
+                    } catch {
+                        setStatus("error");
+                        setMessage("Something went wrong ");
+                    }
+                }, SILENCE_DELAY);
+            };
+
+            recognition.onerror = (event: any) => {
+                // "no-speech" is not a real error — just restart
+                if (event.error === "no-speech") {
+                    startRecognition(); 
+                    return;
+                }
+                setStatus("error");
+                setMessage("Voice recognition error");
+            };
+
+            // Auto-restart on end (until silence timer fires)
+            recognition.onend = () => {
+                if (!isStopped) startRecognition();
+            };
+
+            recognition.start();
         };
 
-        recognition.onerror = () => {
-            setStatus("error");
-            setMessage("Voice recognition error");
-        };
-
-        recognition.start();
+        startRecognition();
 
         return () => {
-            recognition.stop();
+            isStopped = true;
+            recognitionRef.current?.stop();
             clearTimeout(silenceTimerRef.current);
             recognitionRef.current = null;
         };

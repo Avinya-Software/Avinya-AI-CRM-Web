@@ -64,3 +64,14 @@ export const getAllFollowUps = async (): Promise<
   const response = await api.get(`/FollowUp/list`);
   return response.data;
 };
+
+// ── GET: Follow-up History (Today/Overdue) ─────────────────────────
+export const getFollowupHistoryList = async (
+  isToday: boolean,
+  isOverDue: boolean
+): Promise<ApiWrapper<any>> => {
+  const response = await api.get(
+    `/FollowUp/list-followup-history?isToday=${isToday}&isOverDue=${isOverDue}`
+  );
+  return response.data;
+};
