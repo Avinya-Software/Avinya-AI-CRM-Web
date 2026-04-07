@@ -3,10 +3,11 @@ import { Settings } from "../../interfaces/setting.interface";
 import { getSettings, updateSetting } from "../../api/setting.api";
 import { toast } from "react-hot-toast";
 
-export const useSettings = (search?: string) => {
+export const useSettings = (search?: string, enabled: boolean = true) => {
   return useQuery<Settings[]>({
     queryKey: ["settings", search],
     queryFn: () => getSettings(search),
+    enabled: !!enabled,
   });
 };
 

@@ -3,11 +3,11 @@ import { BankDetails } from "../../interfaces/bankDetail.interface";
 import { getBankDetails, addBankDetail, updateBankDetail, deleteBankDetail } from "../../api/bankDetail.api";
 import { toast } from "react-hot-toast";
 
-export const useBankDetails = (tenantId?: string) => {
+export const useBankDetails = (tenantId?: string, enabled: boolean = true) => {
   return useQuery<BankDetails[]>({
     queryKey: ["bankDetails", tenantId],
     queryFn: () => getBankDetails(tenantId!),
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
   });
 };
 

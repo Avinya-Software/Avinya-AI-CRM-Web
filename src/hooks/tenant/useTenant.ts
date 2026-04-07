@@ -3,11 +3,11 @@ import { Tenant } from "../../interfaces/tenant.interface";
 import { getTenant, updateTenant } from "../../api/tenant.api";
 import { toast } from "react-hot-toast";
 
-export const useTenant = (tenantId?: string) => {
+export const useTenant = (tenantId?: string, enabled: boolean = true) => {
   return useQuery<Tenant>({
     queryKey: ["tenant", tenantId],
     queryFn: () => getTenant(tenantId!),
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
   });
 };
 

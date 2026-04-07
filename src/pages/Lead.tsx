@@ -19,7 +19,9 @@ import QuotationUpsertSheet from "../components/quotation/Quotationupsertsheet "
 import { useDebounce } from "../components/common/CommonHelper";
 import LeadDetailSheet from "../components/leads/Leaddetailsmodal";
 
-const DEFAULT_FILTERS = {
+import type { LeadFilters } from "../interfaces/lead.interface";
+
+const DEFAULT_FILTERS: LeadFilters = {
   page: 1,
   pageSize: 10,
   search: "",
@@ -90,6 +92,7 @@ const Leads = () => {
     filters.status || filters.startDate || filters.endDate;
 
   const clearAllFilters = () => {
+    setSearch("");
     setFilters(DEFAULT_FILTERS);
   };
 
@@ -181,11 +184,20 @@ const Leads = () => {
                     onChange={(e) =>
                       setSearch(e.target.value)
                     }
-                    className="w-full h-10 pl-10 pr-3 border rounded text-sm"
+                    className="w-full h-10 pl-10 pr-3 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                     🔍
                   </span>
+
+                  {search && (
+                    <button
+                      onClick={() => setSearch("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -200,6 +212,17 @@ const Leads = () => {
                     Clear Filters
                   </button>
                 )}
+
+                <button
+                  onClick={() => setOpenFilterSheet(true)}
+                  className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 relative"
+                >
+                  <Filter size={16} />
+                  Filters
+                  {hasActiveFilters && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-600 rounded-full" />
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -248,7 +271,15 @@ const Leads = () => {
         onClose={() => setOpenFilterSheet(false)}
         filters={filters}
         onApply={(f) => setFilters({ ...f, page: 1 })}
-        onClear={clearAllFilters}
+        onClear={() => {
+          setFilters(prev => ({
+            ...prev,
+            status: "",
+            startDate: "",
+            endDate: "",
+            page: 1,
+          }));
+        }}
       />
 
       {/* LEAD UPSERT */}

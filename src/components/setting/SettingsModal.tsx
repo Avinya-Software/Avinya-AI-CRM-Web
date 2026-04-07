@@ -34,7 +34,7 @@ const TABS = [
 ];
 
 export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
-  const { data: serverSettings, isLoading } = useSettings();
+  const { data: serverSettings, isLoading } = useSettings(undefined, open);
   const updateMutation = useUpdateSetting();
   const [localSettings, setLocalSettings] = useState<Settings[]>([]);
   const [activeTab, setActiveTab] = useState("basic");
@@ -88,7 +88,10 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
         delete currentData.preFix;
         delete currentData.Digits;
 
-        const updatedData = { ...currentData, [field]: newVal };
+        const updatedData = { 
+          ...currentData, 
+          [field]: field === "LastNumber" && newVal !== "" ? Number(newVal) : newVal 
+        };
         return { ...s, value: JSON.stringify(updatedData) };
       })
     );
@@ -100,6 +103,12 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
       if (typeof data !== 'object' || data === null) {
         return field === "value" ? value : fallback;
       }
+      
+      // If looking for a specific field in JSON, return fallback if it doesn't exist
+      if (field !== "value" && !(field in data)) {
+        return fallback;
+      }
+
       return data[field] ?? (field === "value" ? value : fallback);
     } catch {
       return field === "value" ? value : fallback;
@@ -210,24 +219,34 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-6">
-                              <div className="space-y-2">
-                                <Label className="text-[13px] font-bold text-slate-500">Value</Label>
-                                {setting.entityType.toLowerCase().includes("termsandconditions") || setting.entityType.toLowerCase().includes("terms and conditions") ? (
-                                  <textarea
-                                    value={getField(setting.value, "value")}
-                                    onChange={(e) => handleDetailChange(setting.settingID, "value", e.target.value)}
-                                    className="w-full p-4 border border-slate-200 rounded-lg text-sm min-h-[150px] focus:ring-2 focus:ring-[#1853FF]/20 focus:border-[#1853FF] outline-none transition-all"
-                                    placeholder="Enter terms and conditions..."
-                                  />
-                                ) : (
-                                  <Input
-                                    value={getField(setting.value, "value")}
-                                    onChange={(e) => handleDetailChange(setting.settingID, "value", e.target.value)}
-                                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[#1853FF]/20 focus:border-[#1853FF] transition-all font-mono text-sm"
-                                    placeholder="Enter value"
-                                  />
-                                )}
-                              </div>
+                               {(() => {
+                                 // Check if this setting is a sequence setting (has LastNumber)
+                                 const hasLastNumber = getField(setting.value, "LastNumber", undefined) !== undefined;
+                                 const editField = hasLastNumber ? "LastNumber" : "value";
+                                 const label = hasLastNumber ? "Last Number" : "Value";
+
+                                 return (
+                                   <div className="space-y-2">
+                                     <Label className="text-[13px] font-bold text-slate-500">{label}</Label>
+                                     {setting.entityType.toLowerCase().includes("termsandconditions") || setting.entityType.toLowerCase().includes("terms and conditions") ? (
+                                       <textarea
+                                         value={getField(setting.value, editField)}
+                                         onChange={(e) => handleDetailChange(setting.settingID, editField, e.target.value)}
+                                         className="w-full p-4 border border-slate-200 rounded-lg text-sm min-h-[150px] focus:ring-2 focus:ring-[#1853FF]/20 focus:border-[#1853FF] outline-none transition-all"
+                                         placeholder="Enter terms and conditions..."
+                                       />
+                                     ) : (
+                                       <Input
+                                         type={hasLastNumber ? "number" : "text"}
+                                         value={getField(setting.value, editField)}
+                                         onChange={(e) => handleDetailChange(setting.settingID, editField, e.target.value)}
+                                         className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[#1853FF]/20 focus:border-[#1853FF] transition-all font-mono text-sm"
+                                         placeholder={`Enter ${label.toLowerCase()}`}
+                                       />
+                                     )}
+                                   </div>
+                                 );
+                               })()}
 
                               {!(
                                 setting.entityType.toLowerCase().includes("termsandconditions") ||
@@ -279,9 +298,9 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
               </div>
             )
           ) : activeTab === "company" ? (
-            <CompanySettingsTab />
+            <CompanySettingsTab enabled={open} />
           ) : activeTab === "bank" ? (
-            <BankDetailsTab />
+            <BankDetailsTab enabled={open} />
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-slate-400 py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
               <p>{TABS.find(t => t.id === activeTab)?.label} coming soon...</p>
@@ -334,10 +353,10 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
   );
 };
 
-const CompanySettingsTab = () => {
+const CompanySettingsTab = ({ enabled }: { enabled: boolean }) => {
   const { token } = useAuth();
   const claims = decodeUserToken(token);
-  const { data: tenant, isLoading } = useTenant(claims?.tenantId);
+  const { data: tenant, isLoading } = useTenant(claims?.tenantId, enabled);
   const updateMutation = useUpdateTenant();
   const [formData, setFormData] = useState<Tenant | null>(null);
 
@@ -461,11 +480,11 @@ const CompanySettingsTab = () => {
   );
 };
 
-const BankDetailsTab = () => {
+const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
   const { token } = useAuth();
   const claims = decodeUserToken(token);
   const tenantId = claims?.tenantId;
-  const { data: banks, isLoading } = useBankDetails(tenantId);
+  const { data: banks, isLoading } = useBankDetails(tenantId, enabled);
   const addMutation = useAddBankDetail();
   const updateMutation = useUpdateBankDetail();
   const deleteMutation = useDeleteBankDetail();
