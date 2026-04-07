@@ -310,44 +310,46 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
 
 
         {/* Footer */}
-        <div className="px-8 py-6 border-t bg-slate-50/30 flex items-center justify-between shrink-0">
-          <div className="text-sm">
-            {hasChanges ? (
-              <span className="text-emerald-600 font-bold flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                Unsaved changes
-              </span>
-            ) : (
-              <span className="text-slate-400 font-medium">No changes</span>
-            )}
-          </div>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="px-8 h-12 border-slate-200 text-slate-600 hover:bg-slate-100 font-bold rounded-lg"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleUpdateAll}
-              disabled={!hasChanges || updateMutation.isPending}
-              className="px-10 h-12 bg-[#1853FF] hover:bg-[#1040D1] text-white font-bold shadow-lg shadow-blue-200 transition-all flex gap-2 rounded-lg"
-            >
-              {updateMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
-                </>
+        {activeTab === "basic" && (
+          <div className="px-8 py-6 border-t bg-slate-50/30 flex items-center justify-between shrink-0">
+            <div className="text-sm">
+              {hasChanges ? (
+                <span className="text-emerald-600 font-bold flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Unsaved changes
+                </span>
               ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save Changes
-                </>
+                <span className="text-slate-400 font-medium">No changes</span>
               )}
-            </Button>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="px-8 h-12 border-slate-200 text-slate-600 hover:bg-slate-100 font-bold rounded-lg"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateAll}
+                disabled={!hasChanges || updateMutation.isPending}
+                className="px-10 h-12 bg-[#1853FF] hover:bg-[#1040D1] text-white font-bold shadow-lg shadow-blue-200 transition-all flex gap-2 rounded-lg"
+              >
+                {updateMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );
