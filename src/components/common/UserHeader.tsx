@@ -1,5 +1,6 @@
 import React from "react";
-import { Bot, User, Shield, ChevronDown } from "lucide-react";
+import { Bot, User, Shield, ChevronDown, Settings } from "lucide-react";
+import { SettingsModal } from "../setting/SettingsModal";
 import { useAuth } from "../../auth/useAuth";
 import { decodeUserToken } from "../../lib/auth.utils";
 import { useChat } from "../../context/ChatContext";
@@ -9,6 +10,7 @@ import { Button } from "../ui/button";
 export const UserHeader = () => {
   const { token } = useAuth();
   const { isOpen, setIsOpen } = useChat();
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const user = decodeUserToken(token);
 
   if (!user) return null;
@@ -42,6 +44,16 @@ export const UserHeader = () => {
         </Button>
 
         <div className="h-8 w-px bg-slate-800 mx-1" />
+
+        <button 
+          onClick={() => setIsSettingsOpen(true)}
+          title="System Settings"
+          className="p-2 rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all active:scale-95 group"
+        >
+          <Settings className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />
+        </button>
+
+        <SettingsModal open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
         {/* User Info on the Right */}
         <div className="flex items-center gap-3 pl-2">
