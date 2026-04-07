@@ -387,7 +387,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             required
             value={form.leadSourceId}
             options={sources ?? []}
-            error={errors.leadStatusId}
+            error={errors.leadSourceId}
             onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
             disabled={isReadOnly}
           />
