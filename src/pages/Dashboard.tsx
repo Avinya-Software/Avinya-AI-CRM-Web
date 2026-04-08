@@ -27,6 +27,7 @@ import {
   BarChart3,
   Play,
   Check,
+  CalendarDays,
 } from "lucide-react";
 import { useDashboardOverview } from "../hooks/dashboard/useDashboardOverview";
 import { updateTask } from "../api/task.api";
@@ -65,10 +66,13 @@ interface HotLead {
 /* ================================================================
    MAIN COMPONENT
 ================================================================ */
+type Preset = "today" | "this_week" | "this_month" | "custom" | null;
+
 const Dashboard = () => {
-  const { data, loading, refresh } = useDashboardOverview();
+  const { data, loading, refresh, applyFilter, clearFilter, fetchWithDates, fromDate, setFromDate, toDate, setToDate } = useDashboardOverview();
   const navigate = useNavigate();
   const [quickUpdateOpen, setQuickUpdateOpen] = useState(false);
+  const [activePreset, setActivePreset] = useState<Preset>("today");
 
   const [showLeadModal, setShowLeadModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -78,6 +82,32 @@ const Dashboard = () => {
     open: boolean;
     type: "followup_today" | "followup_overdue" | "quotation_sent" | null;
   }>({ open: false, type: null });
+
+  const handlePreset = (preset: Preset) => {
+    setActivePreset(preset);
+    if (preset === "custom") {
+      // just reveal the custom date inputs, don't fetch yet
+      return;
+    }
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (preset === "today") {
+      fetchWithDates(todayStr, todayStr);
+    } else if (preset === "this_week") {
+      const d = new Date();
+      const day = d.getDay(); // 0 = Sun
+      const diffToMon = day === 0 ? -6 : 1 - day;
+      const mon = new Date(d);
+      mon.setDate(d.getDate() + diffToMon);
+      fetchWithDates(mon.toISOString().split("T")[0], todayStr);
+    } else if (preset === "this_month") {
+      const d = new Date();
+      const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+      fetchWithDates(firstDay.toISOString().split("T")[0], todayStr);
+    } else {
+      // null — clear all
+      clearFilter();
+    }
+  };
 
   const handleTaskStatusUpdate = async (occurrenceId: number, status: TaskStatus) => {
     try {
@@ -189,42 +219,130 @@ const Dashboard = () => {
     <div className="min-h-screen bg-slate-50">
       {/* ── HEADER ── */}
       <div className="bg-white border-b border-slate-100 px-6 py-4">
-        <div className="flex items-center justify-between max-w-screen-2xl mx-auto">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-600 rounded-lg">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 leading-tight">
-                Action Dashboard
-              </h1>
-              <p className="text-xs text-slate-400">
-                {new Date().toLocaleDateString("en-IN", {
-                  weekday: "long",
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {totalActions > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full">
-                <Bell className="w-3.5 h-3.5 text-red-500" />
-                <span className="text-xs font-bold text-red-600">
-                  {totalActions} pending
-                </span>
+        <div className="max-w-screen-2xl mx-auto space-y-3">
+
+          {/* ── ROW 1: Title + Refresh/Bell ── */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-600 rounded-lg">
+                <Activity className="w-5 h-5 text-white" />
               </div>
-            )}
-            <button
-              onClick={refresh}
-              className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-sm font-medium text-slate-600"
-            >
-              <RefreshCcw className="w-3.5 h-3.5" />
-              Refresh
-            </button>
+              <div>
+                <h1 className="text-xl font-bold text-slate-900 leading-tight">
+                  Action Dashboard
+                </h1>
+                <p className="text-xs text-slate-400">
+                  {new Date().toLocaleDateString("en-IN", {
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {totalActions > 0 && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full">
+                  <Bell className="w-3.5 h-3.5 text-red-500" />
+                  <span className="text-xs font-bold text-red-600">
+                    {totalActions} pending
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={refresh}
+                className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-sm font-medium text-slate-600"
+              >
+                <RefreshCcw className="w-3.5 h-3.5" />
+                Refresh
+              </button>
+            </div>
           </div>
+
+          {/* ── ROW 2: Preset filter bar ── */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <CalendarDays className="w-4 h-4 text-slate-400" />
+            {([
+              { label: "Today",      key: "today"      },
+              { label: "This Week",  key: "this_week"  },
+              { label: "This Month", key: "this_month" },
+              { label: "Custom",     key: "custom"     },
+            ] as { label: string; key: Preset }[]).map(({ label, key }) => (
+              <button
+                key={key!}
+                id={`dashboard-preset-${key}`}
+                onClick={() => handlePreset(key)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-150 ${
+                  activePreset === key
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                    : "bg-white text-slate-600 border-slate-200 hover:border-indigo-400 hover:text-indigo-600"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+
+            {/* Active filter badge */}
+            {(fromDate || toDate) && activePreset !== "custom" && (
+              <span className="text-[11px] text-slate-400 font-medium">
+                {fromDate} {toDate && fromDate !== toDate ? `→ ${toDate}` : ""}
+              </span>
+            )}
+
+            {/* Clear */}
+            {activePreset && (
+              <button
+                id="dashboard-clear-preset"
+                onClick={() => { setActivePreset(null); clearFilter(); }}
+                className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-red-500 transition-colors ml-1"
+                title="Clear filter"
+              >
+                <X className="w-3 h-3" /> Clear
+              </button>
+            )}
+          </div>
+
+          {/* ── ROW 3: Custom date inputs (only when Custom is selected) ── */}
+          {activePreset === "custom" && (() => {
+            const today = new Date().toISOString().split("T")[0];
+            return (
+              <div className="flex items-center gap-2 flex-wrap pl-6 animate-fadeIn">
+                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
+                  <span className="text-[11px] text-slate-400 font-medium">From</span>
+                  <input
+                    id="dashboard-from-date"
+                    type="date"
+                    value={fromDate ?? ""}
+                    max={toDate ? (toDate < today ? toDate : today) : today}
+                    onChange={(e) => setFromDate(e.target.value || null)}
+                    className="bg-transparent text-slate-700 text-xs font-semibold outline-none cursor-pointer"
+                  />
+                </div>
+                <span className="text-slate-300 text-sm">→</span>
+                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
+                  <span className="text-[11px] text-slate-400 font-medium">To</span>
+                  <input
+                    id="dashboard-to-date"
+                    type="date"
+                    value={toDate ?? ""}
+                    min={fromDate ?? undefined}
+                    max={today}
+                    onChange={(e) => setToDate(e.target.value || null)}
+                    className="bg-transparent text-slate-700 text-xs font-semibold outline-none cursor-pointer"
+                  />
+                </div>
+                <button
+                  id="dashboard-apply-dates"
+                  onClick={applyFilter}
+                  className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold tracking-wide transition-all duration-150"
+                >
+                  Apply
+                </button>
+              </div>
+            );
+          })()}
+
         </div>
       </div>
 

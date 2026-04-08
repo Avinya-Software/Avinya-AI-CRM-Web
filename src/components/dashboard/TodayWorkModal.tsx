@@ -122,7 +122,7 @@ const TodayWorkModal = ({ open, onClose, type }: TodayWorkModalProps) => {
                             {row.followUpDate || row.nextFollowupDate ? new Date(row.followUpDate || row.nextFollowupDate).toLocaleDateString() : 'N/A'}
                           </td>
                           <td className="px-4 py-3 text-slate-600 font-medium whitespace-nowrap">
-                            {row.contactPerson || row.leadName || row.fullName || 'Unknown'}
+                            {row.contactPerson || row.clientName || row.leadName || row.fullName || 'Unknown'}
                           </td>
                           <td className="px-4 py-3 text-slate-500 max-w-xs truncate" title={row.notes}>
                             {row.notes || '-'}
