@@ -10,6 +10,7 @@ import Pagination from "../components/leads/Pagination";
 import OrderFilterSheet from "../components/order/OrderFilterSheet";
 import OrderUpsertSheet from "../components/order/OrderUpsertSheet";
 import OrderViewSheet from "../components/order/OrderViewSheet";
+import InvoiceUpsertSheet from "../components/invoice/InvoiceUpsertSheet";
 import { usePermissions } from "../context/PermissionContext"; // ✅ PERMISSION
 import { useDebounce } from "../components/common/CommonHelper";
 
@@ -40,6 +41,8 @@ const Orders = () => {
   const [openViewSheet, setOpenViewSheet] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
+  const [openInvoiceSheet, setOpenInvoiceSheet] = useState(false);
+
 
   const deleteMutation = useDeleteOrder();
   const debouncedSearchTerm = useDebounce(searchInput, 500);
@@ -87,6 +90,12 @@ const Orders = () => {
     if (!canDeleteOrder) return; // ✅ protection
     deleteMutation.mutate(order.orderID);
   };
+
+  const handleCreateInvoice = (order: Order) => {
+    setSelectedOrder(order);
+    setOpenInvoiceSheet(true);
+  };
+
 
   const handleApplyFilters = (newFilters: OrderFilters) => {
     setFilters((prev) => ({
@@ -190,6 +199,7 @@ const Orders = () => {
           onEdit={handleEditOrder}
           onDelete={handleDeleteOrder}
           onAdd={handleAddOrder}
+          onCreateInvoice={handleCreateInvoice}
         />
 
         {/* PAGINATION */}
@@ -244,6 +254,16 @@ const Orders = () => {
           setSelectedOrder(null);
         }}
         order={selectedOrder}
+      />
+
+      {/* INVOICE UPSERT SHEET */}
+      <InvoiceUpsertSheet
+        open={openInvoiceSheet}
+        onClose={() => {
+          setOpenInvoiceSheet(false);
+          setSelectedOrder(null);
+        }}
+        sourceOrder={selectedOrder}
       />
     </>
   );

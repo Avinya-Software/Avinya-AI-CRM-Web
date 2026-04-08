@@ -39,6 +39,8 @@ import SmartRedirect from "./components/SmartRedirect";
 import QuickBooksSuccess from "./pages/QuickBooksSuccess";
 import QuickBookCustomers from "./pages/QuickBookCustomers";
 import QuickBookInvoices from "./pages/QuickBookInvoices";
+import Invoices from "./pages/Invoices";
+
 function App() {
   return (
     <>
@@ -181,6 +183,16 @@ function App() {
                 </RBACProtectedRoute>
               }
             />
+
+            <Route
+              path="/invoices"
+              element={
+                <RBACProtectedRoute module="invoice" action="view">
+                  <Invoices />
+                </RBACProtectedRoute>
+              }
+            />
+
 
             <Route
               path="/policies"

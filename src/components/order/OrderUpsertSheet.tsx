@@ -9,6 +9,9 @@ import { useCreateOrder, useDesignStatusDropdown, useOrderStatusDropdown, useUpd
 import { useCities } from "../../hooks/city/useCities";
 import { useStates } from "../../hooks/state/useStates";
 import { usePermissions } from "../../context/PermissionContext";
+import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
+import { TaxCategory } from "../../interfaces/quotation.interface";
+
 
 interface OrderUpsertSheetProps {
     open: boolean;
@@ -26,7 +29,9 @@ interface ProductItem {
     unitType: string;
     unitPrice: number;
     quantity: number;
+    taxCategoryID: string;
 }
+
 
 const OrderUpsertSheet = ({
     open,
@@ -53,7 +58,10 @@ const OrderUpsertSheet = ({
         cityID: "" as string,
         orderStatusID: "",
         designStatusID: "",
+        enableTax: false,
+        taxCategoryID: "" as string,
     });
+
 
     const [productItems, setProductItems] = useState<ProductItem[]>([{
         id: "1",
@@ -63,7 +71,9 @@ const OrderUpsertSheet = ({
         unitType: "",
         unitPrice: 0,
         quantity: 1,
+        taxCategoryID: "",
     }]);
+
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -75,8 +85,10 @@ const OrderUpsertSheet = ({
     );
     const { data: orderStatusData = [] } = useOrderStatusDropdown();
     const { data: designStatusData = [] } = useDesignStatusDropdown();
+    const { data: taxCategories = [] } = useTaxCategories();
     const createOrder = useCreateOrder();
     const updateOrder = useUpdateOrder();
+
 
     const handleStateChange = (stateID: string) => {
         setFormData(prev => ({ ...prev, stateID, cityID: "" }));
@@ -100,7 +112,10 @@ const OrderUpsertSheet = ({
                 cityID: order.cityID != null ? String(order.cityID) : "",
                 orderStatusID: order.status ? String(order.status) : "",
                 designStatusID: order.status ? String(order.status) : "",
+                enableTax: order.enableTax ?? false,
+                taxCategoryID: order.taxCategoryID || "",
             });
+
 
             setProductItems(
                 sourceItems.length > 0
@@ -115,7 +130,9 @@ const OrderUpsertSheet = ({
                             unitType: matchedProduct?.unitName || "", // ✅ lookup here
                             unitPrice: item.unitPrice || 0,
                             quantity: item.quantity || 1,
+                            taxCategoryID: item.taxCategoryID || "",
                         };
+
                     })
                     : [{
                         id: "1",
@@ -124,8 +141,10 @@ const OrderUpsertSheet = ({
                         description: "",
                         unitName: "",
                         unitPrice: 0,
-                        quantity: 1
+                        quantity: 1,
+                        taxCategoryID: ""
                     }]
+
             );
 
         } else if (sourceQuotation) {
@@ -141,8 +160,11 @@ const OrderUpsertSheet = ({
                 stateID: "",
                 cityID: "",
                 designStatusID: "",
-                orderStatusID: ""
+                orderStatusID: "",
+                enableTax: sourceQuotation.enableTax ?? false,
+                taxCategoryID: sourceQuotation.taxCategoryID || "",
             });
+
 
             const quotationItems = sourceQuotation.quotationItems
                 ?? sourceQuotation.items
@@ -159,8 +181,10 @@ const OrderUpsertSheet = ({
                         unitType: item.unitType || item.unitName || "",
                         unitPrice: item.unitPrice || item.rate || 0,
                         quantity: item.quantity || 1,
+                        taxCategoryID: item.taxCategoryID || "",
                     }))
-                    : [{ id: "1", orderItemId: null, productID: "", description: "", unitType: "", unitPrice: 0, quantity: 1 }]
+                    : [{ id: "1", orderItemId: null, productID: "", description: "", unitType: "", unitPrice: 0, quantity: 1, taxCategoryID: "" }]
+
             );
 
         } else {
@@ -176,13 +200,18 @@ const OrderUpsertSheet = ({
                 stateID: "",
                 cityID: "",
                 designStatusID: "",
-                orderStatusID: ""
+                orderStatusID: "",
+                enableTax: false,
+                taxCategoryID: "",
             });
+
 
             setProductItems([{
                 id: "1", orderItemId: null, productID: "",
                 description: "", unitType: "", unitPrice: 0, quantity: 1,
+                taxCategoryID: "",
             }]);
+
         }
 
         setErrors({});
@@ -213,9 +242,10 @@ const OrderUpsertSheet = ({
         firmID: sourceQuotation?.firmID ?? 1,
         designStatus: Number(formData.designStatusID),
         assignedDesignTo: null,
-        enableTax: false,
-        taxCategoryID: null,
+        enableTax: formData.enableTax,
+        taxCategoryID: formData.taxCategoryID || null,
         isUseBillingAddress: formData.isUseBillingAddress,
+
         shippingAddress: formData.shippingAddress || null,
         stateID: formData.stateID ? Number(formData.stateID) : null,
         cityID: formData.cityID ? Number(formData.cityID) : null,
@@ -225,9 +255,10 @@ const OrderUpsertSheet = ({
             description: i.description || null,
             quantity: i.quantity,
             unitPrice: i.unitPrice,
-            taxCategoryID: null,
+            taxCategoryID: i.taxCategoryID || null,
             lineTotal: i.unitPrice * i.quantity,
         })),
+
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -257,7 +288,10 @@ const OrderUpsertSheet = ({
         setProductItems(prev => [...prev, {
             id: Date.now().toString(), orderItemId: null,
             productID: "", description: "", unitType: "", unitPrice: 0, quantity: 1,
+            taxCategoryID: formData.taxCategoryID,
         }]);
+
+
     };
 
     const removeProductItem = (id: string) => {
@@ -289,6 +323,15 @@ const OrderUpsertSheet = ({
     };
 
     const subtotal = productItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+    const totalTax = formData.enableTax
+        ? productItems.reduce((sum, i) => {
+            const cat = (taxCategories as TaxCategory[]).find(t => t.taxCategoryID === i.taxCategoryID);
+            const pct = cat?.rate ?? 0;
+            return sum + (i.unitPrice * i.quantity * pct) / 100;
+        }, 0)
+        : 0;
+    const grandTotal = subtotal + totalTax;
+
 
     // Guard: if no relevant permission, don't render the sheet
     if (!open) return null;
@@ -307,7 +350,7 @@ const OrderUpsertSheet = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
-            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] overflow-y-auto">
 
                 {/* HEADER */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 sticky top-0 bg-white z-10">
@@ -379,18 +422,35 @@ const OrderUpsertSheet = ({
                         {errors.expectedDeliveryDate && <p className="text-red-500 text-xs mt-1">{errors.expectedDeliveryDate}</p>}
                     </div>
 
-                    {/* Use Billing Address toggle */}
-                    <div className="flex items-center justify-between py-2 px-4 bg-slate-50 rounded-lg">
-                        <span className="text-sm font-medium text-slate-700">Use Billing Address</span>
-                        <button
-                            type="button"
-                            disabled={isFormReadOnly}
-                            onClick={() => setFormData({ ...formData, isUseBillingAddress: !formData.isUseBillingAddress })}
-                            className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.isUseBillingAddress ? "bg-blue-900" : "bg-slate-300"}`}
-                        >
-                            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition transform shadow-sm ${formData.isUseBillingAddress ? "translate-x-6" : "translate-x-0"}`} />
-                        </button>
+                    {/* Enable Tax Toggle */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center justify-between py-2 px-4 bg-slate-50 rounded-lg">
+                            <span className="text-sm font-medium text-slate-700">Enable Tax</span>
+                            <button
+                                type="button"
+                                disabled={isFormReadOnly}
+                                onClick={() => setFormData({ ...formData, enableTax: !formData.enableTax })}
+                                className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.enableTax ? "bg-blue-900" : "bg-slate-300"}`}
+                            >
+                                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition transform shadow-sm ${formData.enableTax ? "translate-x-6" : "translate-x-0"}`} />
+                            </button>
+                        </div>
+                        {/* Use Billing Address toggle */}
+
+                        <div className="flex items-center justify-between py-2 px-4 bg-slate-50 rounded-lg">
+                            <span className="text-sm font-medium text-slate-700">Use Billing Address</span>
+                            <button
+                                type="button"
+                                disabled={isFormReadOnly}
+                                onClick={() => setFormData({ ...formData, isUseBillingAddress: !formData.isUseBillingAddress })}
+                                className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.isUseBillingAddress ? "bg-blue-900" : "bg-slate-300"}`}
+                            >
+                                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition transform shadow-sm ${formData.isUseBillingAddress ? "translate-x-6" : "translate-x-0"}`} />
+                            </button>
+                        </div>
                     </div>
+
+
 
                     {/* Shipping address + State + City */}
                     {!formData.isUseBillingAddress && (
@@ -399,8 +459,7 @@ const OrderUpsertSheet = ({
                                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                     Shipping Address <span className="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="text"
+                                <textarea
                                     value={formData.shippingAddress}
                                     onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
                                     placeholder="Enter shipping address"
@@ -473,7 +532,11 @@ const OrderUpsertSheet = ({
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Unit</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Unit Price</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Qty</th>
+                                        {formData.enableTax && (
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Tax Category</th>
+                                        )}
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Total</th>
+
                                         {!isFormReadOnly && <th className="px-3 py-2 w-10"></th>}
                                     </tr>
                                 </thead>
@@ -520,6 +583,7 @@ const OrderUpsertSheet = ({
                                                     className="w-24 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 read-only:bg-slate-50 read-only:text-slate-500"
                                                 />
                                             </td>
+
                                             <td className="px-3 py-2">
                                                 <input
                                                     type="number"
@@ -531,6 +595,23 @@ const OrderUpsertSheet = ({
                                                     className="w-16 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 read-only:bg-slate-50 read-only:text-slate-500"
                                                 />
                                             </td>
+                                            {formData.enableTax && (
+                                                <td className="px-3 py-2">
+                                                    <select
+                                                        value={item.taxCategoryID}
+                                                        onChange={(e) => updateItem(item.id, "taxCategoryID", e.target.value)}
+                                                        disabled={isFormReadOnly}
+                                                        className="w-36 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
+                                                    >
+                                                        <option value="">No Tax</option>
+                                                        {(taxCategories as TaxCategory[])?.map(t => (
+                                                            <option key={t.taxCategoryID} value={t.taxCategoryID}>
+                                                                {t.taxName} 
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </td>
+                                            )}
                                             <td className="px-3 py-2 text-slate-700 font-medium whitespace-nowrap">
                                                 ₹{(item.unitPrice * item.quantity).toFixed(2)}
                                             </td>
@@ -608,10 +689,17 @@ const OrderUpsertSheet = ({
                             <span className="text-slate-600">Subtotal:</span>
                             <span className="font-semibold text-slate-800">₹{subtotal.toFixed(2)}</span>
                         </div>
+                        {formData.enableTax && (
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-slate-600">Total Tax:</span>
+                                <span className="font-semibold text-slate-800">₹{totalTax.toFixed(2)}</span>
+                            </div>
+                        )}
                         <div className="flex items-center justify-between text-base font-bold border-t border-slate-200 pt-2">
                             <span className="text-slate-900">Grand Total:</span>
-                            <span className="text-blue-900">₹{subtotal.toFixed(2)}</span>
+                            <span className="text-blue-900">₹{grandTotal.toFixed(2)}</span>
                         </div>
+
                     </div>
 
                     {/* Submit */}

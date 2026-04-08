@@ -68,7 +68,9 @@ const MODULE_ICONS: Record<string, any> = {
   project: Briefcase,
   task: CheckSquare,
   expense: DollarSign,
+  invoice: FileText,
 };
+
 
 /* ================= GROUP ICONS ================= */
 
@@ -92,6 +94,7 @@ const MODULE_GROUPS: Record<string, string> = {
   task: "Work Management",
 
   expense: "Finance",
+  invoice: "Finance",
 };
 
 const GROUP_ORDER = ["CRM", "Work Management", "Finance", "Other"];
@@ -167,17 +170,17 @@ const Sidebar = () => {
         project: 6,
         task: 7,
         expense: 8,
+        invoice: 9,
       };
+
       const orderA = fixedOrder[a.moduleKey] ?? (a.order + 10);
       const orderB = fixedOrder[b.moduleKey] ?? (b.order + 10);
       return orderA - orderB;
     })
     .reduce((groups: any, item) => {
       const group = MODULE_GROUPS[item.moduleKey] || "Other";
-
       if (!groups[group]) groups[group] = [];
       groups[group].push(item);
-
       return groups;
     }, {});
 

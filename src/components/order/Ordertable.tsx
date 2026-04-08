@@ -14,7 +14,9 @@ interface Props {
     onEdit: (order: Order) => void;
     onDelete: (order: Order) => void;
     onAdd: () => void;
+    onCreateInvoice: (order: Order) => void;
 }
+
 
 const STATUS_STYLE: Record<number, string> = {
     1: "bg-yellow-100 text-yellow-700",
@@ -37,10 +39,14 @@ const DESIGN_STATUS_STYLE: Record<number, string> = {
 const ActionMenu = ({
     onEdit,
     onDeleteClick,
+    onCreateInvoice,
 }: {
     onEdit: () => void;
     onDeleteClick: () => void;
+    onCreateInvoice: () => void;
 }) => {
+
+
     const [open, setOpen] = useState(false);
     const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
     const btnRef = useRef<HTMLButtonElement>(null);
@@ -77,7 +83,8 @@ const ActionMenu = ({
 
             {open && (
                 <>
-                    <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpen(false); }} />
+
 
                     <div
                         className="fixed z-50 w-36 bg-white rounded-lg shadow-lg border py-1 text-sm"
@@ -85,18 +92,29 @@ const ActionMenu = ({
                     >
 
                         <button
-                            onClick={() => { setOpen(false); onEdit(); }}
+                            onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }}
                             className="flex items-center gap-2 w-full px-3 py-2 hover:bg-slate-50 text-slate-700"
                         >
                             <Pencil size={14} /> Edit
                         </button>
 
+
                         <button
-                            onClick={() => { setOpen(false); onDeleteClick(); }}
-                            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-red-50 text-red-600"
+                            onClick={(e) => { e.stopPropagation(); setOpen(false); onCreateInvoice(); }}
+                            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-slate-50 text-slate-700 border-t"
+                        >
+                            <FileText size={14} /> Create Invoice
+                        </button>
+
+
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setOpen(false); onDeleteClick(); }}
+                            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-red-50 text-red-600 border-t"
                         >
                             <Trash2 size={14} /> Delete
                         </button>
+
+
                     </div>
                 </>
             )}
@@ -106,7 +124,8 @@ const ActionMenu = ({
 
 /* ================= MAIN TABLE ================= */
 
-const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) => {
+const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateInvoice }: Props) => {
+
 
     /* ✅ PERMISSIONS ADDED */
     const { hasPermission } = usePermissions();
@@ -269,7 +288,9 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd }: Props) =
                                             onDeleteClick={() =>
                                                 canDeleteOrder && setConfirmDelete(order)
                                             }
+                                            onCreateInvoice={() => onCreateInvoice(order)}
                                         />
+
                                     </div>
                                 </td>
                             </tr>
