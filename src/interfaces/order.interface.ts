@@ -83,6 +83,7 @@ export interface Order {
   // Work order
   workOrder?: any;
   bill?: any;
+  isInvoiceCreated?: boolean;
 }
 
 // ── Filters ────────────────────────────────────────────────────────

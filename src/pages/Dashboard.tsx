@@ -241,9 +241,32 @@ const Dashboard = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* ── Date Presets (Desktop) ── */}
+              <div className="hidden lg:flex items-center gap-1.5 bg-slate-50 border border-slate-100 p-1 rounded-xl mr-2">
+                {([
+                  { label: "Today",      key: "today"      },
+                  { label: "This Week",  key: "this_week"  },
+                  { label: "This Month", key: "this_month" },
+                  { label: "Custom",     key: "custom"     },
+                ] as { label: string; key: Preset }[]).map(({ label, key }) => (
+                  <button
+                    key={key!}
+                    id={`dashboard-preset-${key}`}
+                    onClick={() => handlePreset(key)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+                      activePreset === key
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                        : "text-slate-500 hover:text-indigo-600 hover:bg-white"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
               {totalActions > 0 && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full shrink-0">
                   <Bell className="w-3.5 h-3.5 text-red-500" />
                   <span className="text-xs font-bold text-red-600">
                     {totalActions} pending
@@ -252,54 +275,52 @@ const Dashboard = () => {
               )}
               <button
                 onClick={refresh}
-                className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-sm font-medium text-slate-600"
+                className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 rounded-xl transition-all active:scale-95 text-xs font-bold text-white shadow-lg shadow-slate-200"
               >
                 <RefreshCcw className="w-3.5 h-3.5" />
-                Refresh
               </button>
             </div>
           </div>
 
-          {/* ── ROW 2: Preset filter bar ── */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <CalendarDays className="w-4 h-4 text-slate-400" />
-            {([
-              { label: "Today",      key: "today"      },
-              { label: "This Week",  key: "this_week"  },
-              { label: "This Month", key: "this_month" },
-              { label: "Custom",     key: "custom"     },
-            ] as { label: string; key: Preset }[]).map(({ label, key }) => (
-              <button
-                key={key!}
-                id={`dashboard-preset-${key}`}
-                onClick={() => handlePreset(key)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-150 ${
-                  activePreset === key
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                    : "bg-white text-slate-600 border-slate-200 hover:border-indigo-400 hover:text-indigo-600"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          {/* ── ROW 2: Mobile Preset bar + Active Badge ── */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+              {([
+                { label: "Today",      key: "today"      },
+                { label: "This Week",  key: "this_week"  },
+                { label: "This Month", key: "this_month" },
+                { label: "Custom",     key: "custom"     },
+              ] as { label: string; key: Preset }[]).map(({ label, key }) => (
+                <button
+                  key={key!}
+                  onClick={() => handlePreset(key)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border whitespace-nowrap ${
+                    activePreset === key
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : "bg-white text-slate-600 border-slate-200"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
 
             {/* Active filter badge */}
             {(fromDate || toDate) && activePreset !== "custom" && (
-              <span className="text-[11px] text-slate-400 font-medium">
-                {fromDate} {toDate && fromDate !== toDate ? `→ ${toDate}` : ""}
-              </span>
-            )}
-
-            {/* Clear */}
-            {activePreset && (
-              <button
-                id="dashboard-clear-preset"
-                onClick={() => { setActivePreset(null); clearFilter(); }}
-                className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-red-500 transition-colors ml-1"
-                title="Clear filter"
-              >
-                <X className="w-3 h-3" /> Clear
-              </button>
+              <div className="flex items-center gap-2 px-2.5 py-1 bg-white border border-slate-100 rounded-lg shadow-sm">
+                 <CalendarDays className="w-3.5 h-3.5 text-indigo-500" />
+                 <span className="text-[10px] text-slate-600 font-bold uppercase tracking-tight">
+                   {fromDate} {toDate && fromDate !== toDate ? `→ ${toDate}` : ""}
+                 </span>
+                 {activePreset && (
+                  <button
+                    onClick={() => { setActivePreset(null); clearFilter(); }}
+                    className="p-0.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                 )}
+              </div>
             )}
           </div>
 

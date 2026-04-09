@@ -40,10 +40,12 @@ const ActionMenu = ({
     onEdit,
     onDeleteClick,
     onCreateInvoice,
+    isInvoiceCreated,
 }: {
     onEdit: () => void;
     onDeleteClick: () => void;
     onCreateInvoice: () => void;
+    isInvoiceCreated?: boolean;
 }) => {
 
 
@@ -99,12 +101,14 @@ const ActionMenu = ({
                         </button>
 
 
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setOpen(false); onCreateInvoice(); }}
-                            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-slate-50 text-slate-700 border-t"
-                        >
-                            <FileText size={14} /> Create Invoice
-                        </button>
+                        {!isInvoiceCreated && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setOpen(false); onCreateInvoice(); }}
+                                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-slate-50 text-slate-700 border-t"
+                            >
+                                <FileText size={14} /> Create Invoice
+                            </button>
+                        )}
 
 
                         <button
@@ -289,6 +293,7 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateIn
                                                 canDeleteOrder && setConfirmDelete(order)
                                             }
                                             onCreateInvoice={() => onCreateInvoice(order)}
+                                            isInvoiceCreated={order.isInvoiceCreated}
                                         />
 
                                     </div>
