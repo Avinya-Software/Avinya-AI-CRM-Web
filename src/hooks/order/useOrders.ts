@@ -1,36 +1,29 @@
 // src/hooks/order/useOrders.ts
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { OrderFilters } from "../../interfaces/order.interface";
 import { createOrder, deleteOrder, getDesignStatusDropdown, getOrderById, getOrderDropdown, getOrders, getOrderStatusDropdown, updateOrder } from "../../api/order.api";
 
 
 // ── Fetch orders with filters ──────────────────────────────────────
-export const useOrders = (filters: OrderFilters) => {
-  return useQuery({
-    queryKey:  ['orders', filters.search, filters.page, filters.pageSize, filters.status],
-    queryFn: () => getOrders(filters),
-    staleTime: 30000,
+export const useOrders = () => {
+  return useMutation({
+    mutationFn: (filters: OrderFilters) => getOrders(filters),
   });
 };
 
 // ── Fetch single order by ID ───────────────────────────────────────
-export const useOrder = (id: string | null) => {
-  return useQuery({
-    queryKey: ["order", id],
-    queryFn: () => getOrderById(id!),
-    enabled: !!id,
-    staleTime: 30000,
+export const useOrder = () => {
+  return useMutation({
+    mutationFn: (id: string) => getOrderById(id),
   });
 };
 
 // ── Fetch order dropdown list ──────────────────────────────────────
 export const useOrderDropdown = () => {
-  return useQuery({
-    queryKey: ["order-dropdown"],
-    queryFn: getOrderDropdown,
-    staleTime: 60000,
+  return useMutation({
+    mutationFn: () => getOrderDropdown(),
   });
 };
 
@@ -82,18 +75,14 @@ export const useDeleteOrder = () => {
 
 // ── Fetch order status dropdown list ──────────────────────────────────────
 export const useOrderStatusDropdown = () => {
-  return useQuery({
-    queryKey: ["order-status-dropdown"],
-    queryFn: getOrderStatusDropdown,
-    staleTime: 60000,
+  return useMutation({
+    mutationFn: () => getOrderStatusDropdown(),
   });
 };
 
 // ── Fetch design status dropdown list ──────────────────────────────────────
 export const useDesignStatusDropdown = () => {
-  return useQuery({
-    queryKey: ["design-status-dropdown"],
-    queryFn: getDesignStatusDropdown,
-    staleTime: 60000,
+  return useMutation({
+    mutationFn: () => getDesignStatusDropdown(),
   });
 };

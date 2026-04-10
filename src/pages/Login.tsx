@@ -5,8 +5,6 @@ import { useLoginAdmin } from "../hooks/admin/useLoginAdmin";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePermissions } from "../context/PermissionContext";
 import { useAuth } from "../auth/useAuth";
-import { useDispatch } from "react-redux";
-import { loginSuccess } from "../store/authSlice";
 import { toast } from "react-hot-toast";
 
 type LoginErrors = { email?: string; password?: string };
@@ -20,7 +18,6 @@ const Login = () => {
   const queryClient = useQueryClient();
   const { isReady } = usePermissions();
   const [loginDone, setLoginDone] = useState(false);
-  const dispatch = useDispatch();
   const { login: authLogin } = useAuth();
 
   const { mutate: loginAdmin, isPending: adminLoading, isError: adminError, error: adminErr } = useLoginAdmin();
@@ -44,7 +41,6 @@ const Login = () => {
         onSuccess: (res) => {
           const data = res.data;
           authLogin(data.token, data.userId);
-          dispatch(loginSuccess(data));
           queryClient.invalidateQueries({ queryKey: ["user-permissions"] });
           queryClient.invalidateQueries({ queryKey: ["user-menu"] });
           setLoginDone(true);

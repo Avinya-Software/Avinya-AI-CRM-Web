@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MoreVertical, Check } from "lucide-react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { useRenewalStatuses } from "../../hooks/renewal/useRenewalStatuses";
@@ -49,9 +49,14 @@ const RenewalTable = ({
 
   /*   API HOOKS   */
 
-  const { data: statuses = [] } = useRenewalStatuses();
-  const { mutate: updateStatus, isPending } =
-    useUpdateRenewalStatus();
+  const renewalStatusesMutation = useRenewalStatuses();
+  const { mutate: updateStatus, isPending } = useUpdateRenewalStatus();
+
+  useEffect(() => {
+    renewalStatusesMutation.mutate(undefined);
+  }, []);
+
+  const statuses: any[] = renewalStatusesMutation.data ?? [];
 
   /*   DROPDOWN POSITION   */
 

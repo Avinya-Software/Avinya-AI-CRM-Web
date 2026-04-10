@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
 import { X, Edit2, Plus, Clock, CheckSquare, Loader2 } from "lucide-react";
@@ -57,9 +57,20 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit }: Props) =>
   const canEditProject = hasPermission("project", "edit");
   const canAddTask = hasPermission("task", "add");
 
-  const { data: projectFetch, isLoading } = useProjectById(projectId);
+  const projectByIdMutation = useProjectById();
+  const teamsDropdownMutation = useGetTeamsDropdown();
   const { mutate: addTask, isPending: addingTask } = useCreateTask();
-  const { data: teamResponse } = useGetTeamsDropdown();
+
+  useEffect(() => {
+    if (projectId) projectByIdMutation.mutate(projectId);
+  }, [projectId]);
+
+  useEffect(() => {
+    teamsDropdownMutation.mutate(undefined);
+  }, []);
+
+  const { data: projectFetch, isPending: isLoading } = projectByIdMutation;
+  const { data: teamResponse } = teamsDropdownMutation;
 
   const project = projectFetch || initialData;
 
@@ -354,11 +365,13 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit }: Props) =>
 
                   <div className="flex flex-col gap-1">
                     <label className="block text-xs font-medium text-slate-500 mb-1">Due Date & Time *</label>
-                    <DatePicker 
+                    <DatePicker
                       className="w-full h-9 border-slate-200 rounded-lg text-sm bg-white"
                       showTime
+                      format="YYYY-MM-DD HH:mm"
+                      placeholder="Select date & time"
                       value={taskForm.dueDate ? dayjs(taskForm.dueDate) : null}
-                      onChange={(date, dateString) => 
+                      onChange={(date, dateString) =>
                         setTaskForm({ ...taskForm, dueDate: Array.isArray(dateString) ? dateString[0] : dateString })
                       }
                     />

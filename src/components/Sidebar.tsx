@@ -124,7 +124,15 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
 
-  const { data: menuResponse, isLoading } = useGetUserMenu(userId, token);
+  const userMenuMutation = useGetUserMenu();
+
+  useEffect(() => {
+    if (userId && token) {
+      userMenuMutation.mutate(userId);
+    }
+  }, [userId, token]);
+
+  const { data: menuResponse, isPending: isLoading } = userMenuMutation;
   const { hasPermission } = usePermissions();
 
   /* ================= CACHE MENU ================= */

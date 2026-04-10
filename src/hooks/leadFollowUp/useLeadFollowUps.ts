@@ -1,11 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getFollowUpsByLeadId } from "../../api/leadFollowUp.api";
 import { LeadFollowUp } from "../../interfaces/lead.interface";
 
-export const useLeadFollowUps = (leadId: string | null) => {
-  return useQuery<LeadFollowUp[]>({
-    queryKey: ["lead-followups", leadId],
-    queryFn: () => getFollowUpsByLeadId(leadId!),
-    enabled: !!leadId,
+export const useLeadFollowUps = () => {
+  return useMutation<LeadFollowUp[], Error, string>({
+    mutationFn: (leadId: string) => getFollowUpsByLeadId(leadId),
   });
 };

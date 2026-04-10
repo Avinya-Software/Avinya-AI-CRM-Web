@@ -299,6 +299,8 @@ const RecurringModal = ({
               </label>
               <DatePicker
                 className="w-full h-11 border-2 border-slate-300 rounded-lg"
+                format="YYYY-MM-DD"
+                placeholder="Select end date"
                 value={endsOn ? dayjs(endsOn) : null}
                 onChange={(date, dateString) => setEndsOn(Array.isArray(dateString) ? dateString[0] : dateString)}
               />

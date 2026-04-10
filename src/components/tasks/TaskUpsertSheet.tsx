@@ -59,8 +59,16 @@ const TaskUpsertSheet = ({
     yearDay?: number;
   } | null | undefined>(null);
 
-  const { data: teamResponse } = useGetTeamsDropdown();
-  const { data: usersResponse } = useUsersDropdown();
+  const teamsDropdownMutation = useGetTeamsDropdown();
+  const usersDropdownMutation = useUsersDropdown();
+
+  useEffect(() => {
+    teamsDropdownMutation.mutate(undefined);
+    usersDropdownMutation.mutate(undefined);
+  }, []);
+
+  const { data: teamResponse } = teamsDropdownMutation;
+  const { data: usersResponse } = usersDropdownMutation;
   const createTeam = useCreateTeam();
   const [teamOptions, setTeamOptions] = useState<ComboboxOption[]>([]);
 
@@ -352,6 +360,7 @@ const TaskUpsertSheet = ({
               <DatePicker
                 showTime
                 format="YYYY-MM-DD HH:mm"
+                placeholder="Select due date & time"
                 className={`w-full h-10 rounded-lg ${errors.dueDateTime ? "border-red-500" : "border-slate-300"}`}
                 value={formData.dueDateTime ? dayjs(formData.dueDateTime) : null}
                 onChange={(date, dateString) =>

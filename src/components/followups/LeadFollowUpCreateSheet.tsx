@@ -49,7 +49,13 @@ const LeadFollowUpCreateSheet = ({
 
   const createFollowUp = useCreateFollowUp();
   const updateFollowUp = useUpdateFollowUp();
-  const { data: employees } = useUsersDropdown();
+  const usersDropdownMutation = useUsersDropdown();
+
+  useEffect(() => {
+    if (open) usersDropdownMutation.mutate(undefined);
+  }, [open]);
+
+  const { data: employees } = usersDropdownMutation;
 
   const isPending = createFollowUp.isPending || updateFollowUp.isPending;
 
@@ -186,6 +192,8 @@ const LeadFollowUpCreateSheet = ({
               </label>
               <DatePicker
                 className={`w-full h-10 rounded-lg ${errors.followUpDate ? "border-red-500" : "border-slate-300"}`}
+                format="YYYY-MM-DD"
+                placeholder="Select follow-up date"
                 value={formData.followUpDate ? dayjs(formData.followUpDate) : null}
                 onChange={(date, dateString) =>
                   setFormData({ ...formData, followUpDate: Array.isArray(dateString) ? dateString[0] : dateString })
@@ -222,6 +230,8 @@ const LeadFollowUpCreateSheet = ({
             </label>
             <DatePicker
               className="w-full h-10 border-slate-300 rounded-lg"
+              format="YYYY-MM-DD"
+              placeholder="Select next follow-up date"
               value={formData.nextFollowupDate ? dayjs(formData.nextFollowupDate) : null}
               onChange={(date, dateString) =>
                 setFormData({ ...formData, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })

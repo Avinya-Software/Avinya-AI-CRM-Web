@@ -1,5 +1,5 @@
 // src/pages/Products.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 
 import { useProducts } from "../hooks/product/useProducts";
@@ -26,12 +26,13 @@ const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const debouncedSearchTerm = useDebounce(search, 500);
 
-  const { data, isLoading, isFetching, refetch } = useProducts({
-    pageNumber,
-    pageSize,
-    status,
-    search: debouncedSearchTerm,
-  });
+  const productsMutation = useProducts();
+
+  useEffect(() => {
+    productsMutation.mutate({ pageNumber, pageSize, status, search: debouncedSearchTerm });
+  }, [pageNumber, pageSize, status, debouncedSearchTerm]);
+
+  const { data, isPending: isLoading } = productsMutation;
 
   const products: Product[] = data?.data?.data ?? [];
   const totalRecords: number = data?.data?.totalRecords ?? 0;
@@ -52,7 +53,7 @@ const Products = () => {
   };
 
   const handleSuccess = () => {
-    refetch();
+    productsMutation.mutate({ pageNumber, pageSize, status, search: debouncedSearchTerm });
     setOpenSheet(false);
     setSelectedProduct(null);
   };
@@ -124,7 +125,7 @@ const Products = () => {
         {/* TABLE */}
         <ProductTable
           data={products}
-          loading={isLoading || isFetching}
+          loading={isLoading}
           onEdit={canUpdate ? handleEdit : () => { }} // ✅ Protected
         />
 

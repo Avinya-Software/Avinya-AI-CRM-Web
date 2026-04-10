@@ -207,11 +207,13 @@ const AddFollowUpForm = ({ leadId, onSuccess, onCancel,  editData,}: AddFollowUp
       <label className="text-xs font-medium text-slate-500 block mb-1">
         Next Follow-up Date & Time
       </label>
-      <DatePicker 
+      <DatePicker
         showTime
+        format="YYYY-MM-DD HH:mm"
+        placeholder="Select date & time"
         className="w-full h-10 border-slate-200 rounded-lg"
         value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
-        onChange={(date, dateString) => 
+        onChange={(date, dateString) =>
           setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
         }
       />
@@ -265,7 +267,13 @@ const LeadDetailSheet = ({
   const canAddQuotation = hasPermission("quotation", "add");
 
   const leadId = lead?.leadID ?? lead?.leadId ?? null;
-  const { data, isLoading, isError } = useLeadDetails(leadId);
+  const leadDetailsMutation = useLeadDetails();
+
+  useEffect(() => {
+    if (leadId) leadDetailsMutation.mutate(leadId);
+  }, [leadId]);
+
+  const { data, isPending: isLoading, isError } = leadDetailsMutation;
 
   // Reset when lead changes
   useEffect(() => {

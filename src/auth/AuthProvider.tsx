@@ -1,44 +1,36 @@
 import { useState } from "react";
 import { AuthContext } from "./AuthContext";
-import { saveToken, saveUserId, clearToken, clearUserId, getToken, getUserId } from "../utils/token";
+import { storage } from "../utils/storage";
 
-// ── One-time migration: move old unprefixed keys to new prefixed keys ──────────
-const migrateOldToken = () => {
-  if (!getToken()) {
-    const oldToken = localStorage.getItem("token");
-    if (oldToken) {
-      saveToken(oldToken);
-      localStorage.removeItem("token");
-    }
-  }
-  if (!getUserId()) {
-    const oldUserId = localStorage.getItem("userId");
-    if (oldUserId) {
-      saveUserId(oldUserId);
-      localStorage.removeItem("userId");
-    }
-  }
+const isTokenExpired = (token: string): boolean => {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return Date.now() >= payload.exp * 1000;
+  } catch { return true; }
 };
-migrateOldToken();
-// ──────────────────────────────────────────────────────────────────────────────
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [token, setToken] = useState<string | null>(getToken());
-  const [userId, setUserId] = useState<string | null>(getUserId());
+  const [token, setToken] = useState<string | null>(() => {
+    const t = storage.getToken();
+    return t && !isTokenExpired(t) ? t : null;
+  });
+  const [userId, setUserId] = useState<string | null>(storage.getUserId());
 
   const login = (jwt: string, id: string) => {
-    saveToken(jwt);
-    saveUserId(id);
+    storage.setToken(jwt);
+    storage.setUserId(id);
     setToken(jwt);
     setUserId(id);
   };
 
   const logout = () => {
-    clearToken();
-    clearUserId();
+    storage.clearToken();
+    storage.clearUserId();
     localStorage.removeItem("advisor");
     setToken(null);
     setUserId(null);
+    window.location.href = "/login";
   };
 
   return (

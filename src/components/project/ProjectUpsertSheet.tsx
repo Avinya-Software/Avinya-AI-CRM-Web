@@ -60,12 +60,20 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
         getCustomerDropdownApi().then(setCustomers);
     }, []);
 
-    const { data: usersResponse } = useUsersDropdown();
+    const usersDropdownMutation = useUsersDropdown();
+    const teamsDropdownMutation = useGetTeamsDropdown();
+
+    useEffect(() => {
+        usersDropdownMutation.mutate(undefined);
+        teamsDropdownMutation.mutate(undefined);
+    }, []);
+
+    const usersResponse = usersDropdownMutation.data;
     const userOptions: ComboboxOption[] = (usersResponse ?? []).map(
         (u: any) => ({ value: String(u.id), label: u.fullName })
     );
 
-    const { data: teamResponse } = useGetTeamsDropdown();
+    const teamResponse = teamsDropdownMutation.data;
     const teamOptions: ComboboxOption[] = (teamResponse?.data ?? []).map(
         (t: any) => ({ value: String(t.id), label: t.name })
     );
@@ -326,10 +334,12 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                     <div className="grid grid-cols-3 gap-3">
                         <div>
                             <label className="text-sm font-medium">Start Date</label>
-                            <DatePicker 
+                            <DatePicker
                                 className="w-full h-10 border-slate-300 rounded-lg mt-1"
+                                format="YYYY-MM-DD"
+                                placeholder="Select start date"
                                 value={form.startDate ? dayjs(form.startDate) : null}
-                                onChange={(date, dateString) => 
+                                onChange={(date, dateString) =>
                                     setForm({ ...form, startDate: Array.isArray(dateString) ? dateString[0] : dateString })
                                 }
                                 disabled={isReadOnly}
@@ -337,10 +347,12 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                         </div>
                         <div>
                             <label className="text-sm font-medium">End Date</label>
-                            <DatePicker 
+                            <DatePicker
                                 className="w-full h-10 border-slate-300 rounded-lg mt-1"
+                                format="YYYY-MM-DD"
+                                placeholder="Select end date"
                                 value={form.endDate ? dayjs(form.endDate) : null}
-                                onChange={(date, dateString) => 
+                                onChange={(date, dateString) =>
                                     setForm({ ...form, endDate: Array.isArray(dateString) ? dateString[0] : dateString })
                                 }
                                 disabled={isReadOnly}
@@ -348,10 +360,12 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                         </div>
                         <div>
                             <label className="text-sm font-medium">Deadline</label>
-                            <DatePicker 
+                            <DatePicker
                                 className="w-full h-10 border-slate-300 rounded-lg mt-1"
+                                format="YYYY-MM-DD"
+                                placeholder="Select deadline"
                                 value={form.deadline ? dayjs(form.deadline) : null}
-                                onChange={(date, dateString) => 
+                                onChange={(date, dateString) =>
                                     setForm({ ...form, deadline: Array.isArray(dateString) ? dateString[0] : dateString })
                                 }
                                 disabled={isReadOnly}

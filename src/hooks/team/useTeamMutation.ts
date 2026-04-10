@@ -1,6 +1,6 @@
 // hooks/team/useTeam.ts
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   getTeamsDropdown,
@@ -14,10 +14,8 @@ import {
 /* ---------------- GET DROPDOWN ---------------- */
 
 export const useGetTeamsDropdown = () => {
-  return useQuery({
-    queryKey: ["teams-dropdown"],
-    queryFn: getTeamsDropdown,
-    staleTime: 30000,
+  return useMutation({
+    mutationFn: () => getTeamsDropdown(),
   });
 };
 

@@ -38,11 +38,20 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
     }, [open]);
 
     /*   STATES & CITIES   */
-    const { data: states = [] } = useStates();
+    const statesMutation = useStates();
+    const citiesMutation = useCities();
     const [selectedStateId, setSelectedStateId] = useState<string>("");
-    const { data: cities = [] } = useCities(
-        selectedStateId ? Number(selectedStateId) : null
-    );
+
+    useEffect(() => {
+        if (open) statesMutation.mutate(undefined);
+    }, [open]);
+
+    useEffect(() => {
+        if (selectedStateId) citiesMutation.mutate(Number(selectedStateId));
+    }, [selectedStateId]);
+
+    const states: any[] = statesMutation.data ?? [];
+    const cities: any[] = citiesMutation.data ?? [];
 
     /*   FORM STATE   */
     const initialForm = {

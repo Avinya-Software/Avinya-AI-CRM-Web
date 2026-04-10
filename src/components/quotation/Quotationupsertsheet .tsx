@@ -9,11 +9,10 @@ import { useClientsDropdown } from "../../hooks/client/useClients";
 import { useSettings } from "../../hooks/setting/useSettings";
 import { useProductDropdown } from "../../hooks/product/useProductDropdown";
 import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store";
 import { useCreateQuotation, useUpdateQuotation } from "../../hooks/quotation/Usequotationmutations ";
 import { usePermissions } from "../../context/PermissionContext";
 import { useQuotationDropdown } from "../../hooks/quotation/useQuotations";
+import { useAuth } from "../../auth/useAuth";
 
 interface QuotationUpsertSheetProps {
     open: boolean;
@@ -56,7 +55,7 @@ const QuotationUpsertSheet = ({
     if (open && isEdit && !canEditQuotation) return null;
     if (open && !isEdit && !canAddQuotation) return null;
 
-    const createdBy = useSelector((state: RootState) => (state.auth as any).userId ?? (state.auth as any).advisorId ?? "");
+    const { userId: createdBy = "" } = useAuth();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -87,10 +86,24 @@ const QuotationUpsertSheet = ({
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const { data: clients = [] } = useClientsDropdown();
-    const { data: settings = [] } = useSettings();
-    const { data: products = [] } = useProductDropdown();
-    const { data: taxCategories = [] } = useTaxCategories();
+    const clientsDropdownMutation = useClientsDropdown();
+    const settingsMutation = useSettings();
+    const productDropdownMutation = useProductDropdown();
+    const taxCategoriesMutation = useTaxCategories();
+
+    useEffect(() => {
+        if (open) {
+            clientsDropdownMutation.mutate(undefined);
+            settingsMutation.mutate(undefined);
+            productDropdownMutation.mutate(undefined);
+            taxCategoriesMutation.mutate(undefined);
+        }
+    }, [open]);
+
+    const clients: any[] = clientsDropdownMutation.data ?? [];
+    const settings: any[] = settingsMutation.data ?? [];
+    const products: any[] = productDropdownMutation.data ?? [];
+    const taxCategories: any[] = taxCategoriesMutation.data ?? [];
 
     const createQuotation = useCreateQuotation();
     const updateQuotation = useUpdateQuotation();
@@ -362,10 +375,12 @@ const QuotationUpsertSheet = ({
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Quotation Date
                             </label>
-                            <DatePicker 
+                            <DatePicker
                                 className="w-full h-10 border-slate-300 rounded-lg"
+                                format="YYYY-MM-DD"
+                                placeholder="Select quotation date"
                                 value={formData.quotationDate ? dayjs(formData.quotationDate) : null}
-                                onChange={(date, dateString) => 
+                                onChange={(date, dateString) =>
                                     setFormData({ ...formData, quotationDate: Array.isArray(dateString) ? dateString[0] : dateString })
                                 }
                             />
@@ -377,10 +392,12 @@ const QuotationUpsertSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Valid Till
                         </label>
-                        <DatePicker 
+                        <DatePicker
                             className={`w-full h-10 rounded-lg ${errors.validTill ? "border-red-500" : "border-slate-300"}`}
+                            format="YYYY-MM-DD"
+                            placeholder="Select valid till date"
                             value={formData.validTill ? dayjs(formData.validTill) : null}
-                            onChange={(date, dateString) => 
+                            onChange={(date, dateString) =>
                                 setFormData({ ...formData, validTill: Array.isArray(dateString) ? dateString[0] : dateString })
                             }
                         />

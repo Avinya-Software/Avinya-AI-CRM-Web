@@ -79,15 +79,38 @@ const OrderUpsertSheet = ({
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const { data: clients = [] } = useClientsDropdown();
-    const { data: products = [] } = useProductDropdown();
-    const { data: states = [] } = useStates();
-    const { data: cities = [] } = useCities(
-        formData.stateID ? Number(formData.stateID) : null
-    );
-    const { data: orderStatusData = [] } = useOrderStatusDropdown();
-    const { data: designStatusData = [] } = useDesignStatusDropdown();
-    const { data: taxCategories = [] } = useTaxCategories();
+    const clientsDropdownMutation = useClientsDropdown();
+    const productDropdownMutation = useProductDropdown();
+    const statesMutation = useStates();
+    const citiesMutation = useCities();
+    const orderStatusDropdownMutation = useOrderStatusDropdown();
+    const designStatusDropdownMutation = useDesignStatusDropdown();
+    const taxCategoriesMutation = useTaxCategories();
+
+    useEffect(() => {
+        if (open) {
+            clientsDropdownMutation.mutate(undefined);
+            productDropdownMutation.mutate(undefined);
+            statesMutation.mutate(undefined);
+            orderStatusDropdownMutation.mutate(undefined);
+            designStatusDropdownMutation.mutate(undefined);
+            taxCategoriesMutation.mutate(undefined);
+        }
+    }, [open]);
+
+    useEffect(() => {
+        if (formData.stateID) {
+            citiesMutation.mutate(Number(formData.stateID));
+        }
+    }, [formData.stateID]);
+
+    const clients: any[] = clientsDropdownMutation.data ?? [];
+    const products: any[] = productDropdownMutation.data ?? [];
+    const states: any[] = statesMutation.data ?? [];
+    const cities: any[] = citiesMutation.data ?? [];
+    const orderStatusData: any[] = orderStatusDropdownMutation.data ?? [];
+    const designStatusData: any[] = designStatusDropdownMutation.data ?? [];
+    const taxCategories: any[] = taxCategoriesMutation.data ?? [];
     const createOrder = useCreateOrder();
     const updateOrder = useUpdateOrder();
 
@@ -399,10 +422,12 @@ const OrderUpsertSheet = ({
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Order Date</label>
-                            <DatePicker 
+                            <DatePicker
                                 className="w-full h-10 border-slate-300 rounded-lg disabled:bg-slate-50 disabled:text-slate-500"
+                                format="YYYY-MM-DD"
+                                placeholder="Select order date"
                                 value={formData.orderDate ? dayjs(formData.orderDate) : null}
-                                onChange={(date, dateString) => 
+                                onChange={(date, dateString) =>
                                     setFormData({ ...formData, orderDate: Array.isArray(dateString) ? dateString[0] : dateString })
                                 }
                                 disabled={isFormReadOnly}
@@ -415,10 +440,12 @@ const OrderUpsertSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Expected Delivery Date <span className="text-red-500">*</span>
                         </label>
-                        <DatePicker 
+                        <DatePicker
                             className={`w-full h-10 rounded-lg ${errors.expectedDeliveryDate ? "border-red-500" : "border-slate-300"} disabled:bg-slate-50 disabled:text-slate-500`}
+                            format="YYYY-MM-DD"
+                            placeholder="Select delivery date"
                             value={formData.expectedDeliveryDate ? dayjs(formData.expectedDeliveryDate) : null}
-                            onChange={(date, dateString) => 
+                            onChange={(date, dateString) =>
                                 setFormData({ ...formData, expectedDeliveryDate: Array.isArray(dateString) ? dateString[0] : dateString })
                             }
                             disabled={isFormReadOnly}

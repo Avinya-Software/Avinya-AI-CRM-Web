@@ -1,12 +1,10 @@
 // src/hooks/task/useTasks.ts
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getTasks } from "../../api/task.api";
 
-export const useTasks = (from?: string, to?: string, scope?: string) => {
-  return useQuery({
-    queryKey: ["tasks", from, to, scope],
-    queryFn: () => getTasks(from, to, scope),
-    staleTime: 30000,
+export const useTasks = () => {
+  return useMutation({
+    mutationFn: ({ from, to, scope }: { from?: string; to?: string; scope?: string }) =>
+      getTasks(from, to, scope),
   });
 };
-

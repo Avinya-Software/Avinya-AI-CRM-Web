@@ -90,10 +90,12 @@ const TaskFilterSheet = ({
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 From Date
               </label>
-              <DatePicker 
+              <DatePicker
                 className="w-full h-10 border-slate-300 rounded-lg"
+                format="YYYY-MM-DD"
+                placeholder="Select start date"
                 value={localFilters.from ? dayjs(localFilters.from) : null}
-                onChange={(date, dateString) => 
+                onChange={(date, dateString) =>
                     setLocalFilters({ ...localFilters, from: Array.isArray(dateString) ? dateString[0] : dateString })
                 }
               />
@@ -102,10 +104,12 @@ const TaskFilterSheet = ({
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 To Date
               </label>
-              <DatePicker 
+              <DatePicker
                 className="w-full h-10 border-slate-300 rounded-lg"
+                format="YYYY-MM-DD"
+                placeholder="Select end date"
                 value={localFilters.to ? dayjs(localFilters.to) : null}
-                onChange={(date, dateString) => 
+                onChange={(date, dateString) =>
                     setLocalFilters({ ...localFilters, to: Array.isArray(dateString) ? dateString[0] : dateString })
                 }
               />

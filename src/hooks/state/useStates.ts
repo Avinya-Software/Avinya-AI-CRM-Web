@@ -1,11 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getstates } from "../../api/state.api";
 import { States } from "../../interfaces/state.interface";
 
 export const useStates = () => {
-  return useQuery<States[]>({
-    queryKey: ["states"],
-    queryFn: async () => {
+  return useMutation<States[], Error, void>({
+    mutationFn: async () => {
       const response = await getstates();
       return response;
     },

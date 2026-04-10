@@ -22,16 +22,18 @@ const LeadFilterSheet = ({
     onApply,
     onClear,
 }: Props) => {
-    const {
-        data: statuses,
-        isLoading: statusLoading,
-    } = useLeadStatuses();
+    const leadStatusesMutation = useLeadStatuses();
+    const leadSourcesMutation = useLeadSources();
 
-    const {
-        data: sources,
-        isLoading: sourceLoading,
-    } = useLeadSources();
+    useEffect(() => {
+        if (open) {
+            leadStatusesMutation.mutate(undefined);
+            leadSourcesMutation.mutate(undefined);
+        }
+    }, [open]);
 
+    const { data: statuses, isPending: statusLoading } = leadStatusesMutation;
+    const { data: sources, isPending: sourceLoading } = leadSourcesMutation;
     const loading = statusLoading || sourceLoading;
 
     // Local state — changes don't hit API until "Apply" is clicked
@@ -118,10 +120,12 @@ const LeadFilterSheet = ({
                                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                     Start Date
                                 </label>
-                                <DatePicker 
+                                <DatePicker
                                     className="w-full h-10 border-slate-300 rounded-lg"
+                                    format="YYYY-MM-DD"
+                                    placeholder="Select start date"
                                     value={localFilters.startDate ? dayjs(localFilters.startDate) : null}
-                                    onChange={(date, dateString) => 
+                                    onChange={(date, dateString) =>
                                         setLocalFilters(prev => ({ ...prev, startDate: Array.isArray(dateString) ? dateString[0] : dateString }))
                                     }
                                 />
@@ -132,10 +136,12 @@ const LeadFilterSheet = ({
                                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                     End Date
                                 </label>
-                                <DatePicker 
+                                <DatePicker
                                     className="w-full h-10 border-slate-300 rounded-lg"
+                                    format="YYYY-MM-DD"
+                                    placeholder="Select end date"
                                     value={localFilters.endDate ? dayjs(localFilters.endDate) : null}
-                                    onChange={(date, dateString) => 
+                                    onChange={(date, dateString) =>
                                         setLocalFilters(prev => ({ ...prev, endDate: Array.isArray(dateString) ? dateString[0] : dateString }))
                                     }
                                 />

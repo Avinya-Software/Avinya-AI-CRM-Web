@@ -26,7 +26,13 @@ const PAYMENT_METHODS = [
 
 const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
   const createPayment = useCreatePayment();
-  const { data: previousPayments = [], isLoading: loadingPayments } = usePayments(invoice?.invoiceID || null);
+  const paymentsMutation = usePayments();
+
+  useEffect(() => {
+    if (invoice?.invoiceID) paymentsMutation.mutate(invoice.invoiceID);
+  }, [invoice?.invoiceID]);
+
+  const { data: previousPayments = [], isPending: loadingPayments } = paymentsMutation;
 
   const [formData, setFormData] = useState<CreatePaymentDto>({
     invoiceID: invoice?.invoiceID || "",
@@ -138,10 +144,12 @@ const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
                     <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
                       <Calendar size={14} className="text-slate-400" /> Payment Date
                     </label>
-                    <DatePicker 
+                    <DatePicker
                       className="w-full h-[42px] border-slate-200 rounded-xl focus:border-blue-500 transition-all font-medium"
+                      format="YYYY-MM-DD"
+                      placeholder="Select payment date"
                       value={formData.paymentDate ? dayjs(formData.paymentDate) : null}
-                      onChange={(date, dateString) => 
+                      onChange={(date, dateString) =>
                         setFormData({ ...formData, paymentDate: Array.isArray(dateString) ? dateString[0] : dateString })
                       }
                     />

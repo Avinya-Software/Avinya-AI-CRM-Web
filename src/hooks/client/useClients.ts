@@ -1,28 +1,29 @@
-import { useQuery } from "@tanstack/react-query";
-
+import { useMutation } from "@tanstack/react-query";
 import { ClientDropdown } from "../../interfaces/client.interface";
 import { getClientsApi, getClientsDropdownApi } from "../../api/client.api";
 
 export const useClientsDropdown = () => {
-  return useQuery<ClientDropdown[]>({
-    queryKey: ["clients-dropdown"],
-    queryFn: async () => {
+  return useMutation<ClientDropdown[], Error, void>({
+    mutationFn: async () => {
       const response = await getClientsDropdownApi();
       return response;
     },
   });
 };
 
-export const useClients = (
-  page: number,
-  pageSize: number,
-  search?: string,
-  status?: boolean
-) => {
-  return useQuery({
-    queryKey: ["clients", page, pageSize, search, status],
-    queryFn: () => getClientsApi(page, pageSize, search, status),
-    placeholderData: (prev) => prev,
-    select: (res) => res.data, // unwrap to ClientPaginatedData: { data: Client[], totalRecords, totalPages, ... }
+export const useClients = () => {
+  return useMutation({
+    mutationFn: ({
+      page,
+      pageSize,
+      search,
+      status,
+    }: {
+      page: number;
+      pageSize: number;
+      search?: string;
+      status?: boolean;
+    }) =>
+      getClientsApi(page, pageSize, search, status).then((res) => res.data),
   });
 };

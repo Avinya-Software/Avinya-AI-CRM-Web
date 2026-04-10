@@ -60,8 +60,16 @@ const InvoiceUpsertSheet = ({
 
     const createInvoice = useCreateInvoice();
     const updateInvoice = useUpdateInvoice();
-    const { data: taxCategories = [] } = useTaxCategories();
-    const { data: statusDropdown = [] } = useInvoiceStatusDropdown();
+    const taxCategoriesMutation = useTaxCategories();
+    const invoiceStatusDropdownMutation = useInvoiceStatusDropdown();
+
+    useEffect(() => {
+        taxCategoriesMutation.mutate(undefined);
+        invoiceStatusDropdownMutation.mutate(undefined);
+    }, []);
+
+    const taxCategories: any[] = taxCategoriesMutation.data ?? [];
+    const statusDropdown: any[] = invoiceStatusDropdownMutation.data ?? [];
 
     // Resolve the Pending status ID from the backend dropdown, fallback to 1
     const pendingStatusID: number = (statusDropdown as any[]).find(
@@ -189,20 +197,24 @@ const InvoiceUpsertSheet = ({
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Invoice Date</label>
-                            <DatePicker 
+                            <DatePicker
                                 className="w-full h-10 border-slate-300 rounded-lg"
+                                format="YYYY-MM-DD"
+                                placeholder="Select invoice date"
                                 value={formData.invoiceDate ? dayjs(formData.invoiceDate) : null}
-                                onChange={(date, dateString) => 
+                                onChange={(date, dateString) =>
                                     setFormData({ ...formData, invoiceDate: Array.isArray(dateString) ? dateString[0] : dateString })
                                 }
                             />
                         </div>
                         <div className="flex flex-col gap-1">
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Due Date</label>
-                            <DatePicker 
+                            <DatePicker
                                 className="w-full h-10 border-slate-300 rounded-lg"
+                                format="YYYY-MM-DD"
+                                placeholder="Select due date"
                                 value={formData.dueDate ? dayjs(formData.dueDate) : null}
-                                onChange={(date, dateString) => 
+                                onChange={(date, dateString) =>
                                     setFormData({ ...formData, dueDate: Array.isArray(dateString) ? dateString[0] : dateString })
                                 }
                             />

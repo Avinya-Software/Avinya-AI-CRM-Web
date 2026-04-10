@@ -29,8 +29,8 @@ const CLIENT_TYPES = [
 
 const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
   const { mutate, isPending } = useUpsertLead();
-  const { data: statuses } = useLeadStatuses();
-  const { data: sources } = useLeadSources();
+  const leadStatusesMutation = useLeadStatuses();
+  const leadSourcesMutation = useLeadSources();
   const isEdit = !!lead;
 
   /* ── PERMISSIONS ── */
@@ -45,6 +45,16 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     return () => { document.body.style.overflow = "unset"; };
   }, [open]);
 
+  useEffect(() => {
+    if (open) {
+      leadStatusesMutation.mutate(undefined);
+      leadSourcesMutation.mutate(undefined);
+    }
+  }, [open]);
+
+  const statuses = leadStatusesMutation.data;
+  const sources = leadSourcesMutation.data;
+
   /* ── CUSTOMERS ── */
   const [customers, setCustomers] = useState<any[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -53,17 +63,30 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     getCustomerDropdownApi().then(setCustomers);
   }, []);
 
-  const { data: usersResponse } = useUsersDropdown();
+  const usersDropdownMutation = useUsersDropdown();
+  const statesMutation = useStates();
+  const citiesMutation = useCities();
+  const [selectedStateId, setSelectedStateId] = useState<string>("");
+
+  useEffect(() => {
+    if (open) {
+      usersDropdownMutation.mutate(undefined);
+      statesMutation.mutate(undefined);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (selectedStateId) citiesMutation.mutate(Number(selectedStateId));
+  }, [selectedStateId]);
+
+  const usersResponse = usersDropdownMutation.data;
   const userOptions: ComboboxOption[] = (usersResponse ?? []).map(
     (u: any) => ({ value: u.id, label: u.fullName })
   );
 
   /* ── STATES & CITIES ── */
-  const { data: states = [] } = useStates();
-  const [selectedStateId, setSelectedStateId] = useState<string>("");
-  const { data: cities = [] } = useCities(
-    selectedStateId ? Number(selectedStateId) : null
-  );
+  const states: any[] = statesMutation.data ?? [];
+  const cities: any[] = citiesMutation.data ?? [];
 
 
 
@@ -399,7 +422,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
                   showTime
                   format="YYYY-MM-DD HH:mm"
                   className={`w-full h-10 rounded-lg border-slate-200 ${errors.nextFollowupDate ? "border-red-400" : ""}`}
-                  placeholder="Select date and time"
+                  placeholder="Select date & time"
                   value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
                   onChange={(date, dateString) =>
                     setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -24,8 +24,14 @@ const LeadFollowup = () => {
     // For edit — store the follow-up being edited
     const [editFollowUp, setEditFollowUp] = useState<any | null>(null);
 
-    const { data, isLoading, refetch } = useLeadFollowUps(leadId || null);
+    const followUpsMutation = useLeadFollowUps();
     const { mutate: deleteFollowUp } = useDeleteFollowUp();
+
+    useEffect(() => {
+        if (leadId) followUpsMutation.mutate(leadId);
+    }, [leadId]);
+
+    const { data, isPending: isLoading } = followUpsMutation;
     const followUps = data?.data || [];
 
     /* ================= FILTER ================= */
@@ -59,7 +65,7 @@ const LeadFollowup = () => {
     const handleDelete = (id: string) => {
         if (confirm("Delete this follow-up?")) {
             deleteFollowUp(id, {
-                onSuccess: () => refetch(),
+                onSuccess: () => { if (leadId) followUpsMutation.mutate(leadId); },
             });
         }
     };
@@ -116,7 +122,7 @@ const LeadFollowup = () => {
                         </select>
 
                         <button
-                            onClick={() => refetch()}
+                            onClick={() => { if (leadId) followUpsMutation.mutate(leadId); }}
                             className="border px-4 py-2 rounded"
                         >
                             Refresh
@@ -150,7 +156,7 @@ const LeadFollowup = () => {
                     console.log(leadId);
                     setOpenCreateSheet(false);
                     setEditFollowUp(null);
-                    refetch();
+                    if (leadId) followUpsMutation.mutate(leadId);
                 }}
             />
 

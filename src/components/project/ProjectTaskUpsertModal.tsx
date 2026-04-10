@@ -171,11 +171,13 @@ const ProjectTaskUpsertModal = ({
                             <Calendar size={14} className="inline mr-1" />
                             Due Date & Time <span className="text-red-500">*</span>
                         </label>
-                        <DatePicker 
+                        <DatePicker
                             className={`w-full h-10 rounded-lg ${errors.dueDate ? "border-red-500" : "border-slate-300"}`}
                             showTime
+                            format="YYYY-MM-DD HH:mm"
+                            placeholder="Select due date & time"
                             value={formData.dueDate ? dayjs(formData.dueDate) : null}
-                            onChange={(date, dateString) => 
+                            onChange={(date, dateString) =>
                                 setFormData({ ...formData, dueDate: Array.isArray(dateString) ? dateString[0] : dateString })
                             }
                         />

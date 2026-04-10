@@ -1,13 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getLeadStatusesApi } from "../../api/lead.api";
 
 export const useLeadStatuses = () =>
-  useQuery({
-    queryKey: ["lead-statuses"],
-    queryFn: async () => {
+  useMutation({
+    mutationFn: async () => {
       const res = await getLeadStatusesApi();
-
-      // ⭐ normalize shape
       return res.map((s: any) => ({
         id: s.leadStatusID,
         name: s.statusName,

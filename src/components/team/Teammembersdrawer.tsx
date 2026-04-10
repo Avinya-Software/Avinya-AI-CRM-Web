@@ -1,5 +1,5 @@
 // src/components/teams/TeamMembersDrawer.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   X,
   Loader2,
@@ -31,9 +31,13 @@ const TeamMembersDrawer = ({
   const [addIds, setAddIds] = useState<string[]>([]);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
-  const { data: membersData, isLoading: membersLoading } = useTeamMembers(
-    team?.id ?? null
-  );
+  const teamMembersMutation = useTeamMembers();
+
+  useEffect(() => {
+    if (team?.id) teamMembersMutation.mutate(team.id);
+  }, [team?.id]);
+
+  const { data: membersData, isPending: membersLoading } = teamMembersMutation;
 
   const members = membersData?.data ?? [];
 

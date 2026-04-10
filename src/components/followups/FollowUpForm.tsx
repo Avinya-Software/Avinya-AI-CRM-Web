@@ -101,11 +101,13 @@ const FollowUpForm = ({ leadId, onSuccess }: Props) => {
         <label className="text-sm font-medium">
           Follow Up Date <span className="text-red-500">*</span>
         </label>
-        <DatePicker 
+        <DatePicker
           showTime
+          format="YYYY-MM-DD HH:mm"
+          placeholder="Select date & time"
           className={`w-full h-10 ${errors.followUpDate ? "border-red-500" : ""}`}
           value={followUpDate ? dayjs(followUpDate) : null}
-          onChange={(date, dateString) => 
+          onChange={(date, dateString) =>
             setFollowUpDate(Array.isArray(dateString) ? dateString[0] : dateString)
           }
         />
@@ -121,11 +123,13 @@ const FollowUpForm = ({ leadId, onSuccess }: Props) => {
         <label className="text-sm font-medium">
           Next Follow Up Date <span className="text-red-500">*</span>
         </label>
-        <DatePicker 
+        <DatePicker
           showTime
+          format="YYYY-MM-DD HH:mm"
+          placeholder="Select date & time"
           className={`w-full h-10 ${errors.nextFollowUpDate ? "border-red-500" : ""}`}
           value={nextFollowUpDate ? dayjs(nextFollowUpDate) : null}
-          onChange={(date, dateString) => 
+          onChange={(date, dateString) =>
             setNextFollowUpDate(Array.isArray(dateString) ? dateString[0] : dateString)
           }
         />

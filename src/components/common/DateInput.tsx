@@ -32,6 +32,8 @@ const DateInput: React.FC<DateInputProps> = ({
 
       <DatePicker
         className={`w-full h-10 rounded-md border-slate-300 ${className}`}
+        format="YYYY-MM-DD"
+        placeholder="Select date"
         value={value ? dayjs(value) : null}
         disabled={disabled}
         onChange={(date, dateString) => onChange(Array.isArray(dateString) ? dateString[0] : dateString)}

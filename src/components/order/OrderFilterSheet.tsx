@@ -19,7 +19,13 @@ const ORDER_STATUSES = ["Pending", "Processing", "Completed", "Cancelled"];
 
 const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) => {
     const [local, setLocal] = useState<OrderFilters>(filters);
-    const { data: orderStatusData = [] } = useOrderStatusDropdown();
+    const orderStatusDropdownMutation = useOrderStatusDropdown();
+
+    useEffect(() => {
+        if (open) orderStatusDropdownMutation.mutate(undefined);
+    }, [open]);
+
+    const orderStatusData: any[] = orderStatusDropdownMutation.data ?? [];
 
     // Sync when parent filters change (e.g. external clear)
     useEffect(() => {
@@ -95,10 +101,12 @@ const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) =
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             From Date
                         </label>
-                        <DatePicker 
+                        <DatePicker
                             className="w-full h-10 border-slate-300 rounded-lg"
+                            format="YYYY-MM-DD"
+                            placeholder="Select start date"
                             value={local.startDate ? dayjs(local.startDate) : null}
-                            onChange={(date, dateString) => 
+                            onChange={(date, dateString) =>
                                 setLocal(prev => ({ ...prev, startDate: Array.isArray(dateString) ? dateString[0] : dateString }))
                             }
                         />
@@ -109,10 +117,12 @@ const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) =
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             To Date
                         </label>
-                        <DatePicker 
+                        <DatePicker
                             className="w-full h-10 border-slate-300 rounded-lg"
+                            format="YYYY-MM-DD"
+                            placeholder="Select end date"
                             value={local.endDate ? dayjs(local.endDate) : null}
-                            onChange={(date, dateString) => 
+                            onChange={(date, dateString) =>
                                 setLocal(prev => ({ ...prev, endDate: Array.isArray(dateString) ? dateString[0] : dateString }))
                             }
                         />

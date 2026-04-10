@@ -1,34 +1,29 @@
 // src/hooks/invoice/useInvoices.ts
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { InvoiceFilters, CreateInvoiceDto, UpdateInvoiceDto } from "../../interfaces/invoice.interface";
-import { 
-  createInvoice, 
-  deleteInvoice, 
-  getInvoiceById, 
-  getInvoices, 
+import {
+  createInvoice,
+  deleteInvoice,
+  getInvoiceById,
+  getInvoices,
   updateInvoice,
   getInvoiceStatusDropdown
 } from "../../api/invoice.api";
 
 
 // ── Fetch invoices with filters ──────────────────────────────────────
-export const useInvoices = (filters: InvoiceFilters) => {
-  return useQuery({
-    queryKey: ['invoices', filters.search, filters.page, filters.pageSize, filters.status],
-    queryFn: () => getInvoices(filters),
-    staleTime: 30000,
+export const useInvoices = () => {
+  return useMutation({
+    mutationFn: (filters: InvoiceFilters) => getInvoices(filters),
   });
 };
 
 // ── Fetch single invoice by ID ───────────────────────────────────────
-export const useInvoice = (id: string | null) => {
-  return useQuery({
-    queryKey: ["invoice", id],
-    queryFn: () => getInvoiceById(id!),
-    enabled: !!id,
-    staleTime: 30000,
+export const useInvoice = () => {
+  return useMutation({
+    mutationFn: (id: string) => getInvoiceById(id),
   });
 };
 
@@ -36,7 +31,7 @@ export const useInvoice = (id: string | null) => {
 export const useCreateInvoice = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createInvoice,
+    mutationFn: (data: CreateInvoiceDto) => createInvoice(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
@@ -68,7 +63,7 @@ export const useUpdateInvoice = () => {
 export const useDeleteInvoice = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteInvoice,
+    mutationFn: (id: string) => deleteInvoice(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
@@ -79,11 +74,10 @@ export const useDeleteInvoice = () => {
     },
   });
 };
+
 // ── Fetch invoice status dropdown list ──────────────────────────────────────
 export const useInvoiceStatusDropdown = () => {
-  return useQuery({
-    queryKey: ["invoice-status-dropdown"],
-    queryFn: getInvoiceStatusDropdown,
-    staleTime: 60000,
+  return useMutation({
+    mutationFn: () => getInvoiceStatusDropdown(),
   });
 };

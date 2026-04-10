@@ -52,13 +52,30 @@ const RenewalUpsertSheet = ({
   /*   API HOOKS   */
 
   const { mutateAsync, isPending } = useUpsertRenewal();
-  const { data: customers, isLoading: cLoading } = useCustomerDropdown();
-const shouldLoadPolicies = !!form.customerId;
+  const customerDropdownMutation = useCustomerDropdown();
+  const renewalStatusesMutation = useRenewalStatuses();
 
-const { data: policies } = usePolicyDropdown(
-  shouldLoadPolicies ? form.customerId : undefined
-);
-  const { data: statuses, isLoading: sLoading } = useRenewalStatuses();
+  useEffect(() => {
+    if (open) {
+      customerDropdownMutation.mutate(undefined);
+      renewalStatusesMutation.mutate(undefined);
+    }
+  }, [open]);
+
+  const { data: customers, isPending: cLoading } = customerDropdownMutation;
+  const { data: statuses, isPending: sLoading } = renewalStatusesMutation;
+
+  const shouldLoadPolicies = !!form.customerId;
+
+  const policyDropdownMutation = usePolicyDropdown();
+
+  useEffect(() => {
+    if (shouldLoadPolicies) {
+      policyDropdownMutation.mutate(form.customerId);
+    }
+  }, [form.customerId]);
+
+  const { data: policies } = policyDropdownMutation;
 
   const loadingDropdowns = cLoading  || sLoading;
   const selectedCustomer =
@@ -298,10 +315,12 @@ const { data: policies } = usePolicyDropdown(
                 <label className="text-sm font-medium">
                   Renewal Date <span className="text-red-500">*</span>
                 </label>
-                <DatePicker 
+                <DatePicker
                   className={`w-full h-10 rounded-lg ${errors.renewalDate ? "border-red-500" : "border-slate-300"}`}
+                  format="YYYY-MM-DD"
+                  placeholder="Select renewal date"
                   value={form.renewalDate ? dayjs(form.renewalDate) : null}
-                  onChange={(date, dateString) => 
+                  onChange={(date, dateString) =>
                     setForm({ ...form, renewalDate: Array.isArray(dateString) ? dateString[0] : dateString })
                   }
                 />

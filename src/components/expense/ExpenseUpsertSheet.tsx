@@ -195,10 +195,12 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                             <label className="text-sm font-medium text-slate-700 mb-1 block">
                                 Expense Date <span className="text-red-500">*</span>
                             </label>
-                            <DatePicker 
+                            <DatePicker
                                 className={`w-full h-10 rounded-lg ${errors.expenseDate ? "border-red-500" : "border-slate-200"}`}
+                                format="YYYY-MM-DD"
+                                placeholder="Select expense date"
                                 value={form.expenseDate ? dayjs(form.expenseDate) : null}
-                                onChange={(date, dateString) => 
+                                onChange={(date, dateString) =>
                                     setForm({ ...form, expenseDate: Array.isArray(dateString) ? dateString[0] : dateString })
                                 }
                             />

@@ -1,5 +1,5 @@
 // src/pages/Tasks.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Filter, X, Plus, Mic, User, Users } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { useTasks } from "../hooks/task/useTasks";
@@ -62,9 +62,26 @@ const Tasks = () => {
   };
 
   const { from, to } = getDateRange();
-  const { data, isLoading, isFetching } = useTasks(from, to, scope);
-  const { data: personalData } = useTasks(from, to, "Personal");
-  const { data: teamData } = useTasks(from, to, "Team");
+
+  const tasksMutation = useTasks();
+  const personalTasksMutation = useTasks();
+  const teamTasksMutation = useTasks();
+
+  useEffect(() => {
+    tasksMutation.mutate({ from, to, scope });
+  }, [from, to, scope]);
+
+  useEffect(() => {
+    personalTasksMutation.mutate({ from, to, scope: "Personal" });
+  }, [from, to]);
+
+  useEffect(() => {
+    teamTasksMutation.mutate({ from, to, scope: "Team" });
+  }, [from, to]);
+
+  const { data, isPending: isLoading } = tasksMutation;
+  const { data: personalData } = personalTasksMutation;
+  const { data: teamData } = teamTasksMutation;
 
   const filteredTasks = (data?.data || []).filter((task) => {
     if (filters.status && task.status !== filters.status) return false;
@@ -268,7 +285,7 @@ const Tasks = () => {
             </div>
             <TaskList
               tasks={groupedTasks.pending}
-              loading={isLoading || isFetching || isMutating > 0}
+              loading={isLoading || isMutating > 0}
               onEdit={canEditTask ? handleEditTask : undefined}
             />
           </div>
@@ -283,7 +300,7 @@ const Tasks = () => {
             </div>
             <TaskList
               tasks={groupedTasks.inProgress}
-              loading={isLoading || isFetching || isMutating > 0}
+              loading={isLoading || isMutating > 0}
               onEdit={canEditTask ? handleEditTask : undefined}
             />
           </div>
@@ -298,7 +315,7 @@ const Tasks = () => {
             </div>
             <TaskList
               tasks={groupedTasks.completed}
-              loading={isLoading || isFetching || isMutating > 0}
+              loading={isLoading || isMutating > 0}
               onEdit={canEditTask ? handleEditTask : undefined}
             />
           </div>

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getRenewalsApi } from "../../api/renewal.api";
 
 interface Params {
@@ -8,9 +8,8 @@ interface Params {
   renewalStatusId?: number;
 }
 
-export const useRenewals = (params: Params) => {
-  return useQuery({
-    queryKey: ["renewals", params],
-    queryFn: () => getRenewalsApi(params),
+export const useRenewals = () => {
+  return useMutation({
+    mutationFn: (params: Params) => getRenewalsApi(params),
   });
 };
