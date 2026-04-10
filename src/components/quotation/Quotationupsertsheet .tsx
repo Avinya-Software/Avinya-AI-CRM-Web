@@ -1,5 +1,7 @@
 // src/components/quotations/QuotationUpsertSheet.tsx
 import { useState, useEffect } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X, Save, Loader2, Plus, Trash2 } from "lucide-react";
 import { Quotation, TaxCategory } from "../../interfaces/quotation.interface";
 import { ProductDropdown } from "../../interfaces/product.interface";
@@ -360,11 +362,12 @@ const QuotationUpsertSheet = ({
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Quotation Date
                             </label>
-                            <input
-                                type="date"
-                                value={formData.quotationDate}
-                                onChange={(e) => setFormData({ ...formData, quotationDate: e.target.value })}
-                                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            <DatePicker 
+                                className="w-full h-10 border-slate-300 rounded-lg"
+                                value={formData.quotationDate ? dayjs(formData.quotationDate) : null}
+                                onChange={(date, dateString) => 
+                                    setFormData({ ...formData, quotationDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
                             />
                         </div>
                     </div>
@@ -374,12 +377,12 @@ const QuotationUpsertSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Valid Till
                         </label>
-                        <input
-                            type="date"
-                            value={formData.validTill}
-                            onChange={(e) => setFormData({ ...formData, validTill: e.target.value })}
-                            className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.validTill ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:ring-blue-500"
-                                }`}
+                        <DatePicker 
+                            className={`w-full h-10 rounded-lg ${errors.validTill ? "border-red-500" : "border-slate-300"}`}
+                            value={formData.validTill ? dayjs(formData.validTill) : null}
+                            onChange={(date, dateString) => 
+                                setFormData({ ...formData, validTill: Array.isArray(dateString) ? dateString[0] : dateString })
+                            }
                         />
                         {errors.validTill && <p className="text-red-500 text-xs mt-1">{errors.validTill}</p>}
                     </div>

@@ -12,6 +12,8 @@ import { Combobox, ComboboxOption } from "../ui/combobox";
 import { useStates } from "../../hooks/state/useStates";
 import { useCities } from "../../hooks/city/useCities";
 import { usePermissions } from "../../context/PermissionContext";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 interface Props {
   open: boolean;
@@ -389,15 +391,23 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
                 onChange={(v: any) => setForm({ ...form, links: v })}
                 disabled={isReadOnly}
               />
-              <Input
-                label="Next Follow-up Date"
-                required
-                type="datetime-local"
-                value={form.nextFollowupDate}
-                error={errors.nextFollowupDate}
-                onChange={(v: any) => setForm({ ...form, nextFollowupDate: v })}
-                disabled={isReadOnly}
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-slate-600 mb-1">
+                  Next Follow-up Date {!isEdit && <span className="text-red-500">*</span>}
+                </label>
+                <DatePicker
+                  showTime
+                  format="YYYY-MM-DD HH:mm"
+                  className={`w-full h-10 rounded-lg border-slate-200 ${errors.nextFollowupDate ? "border-red-400" : ""}`}
+                  placeholder="Select date and time"
+                  value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
+                  onChange={(date, dateString) =>
+                    setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                  }
+                  disabled={isReadOnly}
+                />
+                {errors.nextFollowupDate && <p className="text-xs text-red-500 mt-0.5">{errors.nextFollowupDate}</p>}
+              </div>
 
               {/* Notes — full width */}
               <div className="col-span-2">

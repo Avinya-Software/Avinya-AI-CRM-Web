@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -292,16 +294,21 @@ const { data: policies } = usePolicyDropdown(
                 }
               />
 
-              <Input
-                type="date"
-                label="Renewal Date"
-                required
-                value={form.renewalDate}
-                error={errors.renewalDate}
-                onChange={(v) =>
-                  setForm({ ...form, renewalDate: v })
-                }
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">
+                  Renewal Date <span className="text-red-500">*</span>
+                </label>
+                <DatePicker 
+                  className={`w-full h-10 rounded-lg ${errors.renewalDate ? "border-red-500" : "border-slate-300"}`}
+                  value={form.renewalDate ? dayjs(form.renewalDate) : null}
+                  onChange={(date, dateString) => 
+                    setForm({ ...form, renewalDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                  }
+                />
+                {errors.renewalDate && (
+                  <p className="text-xs text-red-600 mt-1">{errors.renewalDate}</p>
+                )}
+              </div>
 
               <Input
                 label="Renewal Premium"

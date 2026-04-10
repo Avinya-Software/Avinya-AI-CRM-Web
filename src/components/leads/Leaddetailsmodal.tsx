@@ -1,5 +1,6 @@
-// src/components/leads/LeadDetailSheet.tsx
 import { useState, useEffect } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X, Phone, Mail, MapPin, Building2, Plus, Loader2, Save, Calendar } from "lucide-react";
 import { useLeadDetails } from "../../hooks/lead/useLeadDetails"; // adjust path
 import { useCreateFollowUp } from "../../hooks/leadFollowUp/useCreateFollowUp"; // adjust path
@@ -202,17 +203,16 @@ const AddFollowUpForm = ({ leadId, onSuccess, onCancel,  editData,}: AddFollowUp
       </select>
     </div>
 
-    {/* Next Follow-up Date + Time ✅ */}
-    <div className="mb-4">
+    <div className="mb-4 flex flex-col gap-1">
       <label className="text-xs font-medium text-slate-500 block mb-1">
         Next Follow-up Date & Time
       </label>
-      <input
-        type="datetime-local"
-        className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-2"
-        value={form.nextFollowupDate}
-        onChange={(e) =>
-          setForm({ ...form, nextFollowupDate: e.target.value })
+      <DatePicker 
+        showTime
+        className="w-full h-10 border-slate-200 rounded-lg"
+        value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
+        onChange={(date, dateString) => 
+          setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
         }
       />
     </div>

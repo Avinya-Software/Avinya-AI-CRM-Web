@@ -276,7 +276,7 @@ const LeadTable = ({
           />
 
           {/* Add Follow-Up */}
-          {canAddFollowUp &&
+          {/* {canAddFollowUp &&
             openLead.statusName !== "Lost" && (
               <MenuItem
                 label="Add Follow-Up"
@@ -284,7 +284,7 @@ const LeadTable = ({
                   handleAction(() => handleAddFollowUp(openLead))
                 }
               />
-            )}
+            )} */}
 
           {/* View Follow-Up */}
           <MenuItem

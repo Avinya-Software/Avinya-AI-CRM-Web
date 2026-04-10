@@ -63,6 +63,8 @@ const Tasks = () => {
 
   const { from, to } = getDateRange();
   const { data, isLoading, isFetching } = useTasks(from, to, scope);
+  const { data: personalData } = useTasks(from, to, "Personal");
+  const { data: teamData } = useTasks(from, to, "Team");
 
   const filteredTasks = (data?.data || []).filter((task) => {
     if (filters.status && task.status !== filters.status) return false;
@@ -134,10 +136,10 @@ const Tasks = () => {
                   <User size={14} />
                   My Tasks
                   <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Personal"
-                    ? "bg-blue-700 text-white"
+                    ? "bg-white text-slate-500"
                     : "bg-slate-100 text-slate-500"
                     }`}>
-                    {scope === "Personal" ? filteredTasks.length : "—"}
+                    {personalData?.data?.length ?? "—"}
                   </span>
                 </button>
 
@@ -151,10 +153,10 @@ const Tasks = () => {
                   <Users size={14} />
                   Team Tasks
                   <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Team"
-                    ? "bg-blue-700 text-white"
+                    ? "bg-white text-slate-500"
                     : "bg-slate-100 text-slate-500"
                     }`}>
-                    {scope === "Team" ? filteredTasks.length : "—"}
+                    {teamData?.data?.length ?? "—"}
                   </span>
                 </button>
               </div>

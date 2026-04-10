@@ -11,6 +11,8 @@ import { Combobox, ComboboxOption } from "../../components/ui/combobox"; // your
 import { AddTeamModal } from "../../components/team/Addteammodal"; // the new modal we created
 import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { usePermissions } from "../../context/PermissionContext";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 const TaskUpsertSheet = ({
   open,
@@ -342,20 +344,19 @@ const TaskUpsertSheet = ({
               </div>
             )}
 
-            {/* DUE DATE & TIME */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 <Calendar size={14} className="inline mr-1" />
                 Due Date & Time <span className="text-red-500">*</span>
               </label>
-              <input
-                type="datetime-local"
-                value={formData.dueDateTime}
-                onChange={(e) => setFormData({ ...formData, dueDateTime: e.target.value })}
-                className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.dueDateTime
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-slate-300 focus:ring-blue-500"
-                  }`}
+              <DatePicker
+                showTime
+                format="YYYY-MM-DD HH:mm"
+                className={`w-full h-10 rounded-lg ${errors.dueDateTime ? "border-red-500" : "border-slate-300"}`}
+                value={formData.dueDateTime ? dayjs(formData.dueDateTime) : null}
+                onChange={(date, dateString) =>
+                  setFormData({ ...formData, dueDateTime: Array.isArray(dateString) ? dateString[0] : dateString })
+                }
               />
               {errors.dueDateTime && (
                 <p className="text-red-500 text-xs mt-1">{errors.dueDateTime}</p>

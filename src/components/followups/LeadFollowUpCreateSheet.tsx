@@ -4,6 +4,8 @@ import { X, Save, Loader2 } from "lucide-react";
 import { useCreateFollowUp, useUpdateFollowUp } from "../../hooks/followup/useFollowUpMutations";
 import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { usePermissions } from "../../context/PermissionContext";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 interface LeadFollowUpCreateSheetProps {
   open: boolean;
@@ -182,16 +184,12 @@ const LeadFollowUpCreateSheet = ({
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Follow-Up Date <span className="text-red-500">*</span>
               </label>
-              <input
-                type="date"
-                value={formData.followUpDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, followUpDate: e.target.value })
+              <DatePicker
+                className={`w-full h-10 rounded-lg ${errors.followUpDate ? "border-red-500" : "border-slate-300"}`}
+                value={formData.followUpDate ? dayjs(formData.followUpDate) : null}
+                onChange={(date, dateString) =>
+                  setFormData({ ...formData, followUpDate: Array.isArray(dateString) ? dateString[0] : dateString })
                 }
-                className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.followUpDate
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-slate-300 focus:ring-blue-500"
-                  }`}
               />
               {errors.followUpDate && (
                 <p className="text-red-500 text-xs mt-1">{errors.followUpDate}</p>
@@ -222,13 +220,12 @@ const LeadFollowUpCreateSheet = ({
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Next Follow-Up Date
             </label>
-            <input
-              type="date"
-              value={formData.nextFollowupDate}
-              onChange={(e) =>
-                setFormData({ ...formData, nextFollowupDate: e.target.value })
+            <DatePicker
+              className="w-full h-10 border-slate-300 rounded-lg"
+              value={formData.nextFollowupDate ? dayjs(formData.nextFollowupDate) : null}
+              onChange={(date, dateString) =>
+                setFormData({ ...formData, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
               }
-              className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
           </div>
 

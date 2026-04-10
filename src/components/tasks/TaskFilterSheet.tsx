@@ -2,6 +2,8 @@
 import { X, Filter } from "lucide-react";
 import { useState, useEffect } from "react";
 import { TaskFilters, TaskStatus } from "../../interfaces/task.interface";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 interface TaskFilterSheetProps {
   open: boolean;
@@ -88,26 +90,24 @@ const TaskFilterSheet = ({
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 From Date
               </label>
-              <input
-                type="date"
-                value={localFilters.from || ""}
-                onChange={(e) =>
-                  setLocalFilters({ ...localFilters, from: e.target.value })
+              <DatePicker 
+                className="w-full h-10 border-slate-300 rounded-lg"
+                value={localFilters.from ? dayjs(localFilters.from) : null}
+                onChange={(date, dateString) => 
+                    setLocalFilters({ ...localFilters, from: Array.isArray(dateString) ? dateString[0] : dateString })
                 }
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 To Date
               </label>
-              <input
-                type="date"
-                value={localFilters.to || ""}
-                onChange={(e) =>
-                  setLocalFilters({ ...localFilters, to: e.target.value })
+              <DatePicker 
+                className="w-full h-10 border-slate-300 rounded-lg"
+                value={localFilters.to ? dayjs(localFilters.to) : null}
+                onChange={(date, dateString) => 
+                    setLocalFilters({ ...localFilters, to: Array.isArray(dateString) ? dateString[0] : dateString })
                 }
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>

@@ -10,29 +10,17 @@ interface DateInputProps {
   disabled?: boolean;
 }
 
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
+
 const DateInput: React.FC<DateInputProps> = ({
   label,
   value,
   onChange,
-  name,
   className = "",
   required = false,
   disabled = false,
 }) => {
-  const handleClick = (
-    e: React.MouseEvent<HTMLInputElement>
-  ) => {
-    const input = e.currentTarget;
-
-    // Focus first (Safari support)
-    input.focus();
-
-    // Open picker if supported (Chrome / Edge)
-    if (input.showPicker) {
-      input.showPicker();
-    }
-  };
-
   return (
     <div className="flex flex-col gap-1">
       {label && (
@@ -42,22 +30,11 @@ const DateInput: React.FC<DateInputProps> = ({
         </label>
       )}
 
-      <input
-        type="date"
-        name={name}
-        value={value || ""}
+      <DatePicker
+        className={`w-full h-10 rounded-md border-slate-300 ${className}`}
+        value={value ? dayjs(value) : null}
         disabled={disabled}
-        required={required}
-        onClick={handleClick}
-        onChange={(e) => onChange(e.target.value)}
-        className={`
-          w-full rounded-md border border-slate-300
-          px-3 py-2 text-sm
-          cursor-pointer
-          focus:outline-none focus:ring-2 focus:ring-green-500
-          disabled:bg-slate-100 disabled:cursor-not-allowed
-          ${className}
-        `}
+        onChange={(date, dateString) => onChange(Array.isArray(dateString) ? dateString[0] : dateString)}
       />
     </div>
   );

@@ -1,5 +1,6 @@
-// src/components/project/ProjectViewSheet.tsx
 import { useState } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X, Edit2, Plus, Clock, CheckSquare, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -351,13 +352,15 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit }: Props) =>
                     </div>
                   )}
 
-                  <div>
+                  <div className="flex flex-col gap-1">
                     <label className="block text-xs font-medium text-slate-500 mb-1">Due Date & Time *</label>
-                    <input
-                      type="datetime-local"
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      value={taskForm.dueDate}
-                      onChange={e => setTaskForm({ ...taskForm, dueDate: e.target.value })}
+                    <DatePicker 
+                      className="w-full h-9 border-slate-200 rounded-lg text-sm bg-white"
+                      showTime
+                      value={taskForm.dueDate ? dayjs(taskForm.dueDate) : null}
+                      onChange={(date, dateString) => 
+                        setTaskForm({ ...taskForm, dueDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                      }
                     />
                   </div>
 

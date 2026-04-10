@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { QuotationFilters, QuotationStatus } from "../../interfaces/quotation.interface";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 interface QuotationFilterSheetProps {
     open: boolean;
@@ -97,13 +99,12 @@ const QuotationFilterSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Start Date
                         </label>
-                        <input
-                            type="date"
-                            value={localFilters.startDate || ""}
-                            onChange={(e) =>
-                                setLocalFilters(prev => ({ ...prev, startDate: e.target.value }))
+                        <DatePicker 
+                            className="w-full h-10 border-slate-300 rounded-lg"
+                            value={localFilters.startDate ? dayjs(localFilters.startDate) : null}
+                            onChange={(date, dateString) => 
+                                setLocalFilters(prev => ({ ...prev, startDate: Array.isArray(dateString) ? dateString[0] : dateString }))
                             }
-                            className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         />
                     </div>
 
@@ -112,13 +113,12 @@ const QuotationFilterSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             End Date
                         </label>
-                        <input
-                            type="date"
-                            value={localFilters.endDate || ""}
-                            onChange={(e) =>
-                                setLocalFilters(prev => ({ ...prev, endDate: e.target.value }))
+                        <DatePicker 
+                            className="w-full h-10 border-slate-300 rounded-lg"
+                            value={localFilters.endDate ? dayjs(localFilters.endDate) : null}
+                            onChange={(date, dateString) => 
+                                setLocalFilters(prev => ({ ...prev, endDate: Array.isArray(dateString) ? dateString[0] : dateString }))
                             }
-                            className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         />
                     </div>
 

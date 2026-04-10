@@ -1,6 +1,8 @@
 // src/components/order/OrderFilterSheet.tsx
 
 import { useState, useEffect } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X } from "lucide-react";
 import { OrderFilters } from "../../interfaces/order.interface";
 import { useOrderStatusDropdown } from "../../hooks/order/useOrders";
@@ -93,11 +95,12 @@ const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) =
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             From Date
                         </label>
-                        <input
-                            type="date"
-                            value={local.startDate}
-                            onChange={(e) => setLocal((p) => ({ ...p, startDate: e.target.value }))}
-                            className="w-full h-10 px-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        <DatePicker 
+                            className="w-full h-10 border-slate-300 rounded-lg"
+                            value={local.startDate ? dayjs(local.startDate) : null}
+                            onChange={(date, dateString) => 
+                                setLocal(prev => ({ ...prev, startDate: Array.isArray(dateString) ? dateString[0] : dateString }))
+                            }
                         />
                     </div>
 
@@ -106,11 +109,12 @@ const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) =
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             To Date
                         </label>
-                        <input
-                            type="date"
-                            value={local.endDate}
-                            onChange={(e) => setLocal((p) => ({ ...p, endDate: e.target.value }))}
-                            className="w-full h-10 px-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        <DatePicker 
+                            className="w-full h-10 border-slate-300 rounded-lg"
+                            value={local.endDate ? dayjs(local.endDate) : null}
+                            onChange={(date, dateString) => 
+                                setLocal(prev => ({ ...prev, endDate: Array.isArray(dateString) ? dateString[0] : dateString }))
+                            }
                         />
                     </div>
                 </div>

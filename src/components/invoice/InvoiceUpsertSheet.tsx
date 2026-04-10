@@ -1,5 +1,6 @@
-// src/components/invoice/InvoiceUpsertSheet.tsx
 import { useState, useEffect } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X, Save, Loader2, PackageOpen } from "lucide-react";
 import { Invoice, CreateInvoiceDto, InvoiceItem } from "../../interfaces/invoice.interface";
 import { Order } from "../../interfaces/order.interface";
@@ -186,24 +187,24 @@ const InvoiceUpsertSheet = ({
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div>
+                        <div className="flex flex-col gap-1">
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Invoice Date</label>
-                            <input
-                                type="date"
-                                value={formData.invoiceDate}
-                                onChange={e => setFormData({ ...formData, invoiceDate: e.target.value })}
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                                required
+                            <DatePicker 
+                                className="w-full h-10 border-slate-300 rounded-lg"
+                                value={formData.invoiceDate ? dayjs(formData.invoiceDate) : null}
+                                onChange={(date, dateString) => 
+                                    setFormData({ ...formData, invoiceDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
                             />
                         </div>
-                        <div>
+                        <div className="flex flex-col gap-1">
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Due Date</label>
-                            <input
-                                type="date"
-                                value={formData.dueDate}
-                                onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                                required
+                            <DatePicker 
+                                className="w-full h-10 border-slate-300 rounded-lg"
+                                value={formData.dueDate ? dayjs(formData.dueDate) : null}
+                                onChange={(date, dateString) => 
+                                    setFormData({ ...formData, dueDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
                             />
                         </div>
 

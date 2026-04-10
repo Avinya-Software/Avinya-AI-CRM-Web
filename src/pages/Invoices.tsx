@@ -1,5 +1,6 @@
-// src/pages/Invoices.tsx
 import { useState, useEffect, useRef } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { Filter, X, Eye, Loader2, WalletIcon , FileText, PackageOpen } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { Invoice, InvoiceFilters } from "../interfaces/invoice.interface";
@@ -358,21 +359,23 @@ const Invoices = () => {
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Start Date</label>
-                            <input
-                                type="date"
-                                value={filters.startDate}
-                                onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value, page: 1 }))}
-                                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                            <DatePicker
+                                className="w-full h-10 rounded-lg border-slate-200"
+                                value={filters.startDate ? dayjs(filters.startDate) : null}
+                                onChange={(date, dateString) =>
+                                    setFilters(prev => ({ ...prev, startDate: Array.isArray(dateString) ? dateString[0] : dateString, page: 1 }))
+                                }
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">End Date</label>
-                            <input
-                                type="date"
-                                value={filters.endDate}
-                                onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value, page: 1 }))}
-                                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                            <DatePicker
+                                className="w-full h-10 rounded-lg border-slate-200"
+                                value={filters.endDate ? dayjs(filters.endDate) : null}
+                                onChange={(date, dateString) =>
+                                    setFilters(prev => ({ ...prev, endDate: Array.isArray(dateString) ? dateString[0] : dateString, page: 1 }))
+                                }
                             />
                         </div>
 

@@ -1,5 +1,6 @@
-// src/components/expense/ExpenseUpsertSheet.tsx
 import { useEffect, useRef, useState } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X, Upload, FileText, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -190,14 +191,19 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
 
                     {/* Date + Type */}
                     <div className="grid grid-cols-2 gap-4">
-                        <Field label="Expense Date" required error={errors.expenseDate}>
-                            <input
-                                type="date"
-                                className={`input w-full ${errors.expenseDate ? "border-red-500" : ""}`}
-                                value={form.expenseDate}
-                                onChange={(e) => setForm({ ...form, expenseDate: e.target.value })}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-slate-700 mb-1 block">
+                                Expense Date <span className="text-red-500">*</span>
+                            </label>
+                            <DatePicker 
+                                className={`w-full h-10 rounded-lg ${errors.expenseDate ? "border-red-500" : "border-slate-200"}`}
+                                value={form.expenseDate ? dayjs(form.expenseDate) : null}
+                                onChange={(date, dateString) => 
+                                    setForm({ ...form, expenseDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
                             />
-                        </Field>
+                            {errors.expenseDate && <p className="text-xs text-red-500 mt-1">{errors.expenseDate}</p>}
+                        </div>
 
                         <Field label="Expense Type" required error={errors.expenseType}>
                             <select

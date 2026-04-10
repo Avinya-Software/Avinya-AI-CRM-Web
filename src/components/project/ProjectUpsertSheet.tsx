@@ -1,5 +1,6 @@
-// src/components/project/ProjectUpsertSheet.tsx
 import { useEffect, useState } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -322,35 +323,37 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                         </div>
                     </div>
 
-                    {/* Dates */}
                     <div className="grid grid-cols-3 gap-3">
                         <div>
                             <label className="text-sm font-medium">Start Date</label>
-                            <input
-                                type="date"
-                                className="input w-full mt-1"
-                                value={form.startDate ?? ""}
-                                onChange={(e) => setForm({ ...form, startDate: e.target.value || null })}
+                            <DatePicker 
+                                className="w-full h-10 border-slate-300 rounded-lg mt-1"
+                                value={form.startDate ? dayjs(form.startDate) : null}
+                                onChange={(date, dateString) => 
+                                    setForm({ ...form, startDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
                                 disabled={isReadOnly}
                             />
                         </div>
                         <div>
                             <label className="text-sm font-medium">End Date</label>
-                            <input
-                                type="date"
-                                className="input w-full mt-1"
-                                value={form.endDate ?? ""}
-                                onChange={(e) => setForm({ ...form, endDate: e.target.value || null })}
+                            <DatePicker 
+                                className="w-full h-10 border-slate-300 rounded-lg mt-1"
+                                value={form.endDate ? dayjs(form.endDate) : null}
+                                onChange={(date, dateString) => 
+                                    setForm({ ...form, endDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
                                 disabled={isReadOnly}
                             />
                         </div>
                         <div>
                             <label className="text-sm font-medium">Deadline</label>
-                            <input
-                                type="date"
-                                className="input w-full mt-1"
-                                value={form.deadline ?? ""}
-                                onChange={(e) => setForm({ ...form, deadline: e.target.value || null })}
+                            <DatePicker 
+                                className="w-full h-10 border-slate-300 rounded-lg mt-1"
+                                value={form.deadline ? dayjs(form.deadline) : null}
+                                onChange={(date, dateString) => 
+                                    setForm({ ...form, deadline: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
                                 disabled={isReadOnly}
                             />
                         </div>

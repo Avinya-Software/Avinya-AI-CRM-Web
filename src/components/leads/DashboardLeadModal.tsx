@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X } from "lucide-react";
 import { useUpsertLead } from "../../hooks/lead/useUpsertLead";
 import { useLeadStatuses } from "../../hooks/lead/useLeadStatuses";
@@ -407,15 +409,21 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
               )}
 
               {!isEdit && (
-                <Input
-                  label="Next Follow-up Date"
-                  required
-                  type="datetime-local"
-                  value={form.nextFollowupDate}
-                  error={errors.nextFollowupDate}
-                  onChange={(v: any) => setForm({ ...form, nextFollowupDate: v })}
-                  disabled={isReadOnly}
-                />
+                <div className="flex flex-col gap-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Next Follow-up Date <span className="text-red-500">*</span>
+                  </label>
+                  <DatePicker 
+                    showTime
+                    className={`w-full h-10 rounded-lg ${errors.nextFollowupDate ? "border-red-500" : "border-slate-300"}`}
+                    value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
+                    onChange={(date, dateString) => 
+                      setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                    }
+                    disabled={isReadOnly}
+                  />
+                  {errors.nextFollowupDate && <p className="text-xs text-red-600 mt-1">{errors.nextFollowupDate}</p>}
+                </div>
               )}
             </div>
           </div>

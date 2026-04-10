@@ -10,7 +10,6 @@ import Pagination from "../components/leads/Pagination";
 import LeadFilterSheet from "../components/leads/LeadFilterSheet";
 import LeadUpsertSheet from "../components/leads/LeadUpsertSheet";
 import LeadFollowUpCreateSheet from "../components/followups/LeadFollowUpCreateSheet";
-import CustomerUpsertSheet from "../components/customer/CustomerUpsertSheet";
 import { usePermissions } from "../context/PermissionContext";
 
 import type { RootState } from "../store";
@@ -293,19 +292,7 @@ const Leads = () => {
         advisorId={advisorId}
       />
 
-      {/* CUSTOMER UPSERT */}
-      <CustomerUpsertSheet
-        open={openCustomerSheet}
-        leadId={leadForCustomer?.leadId}
-        onClose={() => {
-          setOpenCustomerSheet(false);
-          setLeadForCustomer(null);
-        }}
-        onSuccess={() => {
-          setOpenCustomerSheet(false);
-          setLeadForCustomer(null);
-        }}
-      />
+  
 
       {/* FOLLOW UP CREATE */}
       <LeadFollowUpCreateSheet
