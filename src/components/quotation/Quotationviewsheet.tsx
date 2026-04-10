@@ -168,7 +168,7 @@ const QuotationViewSheet = ({
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-700">Subtotal</span>
                 <span className="font-semibold text-slate-900">
-                  ₹{(quotation.subTotal ?? 0).toLocaleString()}
+                  ₹{(quotation.totalAmount ?? 0).toLocaleString()}
                 </span>
               </div>
 
@@ -176,7 +176,7 @@ const QuotationViewSheet = ({
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-700">Tax</span>
                   <span className="font-semibold text-slate-900">
-                    ₹{(quotation.totalTax ?? 0).toLocaleString()}
+                    ₹{(quotation.taxes ?? 0).toLocaleString()}
                   </span>
                 </div>
               )}
@@ -250,7 +250,7 @@ const QuotationViewSheet = ({
           {canEdit && (
             <button
               onClick={onEdit}
-              className="flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-xl hover:bg-blue-800 transition text-sm font-medium flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 btn-primary rounded-xl transition text-sm font-medium flex items-center justify-center gap-2"
             >
               <Edit2 size={14} />
               Edit Quotation

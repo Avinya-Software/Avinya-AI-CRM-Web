@@ -193,7 +193,7 @@ function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomerModalPr
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2.5 btn-primary rounded-lg text-sm font-medium transition disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {isLoading ? (
                                 <>
@@ -249,7 +249,7 @@ const QuickBookCustomers = () => {
                 </div>
                 <button
                     onClick={() => setModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition"
+                    className="flex items-center gap-2 px-4 py-2 btn-primary rounded-lg text-sm font-medium transition"
                 >
                     <UserPlus size={15} />
                     New Customer

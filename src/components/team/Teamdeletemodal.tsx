@@ -74,7 +74,7 @@ const TeamDeleteModal = ({ open, team, onClose }: TeamDeleteModalProps) => {
             <button
               onClick={handleConfirm}
               disabled={deleteTeam.isPending || !canDelete} // ✅ Protected
-              className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 btn-danger rounded-lg text-sm font-medium transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {deleteTeam.isPending ? (
                 <>

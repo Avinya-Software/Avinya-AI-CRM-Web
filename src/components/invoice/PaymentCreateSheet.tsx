@@ -251,22 +251,35 @@ const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
                           <p className="text-sm text-slate-400 font-medium">No previous payments recorded for this invoice.</p>
                         </div>
                       ) : (
-                        <div className="space-y-1.5 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1 custom-scrollbar">
                           {previousPayments.map((p) => (
-                            <div key={p.paymentID} className="bg-white border border-slate-100 rounded-xl px-4 py-2 flex justify-between items-center group hover:border-emerald-200 hover:shadow-sm hover:shadow-emerald-500/5 transition-all">
-                              <div className="flex items-center gap-4">
-                                <div className="flex flex-col">
-                                  <span className="text-xs font-bold text-slate-900 leading-none">₹{p.amount.toFixed(2)}</span>
-                                  <span className="text-[9px] text-slate-400 mt-1 font-medium">{new Date(p.paymentDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                            <div key={p.paymentID} className="bg-white border border-slate-100 rounded-xl px-4 py-3 hover:border-emerald-200 hover:shadow-sm hover:shadow-emerald-500/5 transition-all">
+                              {/* Top row: amount + date + method badge */}
+                              <div className="flex items-center justify-between gap-2 mb-1.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-bold text-slate-900">₹{p.amount.toFixed(2)}</span>
+                                  <span className="text-[10px] text-slate-400 font-medium">
+                                    {new Date(p.paymentDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                  </span>
                                 </div>
-                                <div className="h-6 w-px bg-slate-100 hidden sm:block" />
-                                <div className="flex flex-col">
-                                  <span className="text-[9px] px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded-md font-bold uppercase w-fit">{p.paymentMethod}</span>
-                                  {p.referenceNo && <span className="text-[9px] text-slate-400 mt-0.5">Ref: {p.referenceNo}</span>}
-                                </div>
+                                <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full font-bold uppercase tracking-wide shrink-0">
+                                  {p.paymentMethod}
+                                </span>
                               </div>
-                              <div className="text-right max-w-[200px]">
-                                <p className="text-[10px] text-slate-400 italic line-clamp-1">{p.notes || "-"}</p>
+                              {/* Detail rows: ref + notes */}
+                              <div className="flex flex-col gap-0.5 pl-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[10px] text-slate-400 font-semibold w-16 shrink-0">Ref No</span>
+                                  <span className="text-[10px] text-slate-600 font-medium truncate">
+                                    {p.referenceNo || <span className="text-slate-300 italic">—</span>}
+                                  </span>
+                                </div>
+                                <div className="flex items-start gap-1.5">
+                                  <span className="text-[10px] text-slate-400 font-semibold w-16 shrink-0 mt-px">Notes</span>
+                                  <span className="text-[10px] text-slate-600 line-clamp-2">
+                                    {p.notes || <span className="text-slate-300 italic">—</span>}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -293,7 +306,7 @@ const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
             <button
               type="submit"
               disabled={createPayment.isPending || formData.amount <= 0 || formData.amount > (invoice.remainingPayment || 0)}
-              className="bg-blue-900 text-white px-8 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-800 transition-all shadow-lg shadow-blue-900/10 disabled:opacity-50 disabled:shadow-none text-sm"
+              className="btn-primary px-8 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-900/10 disabled:opacity-50 disabled:shadow-none text-sm"
             >
               {createPayment.isPending ? (
                 <>

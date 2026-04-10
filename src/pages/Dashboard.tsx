@@ -71,12 +71,7 @@ type Preset = "today" | "this_week" | "this_month" | "custom" | null;
 const Dashboard = () => {
   const { data, loading, refresh, applyFilter, clearFilter, fetchWithDates, fromDate, setFromDate, toDate, setToDate } = useDashboardOverview();
   const navigate = useNavigate();
-  const [quickUpdateOpen, setQuickUpdateOpen] = useState(false);
   const [activePreset, setActivePreset] = useState<Preset>("today");
-
-  const [showLeadModal, setShowLeadModal] = useState(false);
-  const [showTaskModal, setShowTaskModal] = useState(false);
-  const [showQuotationModal, setShowQuotationModal] = useState(false);
 
   const [workModalInfo, setWorkModalInfo] = useState<{
     open: boolean;
@@ -219,12 +214,13 @@ const Dashboard = () => {
     <div className="min-h-screen bg-slate-50">
       {/* ── HEADER ── */}
       <div className="bg-white border-b border-slate-100 px-6 py-4">
-        <div className="max-w-screen-2xl mx-auto space-y-3">
+        <div className="space-y-3">
 
-          {/* ── ROW 1: Title + Refresh/Bell ── */}
-          <div className="flex items-center justify-between">
+          {/* ── MAIN HEADER ROW: Title + Actions (Filter/Refresh) ── */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Left side: Page Title */}
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-600 rounded-lg">
+              <div className="p-2 bg-[var(--btn-primary)] rounded-lg shadow-blue-100 shadow-lg">
                 <Activity className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -241,133 +237,125 @@ const Dashboard = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {/* ── Date Presets (Desktop) ── */}
-              <div className="hidden lg:flex items-center gap-1.5 bg-slate-50 border border-slate-100 p-1 rounded-xl mr-2">
-                {([
-                  { label: "Today",      key: "today"      },
-                  { label: "This Week",  key: "this_week"  },
-                  { label: "This Month", key: "this_month" },
-                  { label: "Custom",     key: "custom"     },
-                ] as { label: string; key: Preset }[]).map(({ label, key }) => (
-                  <button
-                    key={key!}
-                    id={`dashboard-preset-${key}`}
-                    onClick={() => handlePreset(key)}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
-                      activePreset === key
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
-                        : "text-slate-500 hover:text-indigo-600 hover:bg-white"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
+
+            {/* Right side: Actions Group */}
+            <div className="flex flex-col items-end gap-3">
+              <div className="flex items-center gap-2.5 flex-wrap justify-end">
+                {/* Preset buttons */}
+                <div className="flex items-center gap-1 bg-slate-50 border border-slate-200/50 p-1 rounded-xl">
+                  {([
+                    { label: "Today",      key: "today"      },
+                    { label: "This Week",  key: "this_week"  },
+                    { label: "This Month", key: "this_month" },
+                    { label: "Custom",     key: "custom"     },
+                  ] as { label: string; key: Preset }[]).map(({ label, key }) => (
+                    <button
+                      key={key!}
+                      id={`dashboard-preset-${key}`}
+                      onClick={() => handlePreset(key)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-200 ${
+                        activePreset === key
+                          ? "btn-primary shadow-md"
+                          : "text-slate-500 hover:text-[var(--btn-primary)] hover:bg-white"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Pending badge */}
+                {totalActions > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-100 rounded-lg shrink-0">
+                    <Bell className="w-3.5 h-3.5 text-red-500" />
+                    <span className="text-[11px] font-bold text-red-600">
+                      {totalActions} PENDING
+                    </span>
+                  </div>
+                )}
+
+                {/* Refresh button */}
+                <button
+                  onClick={refresh}
+                  title="Refresh Dashboard"
+                  className="flex items-center gap-1.5 px-3 py-1.5 btn-primary rounded-lg transition-all active:scale-95 shadow-lg shrink-0"
+                >
+                  <RefreshCcw className="w-3.5 h-3.5" />
+                </button>
               </div>
 
-              {totalActions > 0 && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 rounded-full shrink-0">
-                  <Bell className="w-3.5 h-3.5 text-red-500" />
-                  <span className="text-xs font-bold text-red-600">
-                    {totalActions} pending
-                  </span>
-                </div>
-              )}
-              <button
-                onClick={refresh}
-                className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 rounded-xl transition-all active:scale-95 text-xs font-bold text-white shadow-lg shadow-slate-200"
-              >
-                <RefreshCcw className="w-3.5 h-3.5" />
-              </button>
+              {/* Range Display & Custom Inputs Stack */}
+              <div className="flex flex-col items-end gap-2 w-full">
+                {/* Active date range display */}
+                {(fromDate || toDate) && activePreset !== "custom" && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-1">
+                    <CalendarDays className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-blue-400 font-medium uppercase tracking-wide">Range</span>
+                      <span className="text-xs font-bold text-blue-700">
+                        {fromDate}
+                        {toDate && fromDate !== toDate ? ` → ${toDate}` : ""}
+                      </span>
+                    </div>
+                    {activePreset && (
+                      <button
+                        onClick={() => { setActivePreset(null); clearFilter(); }}
+                        className="ml-1 p-0.5 hover:bg-blue-100 rounded text-blue-300 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Custom date inputs */}
+                {activePreset === "custom" && (() => {
+                  const today = new Date().toISOString().split("T")[0];
+                  return (
+                    <div className="flex items-center gap-2 flex-wrap justify-end animate-in fade-in slide-in-from-top-1 w-full">
+                      <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
+                        <span className="text-[11px] text-slate-400 font-medium">From</span>
+                        <input
+                          id="dashboard-from-date"
+                          type="date"
+                          value={fromDate ?? ""}
+                          max={toDate ? (toDate < today ? toDate : today) : today}
+                          onChange={(e) => setFromDate(e.target.value || null)}
+                          className="bg-transparent text-slate-700 text-xs font-semibold outline-none cursor-pointer"
+                        />
+                      </div>
+                      <span className="text-slate-300 text-sm">→</span>
+                      <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
+                        <span className="text-[11px] text-slate-400 font-medium">To</span>
+                        <input
+                          id="dashboard-to-date"
+                          type="date"
+                          value={toDate ?? ""}
+                          min={fromDate ?? undefined}
+                          max={today}
+                          onChange={(e) => setToDate(e.target.value || null)}
+                          className="bg-transparent text-slate-700 text-xs font-semibold outline-none cursor-pointer"
+                        />
+                      </div>
+                      <button
+                        id="dashboard-apply-dates"
+                        onClick={applyFilter}
+                        className="px-4 py-1.5 rounded-lg btn-primary active:scale-95 text-xs font-bold tracking-wide shadow-md shadow-blue-100"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           </div>
 
-          {/* ── ROW 2: Mobile Preset bar + Active Badge ── */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              {([
-                { label: "Today",      key: "today"      },
-                { label: "This Week",  key: "this_week"  },
-                { label: "This Month", key: "this_month" },
-                { label: "Custom",     key: "custom"     },
-              ] as { label: string; key: Preset }[]).map(({ label, key }) => (
-                <button
-                  key={key!}
-                  onClick={() => handlePreset(key)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border whitespace-nowrap ${
-                    activePreset === key
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-white text-slate-600 border-slate-200"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {/* Active filter badge */}
-            {(fromDate || toDate) && activePreset !== "custom" && (
-              <div className="flex items-center gap-2 px-2.5 py-1 bg-white border border-slate-100 rounded-lg shadow-sm">
-                 <CalendarDays className="w-3.5 h-3.5 text-indigo-500" />
-                 <span className="text-[10px] text-slate-600 font-bold uppercase tracking-tight">
-                   {fromDate} {toDate && fromDate !== toDate ? `→ ${toDate}` : ""}
-                 </span>
-                 {activePreset && (
-                  <button
-                    onClick={() => { setActivePreset(null); clearFilter(); }}
-                    className="p-0.5 hover:bg-slate-100 rounded text-slate-400 hover:text-red-500 transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                 )}
-              </div>
-            )}
-          </div>
-
-          {/* ── ROW 3: Custom date inputs (only when Custom is selected) ── */}
-          {activePreset === "custom" && (() => {
-            const today = new Date().toISOString().split("T")[0];
-            return (
-              <div className="flex items-center gap-2 flex-wrap pl-6 animate-fadeIn">
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
-                  <span className="text-[11px] text-slate-400 font-medium">From</span>
-                  <input
-                    id="dashboard-from-date"
-                    type="date"
-                    value={fromDate ?? ""}
-                    max={toDate ? (toDate < today ? toDate : today) : today}
-                    onChange={(e) => setFromDate(e.target.value || null)}
-                    className="bg-transparent text-slate-700 text-xs font-semibold outline-none cursor-pointer"
-                  />
-                </div>
-                <span className="text-slate-300 text-sm">→</span>
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
-                  <span className="text-[11px] text-slate-400 font-medium">To</span>
-                  <input
-                    id="dashboard-to-date"
-                    type="date"
-                    value={toDate ?? ""}
-                    min={fromDate ?? undefined}
-                    max={today}
-                    onChange={(e) => setToDate(e.target.value || null)}
-                    className="bg-transparent text-slate-700 text-xs font-semibold outline-none cursor-pointer"
-                  />
-                </div>
-                <button
-                  id="dashboard-apply-dates"
-                  onClick={applyFilter}
-                  className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold tracking-wide transition-all duration-150"
-                >
-                  Apply
-                </button>
-              </div>
-            );
-          })()}
 
         </div>
       </div>
 
-      <div className="max-w-screen-2xl mx-auto px-6 py-6 space-y-6">
+      <div className="px-6 py-6 space-y-6">
         {/* ────────────────────────────────────────────────────── */}
         {/* SECTION 1 · TODAY'S ACTION CENTER                     */}
         {/* ────────────────────────────────────────────────────── */}
@@ -410,15 +398,15 @@ const Dashboard = () => {
           {/* TASK LIST */}
           <section>
             <SectionHeader
-              icon={<Target className="w-4 h-4 text-indigo-600" />}
+              icon={<Target className="w-4 h-4 text-blue-700" />}
               title="Do This Now"
               subtitle="Pending tasks"
               badge={sortedTasks.length > 0 ? `${sortedTasks.length} tasks` : undefined}
-              badgeColor="indigo"
+              badgeColor="blue"
               action={
                 <button
                   onClick={() => navigate("/tasks")}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-0.5"
+                  className="text-xs text-blue-700 hover:text-blue-800 font-semibold flex items-center gap-0.5"
                 >
                   View all <ChevronRight className="w-3.5 h-3.5" />
                 </button>
@@ -579,7 +567,7 @@ const Dashboard = () => {
               label="Tasks"
               value={counts.tasks ?? 0}
               icon={<CalendarClock className="w-4 h-4" />}
-              color="indigo"
+              color="blue"
               onClick={() => navigate("/tasks")}
             />
             <PerfCard
@@ -667,60 +655,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── FLOATING QUICK UPDATE BUTTON ── */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
-        {quickUpdateOpen && (
-          <QuickUpdateMenu
-            onClose={() => setQuickUpdateOpen(false)}
-            onAction={(actionType: string) => {
-              if (actionType === "lead") setShowLeadModal(true);
-              else if (actionType === "task") setShowTaskModal(true);
-              else if (actionType === "quotation") setShowQuotationModal(true);
-              else if (actionType === "followup" || actionType === "note") navigate("/leads");
-              setQuickUpdateOpen(false);
-            }}
-          />
-        )}
-        <button
-          id="quick-update-btn"
-          onClick={() => setQuickUpdateOpen((p) => !p)}
-          className="w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
-          title="Quick Update"
-        >
-          {quickUpdateOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Plus className="w-6 h-6" />
-          )}
-        </button>
-      </div>
-
-      {/* ── MODALS ── */}
-      <DashboardLeadModal
-        open={showLeadModal}
-        onClose={() => {
-          setShowLeadModal(false);
-          refresh();
-        }}
-        advisorId={null}
-      />
-      <TaskUpsertSheet
-        open={showTaskModal}
-        onClose={() => {
-          setShowTaskModal(false);
-          refresh();
-        }}
-        task={undefined}
-        scope="Personal"
-      />
-      <QuotationUpsertSheet
-        open={showQuotationModal}
-        onClose={() => {
-          setShowQuotationModal(false);
-          refresh();
-        }}
-        quotation={null}
-      />
 
       <TodayWorkModal
         open={workModalInfo.open}
@@ -752,7 +686,7 @@ const SectionHeader = ({
   const badgeColors: Record<string, string> = {
     red: "bg-red-100 text-red-700",
     orange: "bg-orange-100 text-orange-700",
-    indigo: "bg-indigo-100 text-indigo-700",
+    blue: "bg-blue-100 text-blue-700",
     slate: "bg-slate-100 text-slate-700",
   };
   return (
@@ -867,7 +801,7 @@ const TaskRow = ({
       <div className="flex items-center gap-1 transition-opacity">
         <button
           onClick={() => onStatusUpdate(TaskStatus.InProgress)}
-          className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-indigo-600 rounded-lg transition-colors"
+          className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-blue-700 rounded-lg transition-colors"
           title="Mark In Progress"
         >
           <Clock size={16} />
@@ -977,11 +911,10 @@ const PerfCard = ({
   onClick?: () => void;
 }) => {
   const colors: Record<string, string> = {
-    blue: "text-blue-600 bg-blue-50",
+    blue: "text-blue-700 bg-blue-50",
     orange: "text-orange-600 bg-orange-50",
     purple: "text-purple-600 bg-purple-50",
     green: "text-green-600 bg-green-50",
-    indigo: "text-indigo-600 bg-indigo-50",
     rose: "text-rose-600 bg-rose-50",
   };
   return (
@@ -1010,82 +943,6 @@ const PerfCard = ({
   );
 };
 
-/* ================================================================
-   QUICK BUTTON
-================================================================ */
-const QuickBtn = ({
-  icon,
-  label,
-  onClick,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick: (e?: React.MouseEvent) => void;
-  color: string;
-}) => {
-  const colors: Record<string, string> = {
-    blue: "hover:bg-blue-100 hover:text-blue-700",
-    green: "hover:bg-green-100 hover:text-green-700",
-    emerald: "hover:bg-emerald-100 hover:text-emerald-700",
-    slate: "hover:bg-slate-200 hover:text-slate-700",
-    amber: "hover:bg-amber-100 hover:text-amber-700",
-    red: "hover:bg-red-100 hover:text-red-700",
-  };
-  return (
-    <button
-      title={label}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick(e);
-      }}
-      className={`p-1.5 rounded-lg text-slate-400 transition-colors ${colors[color] || colors.slate}`}
-    >
-      {icon}
-    </button>
-  );
-};
-
-/* ================================================================
-   QUICK UPDATE MENU
-================================================================ */
-const QuickUpdateMenu = ({
-  onClose,
-  onAction,
-}: {
-  onClose: () => void;
-  onAction: (actionType: string) => void;
-}) => {
-  const items = [
-    { label: "Add Lead", action: "lead", icon: "🎯", color: "bg-orange-500" },
-    { label: "Add Task", action: "task", icon: "✅", color: "bg-indigo-500" },
-    { label: "Create Quotation", action: "quotation", icon: "📄", color: "bg-purple-500" },
-  ];
-
-  return (
-    <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 w-52 animate-slideUp">
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
-        Quick Actions
-      </p>
-      {items.map((item) => (
-        <button
-          key={item.action + item.label}
-          onClick={() => onAction(item.action)}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors text-left"
-        >
-          <div
-            className={`w-7 h-7 ${item.color} rounded-lg flex items-center justify-center text-sm`}
-          >
-            {item.icon}
-          </div>
-          <span className="text-sm font-medium text-slate-700">
-            {item.label}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-};
 
 /* ================================================================
    EMPTY STATE

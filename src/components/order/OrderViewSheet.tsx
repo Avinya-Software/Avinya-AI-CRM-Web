@@ -117,7 +117,6 @@ const OrderViewSheet = ({ open, onClose, order, onEdit }: Props) => {
                     />
                     <Field label="Design By Us" value={order.isDesignByUs ? "Yes" : "No"} />
                     <Field label="Created By" value={order.createdByName} />
-                    <Field label="Assigned Designer" value={order.assignedDesignToName ?? "-"} />
                     <Field label="Billing Address" value={order.billAddress ?? "-"} />
                     {!order.isUseBillingAddress && (
                       <Field label="Shipping Address" value={order.shippingAddress ?? "-"} />

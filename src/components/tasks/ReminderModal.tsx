@@ -257,7 +257,7 @@ const ReminderModal = ({
           <button
             type="button"
             onClick={() => onSave({ date, time })}
-            className="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition font-medium"
+            className="flex-1 px-4 py-2 btn-primary rounded-lg transition font-medium"
           >
             Set
           </button>

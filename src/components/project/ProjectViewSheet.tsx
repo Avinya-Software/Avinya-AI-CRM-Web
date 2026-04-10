@@ -313,7 +313,7 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit }: Props) =>
               {canAddTask && (
                 <button
                   onClick={() => setShowAddTask(!showAddTask)}
-                  className="w-full py-2.5 bg-blue-900 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-blue-800 transition mb-4"
+                  className="w-full py-2.5 btn-primary rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition mb-4"
                 >
                   <Plus size={16} /> Add Task
                 </button>
@@ -371,7 +371,7 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit }: Props) =>
                     <button
                       disabled={!taskForm.taskName.trim() || !taskForm.dueDate || addingTask}
                       onClick={handleAddTask}
-                      className="flex-1 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 disabled:opacity-50 transition flex items-center justify-center gap-2"
+                      className="flex-1 py-2 btn-primary rounded-lg text-sm font-medium disabled:opacity-50 transition flex items-center justify-center gap-2"
                     >
                       {addingTask && <Spinner />}
                       {addingTask ? "Adding..." : "Add Task"}

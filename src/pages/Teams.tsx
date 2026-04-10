@@ -117,7 +117,7 @@ const Teams = () => {
             {canCreate && ( /* ✅ protected */
               <button
                 onClick={handleAdd}
-                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+                className="inline-flex items-center gap-2 btn-primary px-4 py-2 rounded text-sm font-medium transition"
               >
                 <Plus size={18} />
                 New Team
@@ -185,7 +185,7 @@ const Teams = () => {
                   onClick={() => setFilterStatus(s)}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition
                   ${filterStatus === s
-                      ? "bg-blue-900 text-white shadow-sm"
+                      ? "btn-primary shadow-sm"
                       : "text-slate-500 hover:text-slate-800"
                     }`}
                 >
@@ -212,7 +212,7 @@ const Teams = () => {
               {!search && canCreate && (
                 <button
                   onClick={handleAdd}
-                  className="mt-4 inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition"
+                  className="mt-4 inline-flex items-center gap-2 btn-primary px-4 py-2 rounded-lg text-sm font-medium transition"
                 >
                   <Plus size={16} />
                   Create Team

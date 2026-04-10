@@ -430,7 +430,7 @@ const OrderUpsertSheet = ({
                                 type="button"
                                 disabled={isFormReadOnly}
                                 onClick={() => setFormData({ ...formData, enableTax: !formData.enableTax })}
-                                className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.enableTax ? "bg-blue-900" : "bg-slate-300"}`}
+                                className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.enableTax ? "bg-[var(--btn-primary)]" : "bg-slate-300"}`}
                             >
                                 <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition transform shadow-sm ${formData.enableTax ? "translate-x-6" : "translate-x-0"}`} />
                             </button>
@@ -443,7 +443,7 @@ const OrderUpsertSheet = ({
                                 type="button"
                                 disabled={isFormReadOnly}
                                 onClick={() => setFormData({ ...formData, isUseBillingAddress: !formData.isUseBillingAddress })}
-                                className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.isUseBillingAddress ? "bg-blue-900" : "bg-slate-300"}`}
+                                className={`relative w-12 h-6 rounded-full transition disabled:opacity-50 ${formData.isUseBillingAddress ? "bg-[var(--btn-primary)]" : "bg-slate-300"}`}
                             >
                                 <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition transform shadow-sm ${formData.isUseBillingAddress ? "translate-x-6" : "translate-x-0"}`} />
                             </button>
@@ -514,7 +514,7 @@ const OrderUpsertSheet = ({
                                 <button
                                     type="button"
                                     onClick={addProductItem}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-900 text-white rounded-lg text-xs font-medium hover:bg-blue-800 transition"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 btn-primary rounded-lg text-xs font-medium transition"
                                 >
                                     <Plus size={14} /> Add Product
                                 </button>
@@ -718,7 +718,7 @@ const OrderUpsertSheet = ({
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
+                                className="flex-1 px-4 py-2.5 btn-primary rounded-lg transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
                             >
                                 {isLoading ? (
                                     <><Loader2 size={16} className="animate-spin" /> Saving...</>

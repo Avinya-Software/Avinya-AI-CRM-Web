@@ -65,3 +65,11 @@ export const downloadInvoicePdf = async (id: string): Promise<Blob> => {
   });
   return response.data;
 };
+
+// ── GET: Fetch Invoice with items by ID ─────────────────────────────
+export const getInvoiceWithItems = async (
+  id: string
+): Promise<Invoice> => {
+  const response = await api.get(`/Invoice/getinvoicewithitems/${id}`);
+  return response.data;
+};

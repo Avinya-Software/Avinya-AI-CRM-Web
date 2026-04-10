@@ -273,7 +273,7 @@ const QuotationTable = ({
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                className="px-4 py-2 btn-danger rounded disabled:opacity-50"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>

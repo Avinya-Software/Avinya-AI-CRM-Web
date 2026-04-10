@@ -184,7 +184,7 @@ const TaskDetailModal = ({ open, onClose, task, onEdit }: TaskDetailModalProps) 
                         <button
                             onClick={handleEditClick}
                             disabled={!canEditTask}
-                            className={`flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-xl hover:bg-blue-800 transition text-sm font-medium flex items-center justify-center gap-2 ${!canEditTask ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`flex-1 px-4 py-2.5 btn-primary rounded-xl transition text-sm font-medium flex items-center justify-center gap-2 ${!canEditTask ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                             <Edit2 size={14} />
                             Edit Task

@@ -78,7 +78,7 @@ const Clients = () => {
                         <div className="text-right">
                             {canAddClient && (
                                 <button
-                                    className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium"
+                                    className="inline-flex items-center gap-2 btn-primary px-4 py-2 rounded text-sm font-medium"
                                     onClick={handleAddClient}
                                 >
                                     <span className="text-lg leading-none">+</span>

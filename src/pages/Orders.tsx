@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Filter, X } from "lucide-react";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { Order, OrderFilters } from "../interfaces/order.interface";
 import { useDeleteOrder, useOrders } from "../hooks/order/useOrders";
 import OrderTable from "../components/order/Ordertable";
@@ -13,6 +13,8 @@ import OrderViewSheet from "../components/order/OrderViewSheet";
 import InvoiceUpsertSheet from "../components/invoice/InvoiceUpsertSheet";
 import { usePermissions } from "../context/PermissionContext"; // ✅ PERMISSION
 import { useDebounce } from "../components/common/CommonHelper";
+import { getInvoiceWithItems } from "../api/invoice.api";
+import { Invoice } from "../interfaces/invoice.interface";
 
 const DEFAULT_FILTERS: OrderFilters = {
   page: 1,
@@ -42,6 +44,8 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [openFilterSheet, setOpenFilterSheet] = useState(false);
   const [openInvoiceSheet, setOpenInvoiceSheet] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [isLoadingInvoice, setIsLoadingInvoice] = useState(false);
 
 
   const deleteMutation = useDeleteOrder();
@@ -93,7 +97,30 @@ const Orders = () => {
 
   const handleCreateInvoice = (order: Order) => {
     setSelectedOrder(order);
+    setSelectedInvoice(null);
     setOpenInvoiceSheet(true);
+  };
+
+  const handleUpdateInvoice = async (order: Order) => {
+    // Determine the invoiceID. The order object includes invoiceId or billID.
+    const targetInvoiceId = order.invoiceId || order.billID || order.bill?.invoiceID;
+    if (!targetInvoiceId) {
+      toast.error("Invoice ID not found for this order.");
+      return;
+    }
+
+    try {
+      setIsLoadingInvoice(true);
+      const invoiceData = await getInvoiceWithItems(targetInvoiceId);
+      setSelectedInvoice(invoiceData);
+      setSelectedOrder(order);
+      setOpenInvoiceSheet(true);
+    } catch (error) {
+      toast.error("Failed to load invoice details.");
+      console.error(error);
+    } finally {
+      setIsLoadingInvoice(false);
+    }
   };
 
 
@@ -131,7 +158,7 @@ const Orders = () => {
             <div className="text-right">
               {canAddOrder && ( /* ✅ button hidden if no permission */
                 <button
-                  className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+                  className="inline-flex items-center gap-2 btn-primary px-4 py-2 rounded text-sm font-medium transition"
                   onClick={handleAddOrder}
                 >
                   <span className="text-lg leading-none">+</span>
@@ -191,15 +218,15 @@ const Orders = () => {
           </div>
         </div>
 
-        {/* TABLE */}
         <OrderTable
           data={data?.data ?? []}
-          loading={isLoading || isFetching}
+          loading={isLoading || isFetching || isLoadingInvoice}
           onView={handleViewOrder}
           onEdit={handleEditOrder}
           onDelete={handleDeleteOrder}
           onAdd={handleAddOrder}
           onCreateInvoice={handleCreateInvoice}
+          onUpdateInvoice={handleUpdateInvoice}
         />
 
         {/* PAGINATION */}
@@ -262,8 +289,10 @@ const Orders = () => {
         onClose={() => {
           setOpenInvoiceSheet(false);
           setSelectedOrder(null);
+          setSelectedInvoice(null);
         }}
         sourceOrder={selectedOrder}
+        invoice={selectedInvoice}
       />
     </>
   );

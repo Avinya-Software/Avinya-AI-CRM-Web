@@ -127,7 +127,7 @@ const TeamMembersDrawer = ({
             <button
               onClick={handleAddMembers}
               disabled={addMember.isPending || !canUpdateTeam}
-              className="mt-2.5 w-full px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              className="mt-2.5 w-full px-4 py-2 btn-primary rounded-lg text-sm font-medium transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {addMember.isPending ? (
                 <>

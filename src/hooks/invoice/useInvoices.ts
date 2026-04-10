@@ -39,6 +39,7 @@ export const useCreateInvoice = () => {
     mutationFn: createInvoice,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Invoice created successfully!");
     },
     onError: (error: any) => {
@@ -54,6 +55,7 @@ export const useUpdateInvoice = () => {
     mutationFn: (data: UpdateInvoiceDto) => updateInvoice(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Invoice updated successfully!");
     },
     onError: (error: any) => {
@@ -69,6 +71,7 @@ export const useDeleteInvoice = () => {
     mutationFn: deleteInvoice,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Invoice deleted successfully!");
     },
     onError: () => {

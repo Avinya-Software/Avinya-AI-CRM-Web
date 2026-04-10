@@ -178,7 +178,7 @@ const LeadFilterSheet = ({
                     <button
                         onClick={handleApply}
                         disabled={loading}
-                        className="flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition text-sm font-medium disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 btn-primary rounded-lg transition text-sm font-medium disabled:opacity-50"
                     >
                         Apply Filters
                     </button>

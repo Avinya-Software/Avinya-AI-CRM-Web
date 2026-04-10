@@ -125,7 +125,7 @@ const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) =
                     </button>
                     <button
                         onClick={handleApply}
-                        className="flex-1 h-10 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition"
+                        className="flex-1 h-10 btn-primary rounded-lg text-sm font-medium transition"
                     >
                         Apply Filters
                     </button>

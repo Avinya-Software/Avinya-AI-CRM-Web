@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { X, User, Phone, Mail, MapPin, Briefcase, FileText, Link, Calendar, Tag } from "lucide-react";
 import { useUpsertLead } from "../../hooks/lead/useUpsertLead";
 import { useLeadStatuses } from "../../hooks/lead/useLeadStatuses";
 import { useLeadSources } from "../../hooks/lead/useLeadSources";
@@ -82,6 +82,13 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     cityId: "",
     clientType: 1,
   };
+
+  // Auto-select first status for new leads once statuses load
+  useEffect(() => {
+    if (!isEdit && open && statuses && statuses.length > 0 && !form.leadStatusId) {
+      setForm((prev) => ({ ...prev, leadStatusId: String(statuses[0].id) }));
+    }
+  }, [statuses, open, isEdit]);
 
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -188,8 +195,8 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     if (!form.fullName.trim()) e.fullName = "Full name required";
     if (!mobileRegex.test(form.mobile)) e.mobile = "Invalid mobile number";
     if (!form.leadStatusId) e.leadStatusId = "Status required";
-    if (!form.leadSourceId) e.leadSourceId = "Source required";
-    if (!form.nextFollowupDate) e.nextFollowupDate = "Next Followup Date required";
+    if (!form.requirementDetails.trim()) e.requirementDetails = "Requirement details required";
+    if (!isEdit && !form.nextFollowupDate) e.nextFollowupDate = "Next follow-up date required";
 
     setErrors(e);
 
@@ -219,7 +226,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       Notes: form.notes,
       NextFollowupDate: form.nextFollowupDate ? new Date(form.nextFollowupDate) : null,
       LeadStatusID: form.leadStatusId,
-      LeadSourceID: form.leadSourceId,
+      LeadSourceID: form.leadSourceId || "00000000-0000-0000-0000-000000000000",
       AssignedTo: form.assignedTo || advisorId,
       ClientType: form.clientType,
     };
@@ -236,210 +243,235 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     <>
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
 
-      <div className="fixed right-0 top-0 h-screen w-[420px] bg-white z-50 shadow-xl flex flex-col">
+      <div className="fixed right-0 top-0 h-screen w-full max-w-[720px] bg-white z-50 shadow-2xl flex flex-col">
 
-        {/* HEADER */}
-        <div className="px-6 py-4 border-b flex justify-between">
-          <h2 className="font-semibold">
-            {lead ? "Edit Lead" : "Add Lead"}
-          </h2>
-          <button onClick={onClose}>
-            <X />
+        {/* ── HEADER ── */}
+        <div className="px-6 py-4 border-b bg-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-[var(--btn-primary)]">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-800">
+                {lead ? "Edit Lead" : "Add New Lead"}
+              </h2>
+              <p className="text-xs text-slate-400">
+                {lead ? "Update lead information" : "Fill in the details to create a lead"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-600"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* BODY */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        {/* ── BODY ── */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
 
-          {/* CUSTOMER */}
-          <SearchableComboBox
-            label="Customer"
-            items={customers.map((c) => ({
-              value: c.clientID,
-              label: `${c.contactPerson} - ${c.email ?? ""}`,
-            }))}
-            value={selectedCustomerId}
-            onSelect={isReadOnly
-              ? undefined
-              : (item: any) => onCustomerSelect(item?.value ?? null)
-            }
-            disabled={isReadOnly}
-          />
+          {/* ── SECTION: Client Info ── */}
+          <Section icon={<User className="w-3.5 h-3.5" />} title="Client Information">
+            {/* Customer — full width */}
+            <div className="col-span-2">
+              <SearchableComboBox
+                label="Customer"
+                items={customers.map((c) => ({
+                  value: c.clientID,
+                  label: `${c.contactPerson} - ${c.email ?? ""}`,
+                }))}
+                value={selectedCustomerId}
+                onSelect={isReadOnly
+                  ? undefined
+                  : (item: any) => onCustomerSelect(item?.value ?? null)
+                }
+                disabled={isReadOnly}
+              />
+            </div>
 
-          <Input
-            label="Contact Person"
-            required
-            value={form.fullName}
-            error={errors.fullName}
-            onChange={(v: any) => setForm({ ...form, fullName: v })}
-            disabled={isReadOnly}
-          />
-
-          {/* CLIENT TYPE */}
-          <div>
-            <label className="text-sm font-medium">Customer Type</label>
-            <select
-              className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
-              value={form.clientType}
-              onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
-              disabled={isReadOnly}
-            >
-              {CLIENT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <Input
-            label="Mobile"
-            required
-            value={form.mobile}
-            error={errors.mobile}
-            onChange={(v: any) => setForm({ ...form, mobile: v })}
-            disabled={isReadOnly}
-          />
-
-          <Input
-            label="Email"
-            value={form.email}
-            onChange={(v: any) => setForm({ ...form, email: v })}
-            disabled={isReadOnly}
-          />
-
-          <Textarea
-            label="Billing Address"
-            value={form.address}
-            onChange={(v: any) => setForm({ ...form, address: v })}
-            disabled={isReadOnly}
-          />
-
-
-
-          {/* EMPLOYEE */}
-          <div>
-            <label className="text-sm font-medium">Employee</label>
-            <Combobox
-              options={userOptions}
-              value={form.assignedTo}
-              onValueChange={(val) =>
-                !isReadOnly && setForm({ ...form, assignedTo: val })
-              }
-              placeholder="Select user..."
-              searchPlaceholder="Search users..."
-              emptyText="No users found."
-              disabled={isReadOnly}
-            />
-          </div>
-
-          {/* STATE */}
-          <div>
-            <label className="text-sm font-medium">State</label>
-            <select
-              className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
-              value={selectedStateId}
-              onChange={(e) => handleStateChange(e.target.value)}
-              disabled={isReadOnly}
-            >
-              <option value="">Select State</option>
-              {(states as any[]).map((s) => (
-                <option key={s.stateID} value={s.stateID}>{s.stateName}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* CITY */}
-          <div>
-            <label className="text-sm font-medium">City</label>
-            <select
-              className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-400"
-              value={form.cityId}
-              disabled={!selectedStateId || isReadOnly}
-              onChange={(e) => setForm({ ...form, cityId: e.target.value })}
-            >
-              <option value="">
-                {selectedStateId ? "Select City" : "Select state first"}
-              </option>
-              {(cities as any[]).map((c) => (
-                <option key={c.cityID} value={c.cityID}>{c.cityName}</option>
-              ))}
-            </select>
-          </div>
-
-          <Textarea
-            label="Requirement Details"
-            value={form.requirementDetails}
-            onChange={(v: any) => setForm({ ...form, requirementDetails: v })}
-            disabled={isReadOnly}
-          />
-
-          <Select
-            label="Lead Status"
-            required
-            value={form.leadStatusId}
-            options={statuses ?? []}
-            error={errors.leadStatusId}
-            onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
-            disabled={isReadOnly}
-          />
-
-          <Select
-            label="Lead Source"
-            required
-            value={form.leadSourceId}
-            options={sources ?? []}
-            error={errors.leadSourceId}
-            onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
-            disabled={isReadOnly}
-          />
-
-          {!isEdit && (
+            {/* Contact Person | Customer Type */}
             <Input
-              label="Links"
-              value={form.links}
-              onChange={(v: any) => setForm({ ...form, links: v })}
-              disabled={isReadOnly}
-            />
-          )}
-
-          {!isEdit && (
-            <Textarea
-              label="Notes"
-              value={form.notes}
-              onChange={(v: any) => setForm({ ...form, notes: v })}
-              disabled={isReadOnly}
-            />
-          )}
-
-          {!isEdit && (
-            <Input
-              label="Next Follow-up Date"
+              label="Contact Person"
               required
-              type="datetime-local"
-              value={form.nextFollowupDate}
-              error={errors.nextFollowupDate}
-              onChange={(v: any) => setForm({ ...form, nextFollowupDate: v })}
+              value={form.fullName}
+              error={errors.fullName}
+              onChange={(v: any) => setForm({ ...form, fullName: v })}
               disabled={isReadOnly}
             />
+            <div>
+              <label className="text-xs font-semibold text-slate-600 mb-1 block">Customer Type</label>
+              <select
+                className="input w-full disabled:bg-slate-50 disabled:text-slate-500"
+                value={form.clientType}
+                onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
+                disabled={isReadOnly}
+              >
+                {CLIENT_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Mobile | Email */}
+            <Input
+              label="Mobile"
+              required
+              value={form.mobile}
+              error={errors.mobile}
+              onChange={(v: any) => setForm({ ...form, mobile: v })}
+              disabled={isReadOnly}
+            />
+            <Input
+              label="Email"
+              value={form.email}
+              onChange={(v: any) => setForm({ ...form, email: v })}
+              disabled={isReadOnly}
+            />
+          </Section>
+
+          {/* ── SECTION: Lead Details ── */}
+          <Section icon={<Briefcase className="w-3.5 h-3.5" />} title="Lead Details">
+            {/* Lead Status | Lead Source */}
+            <Select
+              label="Lead Status"
+              required
+              value={form.leadStatusId}
+              options={statuses ?? []}
+              error={errors.leadStatusId}
+              onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
+              disabled={isReadOnly}
+            />
+            <Select
+              label="Lead Source"
+              value={form.leadSourceId}
+              options={sources ?? []}
+              onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
+              disabled={isReadOnly}
+            />
+
+            {/* Assigned To — full width */}
+            <div className="col-span-2">
+              <label className="text-xs font-semibold text-slate-600 mb-1 block">Assigned To</label>
+              <Combobox
+                options={userOptions}
+                value={form.assignedTo}
+                onValueChange={(val) =>
+                  !isReadOnly && setForm({ ...form, assignedTo: val })
+                }
+                placeholder="Select user..."
+                searchPlaceholder="Search users..."
+                emptyText="No users found."
+                disabled={isReadOnly}
+              />
+            </div>
+
+            {/* Requirement Details — full width, mandatory */}
+            <div className="col-span-2">
+              <Textarea
+                label="Requirement Details"
+                required
+                value={form.requirementDetails}
+                error={errors.requirementDetails}
+                onChange={(v: any) => setForm({ ...form, requirementDetails: v })}
+                disabled={isReadOnly}
+              />
+            </div>
+          </Section>
+
+          {/* ── SECTION: Follow-up & Notes (new leads only) — above Location ── */}
+          {!isEdit && (
+            <Section icon={<Calendar className="w-3.5 h-3.5" />} title="Follow-up & Notes">
+              {/* Links | Next Follow-up Date */}
+              <Input
+                label="Links"
+                value={form.links}
+                onChange={(v: any) => setForm({ ...form, links: v })}
+                disabled={isReadOnly}
+              />
+              <Input
+                label="Next Follow-up Date"
+                required
+                type="datetime-local"
+                value={form.nextFollowupDate}
+                error={errors.nextFollowupDate}
+                onChange={(v: any) => setForm({ ...form, nextFollowupDate: v })}
+                disabled={isReadOnly}
+              />
+
+              {/* Notes — full width */}
+              <div className="col-span-2">
+                <Textarea
+                  label="Notes"
+                  value={form.notes}
+                  onChange={(v: any) => setForm({ ...form, notes: v })}
+                  disabled={isReadOnly}
+                />
+              </div>
+            </Section>
           )}
+
+          {/* ── SECTION: Location ── */}
+          <Section icon={<MapPin className="w-3.5 h-3.5" />} title="Location">
+            {/* State | City */}
+            <div>
+              <label className="text-xs font-semibold text-slate-600 mb-1 block">State</label>
+              <select
+                className="input w-full disabled:bg-slate-50 disabled:text-slate-500"
+                value={selectedStateId}
+                onChange={(e) => handleStateChange(e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="">Select State</option>
+                {(states as any[]).map((s) => (
+                  <option key={s.stateID} value={s.stateID}>{s.stateName}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-600 mb-1 block">City</label>
+              <select
+                className="input w-full disabled:bg-slate-50 disabled:text-slate-400"
+                value={form.cityId}
+                disabled={!selectedStateId || isReadOnly}
+                onChange={(e) => setForm({ ...form, cityId: e.target.value })}
+              >
+                <option value="">
+                  {selectedStateId ? "Select City" : "Select state first"}
+                </option>
+                {(cities as any[]).map((c) => (
+                  <option key={c.cityID} value={c.cityID}>{c.cityName}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Billing Address — full width */}
+            <div className="col-span-2">
+              <Textarea
+                label="Billing Address"
+                value={form.address}
+                onChange={(v: any) => setForm({ ...form, address: v })}
+                disabled={isReadOnly}
+              />
+            </div>
+          </Section>
         </div>
 
-        {/* FOOTER */}
-        <div className="p-4 border-t flex gap-3">
+        {/* ── FOOTER ── */}
+        <div className="px-6 py-4 border-t bg-slate-50 flex gap-3 shrink-0">
           <button
-            className="flex-1 border rounded hover:bg-slate-50"
+            className="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
             onClick={onClose}
           >
             Cancel
           </button>
-
-          {/* Save button hidden in read-only mode */}
           {!isReadOnly && (
             <button
               disabled={isPending}
-              className="flex-1 bg-blue-900 text-white rounded hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center font-medium py-2"
+              className="flex-1 btn-primary px-4 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
               onClick={handleSave}
             >
-              {isPending ? <Spinner /> : isEdit ? "Update" : "Save"}
+              {isPending ? <Spinner /> : isEdit ? "Update Lead" : "Save Lead"}
             </button>
           )}
         </div>
@@ -452,29 +484,42 @@ export default LeadUpsertSheet;
 
 /* ================= HELPERS ================= */
 
+const Section = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
+  <div>
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-[var(--btn-primary)]">{icon}</span>
+      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</span>
+      <div className="flex-1 h-px bg-slate-100" />
+    </div>
+    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+      {children}
+    </div>
+  </div>
+);
+
 const Input = ({ label, required, value, error, onChange, type = "text", disabled }: any) => (
   <div>
-    <label className="text-sm font-medium">
-      {label} {required && "*"}
+    <label className="text-xs font-semibold text-slate-600 mb-1 block">
+      {label} {required && <span className="text-red-500">*</span>}
     </label>
     <input
       type={type}
-      className={`input w-full ${error ? "border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
+      className={`input w-full ${error ? "border-red-400 focus:ring-red-500 focus:border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
     />
-    {error && <p className="text-xs text-red-600">{error}</p>}
+    {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
   </div>
 );
 
 const Select = ({ label, required, value, options, onChange, error, disabled }: any) => (
   <div>
-    <label className="text-sm font-medium">
-      {label} {required && "*"}
+    <label className="text-xs font-semibold text-slate-600 mb-1 block">
+      {label} {required && <span className="text-red-500">*</span>}
     </label>
     <select
-      className={`input w-full mt-1 ${error ? "border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
+      className={`input w-full ${error ? "border-red-400 focus:ring-red-500 focus:border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
@@ -485,18 +530,21 @@ const Select = ({ label, required, value, options, onChange, error, disabled }: 
           <option key={o.id} value={o.id}>{o.name}</option>
         ))}
     </select>
-    {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+    {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
   </div>
 );
 
-const Textarea = ({ label, value, onChange, disabled }: any) => (
+const Textarea = ({ label, required, value, error, onChange, disabled }: any) => (
   <div>
-    <label className="text-sm font-medium">{label}</label>
+    <label className="text-xs font-semibold text-slate-600 mb-1 block">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
     <textarea
-      className="input w-full h-24 disabled:bg-slate-50 disabled:text-slate-500"
+      className={`input w-full h-20 resize-none disabled:bg-slate-50 disabled:text-slate-500 ${error ? "border-red-400 focus:ring-red-500 focus:border-red-500" : ""}`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
     />
+    {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
   </div>
 );

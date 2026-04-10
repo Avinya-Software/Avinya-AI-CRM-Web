@@ -169,7 +169,7 @@ const UserFilterSheet = ({
                     </button>
                     <button
                         onClick={handleApply}
-                        className="flex-1 px-4 py-2 bg-blue-900 text-white rounded text-sm font-medium hover:bg-blue-800"
+                        className="flex-1 px-4 py-2 btn-primary rounded text-sm font-medium"
                     >
                         Apply Filters
                     </button>

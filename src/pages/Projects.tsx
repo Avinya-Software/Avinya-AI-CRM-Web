@@ -255,7 +255,7 @@ const Projects = () => {
             <div className="text-right">
               {canCreate && (
                 <button
-                  className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+                  className="inline-flex items-center gap-2 btn-primary px-4 py-2 rounded text-sm font-medium transition"
                   onClick={handleAdd}
                 >
                   + New Project
@@ -309,7 +309,7 @@ const Projects = () => {
                       setPageNumber(1);
                     }}
                     className={`px-3 py-1 rounded text-xs font-medium transition ${statusFilter === tab.value
-                      ? "bg-blue-900 text-white"
+                      ? "btn-primary"
                       : "text-slate-500 hover:bg-slate-100"
                       }`}
                   >
@@ -322,7 +322,7 @@ const Projects = () => {
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-1.5 rounded transition ${viewMode === "grid"
-                    ? "bg-blue-900 text-white"
+                    ? "btn-primary"
                     : "text-slate-400 hover:text-slate-600"
                     }`}
                 >
@@ -331,7 +331,7 @@ const Projects = () => {
                 <button
                   onClick={() => setViewMode("list")}
                   className={`p-1.5 rounded transition ${viewMode === "list"
-                    ? "bg-blue-900 text-white"
+                    ? "btn-primary"
                     : "text-slate-400 hover:text-slate-600"
                     }`}
                 >

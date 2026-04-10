@@ -74,8 +74,8 @@ const InvoiceUpsertSheet = ({
         if (invoice) {
             setFormData({
                 clientID: invoice.clientID,
-                invoiceDate: new Date(invoice.invoiceDate).toISOString().substring(0, 10),
-                dueDate: new Date(invoice.dueDate).toISOString().substring(0, 10),
+                invoiceDate: invoice.invoiceDate ? new Date(invoice.invoiceDate).toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10),
+                dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().substring(0, 10) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
                 invoiceStatusID: invoice.invoiceStatusID || pendingStatusID,
 
                 discount: invoice.discount || 0,
@@ -90,13 +90,14 @@ const InvoiceUpsertSheet = ({
                 termsAndConditions: invoice.termsAndConditions || "",
             });
 
-            setItems(invoice.items.map((item, idx) => ({
+            const invoiceItems = invoice.items || invoice.orderItems || [];
+            setItems(invoiceItems.map((item: any, idx: number) => ({
                 id: String(idx + 1),
-                productID: item.productID,
+                productID: item.productID || "",
                 productName: item.productName || "",
                 description: item.description || "",
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
+                quantity: item.quantity || 1,
+                unitPrice: item.unitPrice || 0,
                 taxCategoryID: item.taxCategoryID || "",
             })));
         } else if (sourceOrder) {
@@ -373,7 +374,7 @@ const InvoiceUpsertSheet = ({
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2.5 btn-primary rounded-lg transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
                         >
                             {isLoading ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : <><Save size={16} /> {isEdit ? "Update Invoice" : "Create Invoice"}</>}
                         </button>

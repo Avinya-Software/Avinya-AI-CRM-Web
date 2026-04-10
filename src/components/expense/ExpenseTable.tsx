@@ -248,7 +248,7 @@ const ExpenseTable = ({ data = [], loading = false, onEdit }: Props) => {
                             <button
                                 onClick={handleDelete}
                                 disabled={isPending}
-                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 text-sm"
+                                className="px-4 py-2 btn-danger rounded disabled:opacity-50 text-sm"
                             >
                                 {isPending ? "Deleting..." : "Delete"}
                             </button>

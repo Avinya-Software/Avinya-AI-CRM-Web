@@ -232,7 +232,7 @@ const AddFollowUpForm = ({ leadId, onSuccess, onCancel,  editData,}: AddFollowUp
         type="button"
         onClick={handleSave}
         disabled={isPending}
-        className="flex-1 bg-blue-900 text-white rounded-lg py-2 text-sm flex items-center justify-center gap-1.5 hover:bg-blue-800 transition"
+        className="flex-1 btn-primary rounded-lg py-2 text-sm flex items-center justify-center gap-1.5 transition"
       >
         {isPending || isUpdating ? (
     <>
@@ -572,7 +572,7 @@ const LeadDetailSheet = ({
           )}
           {canAddQuotation && (
             <button
-              className="flex-1 bg-blue-900 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-blue-800 transition flex items-center justify-center gap-2"
+              className="flex-1 btn-primary rounded-xl py-2.5 text-sm font-semibold transition flex items-center justify-center gap-2"
               onClick={() => { onClose(); onCreateQuotation?.(data ?? lead); }}
             >
               Create Quotation

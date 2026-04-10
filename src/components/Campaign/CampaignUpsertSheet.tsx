@@ -543,7 +543,7 @@ const CampaignUpsertSheet = ({
 
         <button
           disabled={isPending || updating}
-          className="flex-1 bg-blue-900 text-white rounded-lg py-2 hover:bg-blue-800 transition disabled:opacity-50"
+          className="flex-1 btn-primary rounded-lg py-2 transition disabled:opacity-50"
           onClick={handleSubmit}
         >
           <span className="flex items-center justify-center gap-2">

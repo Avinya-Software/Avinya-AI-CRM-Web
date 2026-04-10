@@ -123,7 +123,7 @@ const TaskFilterSheet = ({
           </button>
           <button
             onClick={handleApply}
-            className="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition"
+            className="flex-1 px-4 py-2 btn-primary rounded-lg transition"
           >
             Apply Filters
           </button>

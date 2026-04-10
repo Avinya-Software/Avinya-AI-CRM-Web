@@ -127,7 +127,7 @@ const Tasks = () => {
                 <button
                   onClick={() => setScope("Personal")}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${scope === "Personal"
-                    ? "bg-blue-900 text-white shadow-sm"
+                    ? "btn-primary shadow-sm"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -144,7 +144,7 @@ const Tasks = () => {
                 <button
                   onClick={() => setScope("Team")}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${scope === "Team"
-                    ? "bg-blue-900 text-white shadow-sm"
+                    ? "btn-primary shadow-sm"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
@@ -181,7 +181,7 @@ const Tasks = () => {
               {/* Add Task button — only shown if user can add tasks */}
               {canAddTask && (
                 <button
-                  className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+                  className="inline-flex items-center gap-2 btn-primary px-4 py-2 rounded text-sm font-medium transition"
                   onClick={handleAddTask}
                 >
                   <Plus size={18} />
@@ -197,7 +197,7 @@ const Tasks = () => {
                   key={v}
                   onClick={() => setView(v)}
                   className={`px-4 py-2 rounded text-sm font-medium transition capitalize ${view === v
-                    ? "bg-blue-900 text-white"
+                    ? "btn-primary"
                     : "bg-white border hover:bg-slate-50"
                     }`}
                 >

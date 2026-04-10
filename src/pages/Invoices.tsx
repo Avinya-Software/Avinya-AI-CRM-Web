@@ -193,7 +193,7 @@ const Invoices = () => {
                                 key={tab.id || "all"}
                                 onClick={() => setFilters(prev => ({ ...prev, status: tab.id, page: 1 }))}
                                 className={`px-4 py-1.5 rounded text-sm font-medium transition-all ${String(filters.status) === String(tab.id)
-                                        ? "bg-blue-900 text-white"
+                                        ? "btn-primary"
                                         : "text-slate-600 hover:bg-slate-200"
                                     }`}
                             >
@@ -388,7 +388,7 @@ const Invoices = () => {
                             </button>
                             <button
                                 onClick={() => setOpenFilterSheet(false)}
-                                className="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800"
+                                className="flex-1 px-4 py-2 btn-primary rounded-lg text-sm"
                             >
                                 Apply
                             </button>
@@ -441,7 +441,7 @@ const Invoices = () => {
                             </button>
                             <button
                                 onClick={handleDeleteConfirmed}
-                                className="px-4 py-2 bg-red-600 text-white rounded"
+                                className="px-4 py-2 btn-danger rounded"
                             >
                                 Delete
                             </button>

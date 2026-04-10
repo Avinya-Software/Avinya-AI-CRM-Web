@@ -290,7 +290,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                                 type="button"
                                 onClick={() => !isReadOnly && setForm({ ...form, status: !form.status })}
                                 disabled={isReadOnly}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${form.status ? "bg-blue-900" : "bg-gray-300"
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${form.status ? "bg-[var(--btn-primary)]" : "bg-gray-300"
                                     }`}
                             >
                                 <span
@@ -326,7 +326,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                     {!isReadOnly && (
                         <button
                             disabled={saving}
-                            className="flex-1 bg-blue-900 text-white rounded-lg py-2 flex items-center justify-center gap-2 hover:bg-blue-800 disabled:opacity-50"
+                            className="flex-1 btn-primary rounded-lg py-2 flex items-center justify-center gap-2 disabled:opacity-50"
                             onClick={handleSave}
                         >
                             {saving && <Spinner />}

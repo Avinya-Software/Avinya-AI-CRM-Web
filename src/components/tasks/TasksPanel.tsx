@@ -157,7 +157,7 @@ const TaskCard = ({
         {showAction ? (
           <button
             onClick={onAcknowledge}
-            className="flex-shrink-0 px-4 py-2 text-sm font-medium bg-blue-900 text-white rounded hover:bg-blue-800 transition-colors"
+            className="flex-shrink-0 px-4 py-2 text-sm font-medium btn-primary rounded transition-colors"
           >
             Mark Done
           </button>

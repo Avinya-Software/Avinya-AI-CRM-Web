@@ -7,6 +7,7 @@ import { usePermissions } from "../context/PermissionContext";
 import { useAuth } from "../auth/useAuth";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../store/authSlice";
+import { toast } from "react-hot-toast";
 
 type LoginErrors = { email?: string; password?: string };
 
@@ -47,6 +48,16 @@ const Login = () => {
           queryClient.invalidateQueries({ queryKey: ["user-permissions"] });
           queryClient.invalidateQueries({ queryKey: ["user-menu"] });
           setLoginDone(true);
+        },
+        onError: (err: any) => {
+          const respData = err?.response?.data;
+          if (respData?.statusMessage) {
+            toast.error(respData.statusMessage);
+          } else if (respData?.message) {
+            toast.error(respData.message);
+          } else {
+            toast.error("Login failed. Please check your credentials.");
+          }
         }
       }
     );
@@ -59,7 +70,7 @@ const Login = () => {
     }
   }, [loginDone, isReady, navigate]);
 
-  const errorMessage = (adminErr as any)?.response?.data?.message;
+  const errorMessage = (adminErr as any)?.response?.data?.statusMessage || (adminErr as any)?.response?.data?.message;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8">

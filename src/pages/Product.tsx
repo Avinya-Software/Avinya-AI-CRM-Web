@@ -77,7 +77,7 @@ const Products = () => {
             <div className="text-right">
               {canCreate && ( // ✅ Button hidden if no permission
                 <button
-                  className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-800 transition"
+                  className="inline-flex items-center gap-2 btn-primary px-4 py-2 rounded text-sm font-medium transition"
                   onClick={handleAdd}
                 >
                   + Add Product

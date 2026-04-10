@@ -84,6 +84,7 @@ export interface Order {
   workOrder?: any;
   bill?: any;
   isInvoiceCreated?: boolean;
+  invoiceId?: string;
 }
 
 // ── Filters ────────────────────────────────────────────────────────

@@ -15,6 +15,7 @@ interface Props {
     onDelete: (order: Order) => void;
     onAdd: () => void;
     onCreateInvoice: (order: Order) => void;
+    onUpdateInvoice: (order: Order) => void;
 }
 
 
@@ -40,11 +41,13 @@ const ActionMenu = ({
     onEdit,
     onDeleteClick,
     onCreateInvoice,
+    onUpdateInvoice,
     isInvoiceCreated,
 }: {
     onEdit: () => void;
     onDeleteClick: () => void;
     onCreateInvoice: () => void;
+    onUpdateInvoice: () => void;
     isInvoiceCreated?: boolean;
 }) => {
 
@@ -101,7 +104,14 @@ const ActionMenu = ({
                         </button>
 
 
-                        {!isInvoiceCreated && (
+                        {isInvoiceCreated ? (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setOpen(false); onUpdateInvoice(); }}
+                                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-slate-50 text-slate-700 border-t"
+                            >
+                                <FileText size={14} /> Update Invoice
+                            </button>
+                        ) : (
                             <button
                                 onClick={(e) => { e.stopPropagation(); setOpen(false); onCreateInvoice(); }}
                                 className="flex items-center gap-2 w-full px-3 py-2 hover:bg-slate-50 text-slate-700 border-t"
@@ -128,7 +138,7 @@ const ActionMenu = ({
 
 /* ================= MAIN TABLE ================= */
 
-const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateInvoice }: Props) => {
+const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateInvoice, onUpdateInvoice }: Props) => {
 
 
     /* ✅ PERMISSIONS ADDED */
@@ -293,6 +303,7 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateIn
                                                 canDeleteOrder && setConfirmDelete(order)
                                             }
                                             onCreateInvoice={() => onCreateInvoice(order)}
+                                            onUpdateInvoice={() => onUpdateInvoice(order)}
                                             isInvoiceCreated={order.isInvoiceCreated}
                                         />
 
@@ -329,7 +340,7 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateIn
 
                             <button
                                 onClick={handleDeleteConfirmed}
-                                className="px-4 py-2 bg-red-600 text-white rounded"
+                                className="px-4 py-2 btn-danger rounded"
                             >
                                 Delete
                             </button>

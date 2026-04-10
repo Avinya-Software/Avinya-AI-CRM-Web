@@ -148,7 +148,7 @@ const PolicyFilterSheet = ({
           </button>
 
           <button
-            className="flex-1 bg-blue-900 text-white rounded-lg py-2 hover:bg-blue-800 transition font-medium"
+            className="flex-1 btn-primary rounded-lg py-2 transition font-medium"
             onClick={() => {
               onApply(local);
               onClose();

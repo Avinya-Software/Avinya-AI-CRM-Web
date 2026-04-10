@@ -73,7 +73,7 @@ const Renewals = () => {
 
             <div className="text-right">
               <button
-                className="inline-flex items-center gap-2 bg-blue-900 text-white px-4 py-2 rounded text-sm"
+                className="inline-flex items-center gap-2 btn-primary px-4 py-2 rounded text-sm"
                 onClick={handleAdd}
               >
                 + Add Renewal

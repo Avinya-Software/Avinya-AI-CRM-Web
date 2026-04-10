@@ -111,7 +111,7 @@ const AdminDashboard = () => {
                               setSelectedUserId(c.adminUserId);
                               setActionType("reject");
                             }}
-                            className="inline-flex items-center gap-2 bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700"
+                            className="inline-flex items-center gap-2 btn-danger px-3 py-1.5 rounded text-sm"
                           >
                             <XCircle size={16} />
                             Reject
@@ -154,10 +154,10 @@ const AdminDashboard = () => {
               <button
                 onClick={confirmAction}
                 disabled={isActionLoading}
-                className={`px-4 py-2 text-white rounded disabled:opacity-50 ${
+                className={`px-4 py-2 rounded disabled:opacity-50 ${
                   actionType === "approve"
-                    ? "bg-green-700 hover:bg-green-800"
-                    : "bg-red-600 hover:bg-red-700"
+                    ? "bg-green-700 hover:bg-green-800 text-white"
+                    : "btn-danger"
                 }`}
               >
                 {isActionLoading ? (

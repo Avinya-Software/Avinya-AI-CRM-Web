@@ -362,7 +362,7 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                             <button
                                 type="submit"
                                 disabled={mutation.isPending || updateMutation.isPending}
-                                className="flex-1 px-4 py-2 bg-blue-900 text-white rounded text-sm font-medium hover:bg-blue-800 disabled:opacity-50"
+                                className="flex-1 px-4 py-2 btn-primary rounded text-sm font-medium disabled:opacity-50"
                             >
                                 {(mutation.isPending || updateMutation.isPending)
                                     ? "Saving..."

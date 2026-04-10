@@ -193,7 +193,7 @@ const ProjectTaskUpsertModal = ({
                         <button
                             type="submit"
                             disabled={isLoading || !formData.taskName.trim() || !canAddTask}
-                            className="flex-1 px-4 py-2.5 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2.5 btn-primary rounded-lg transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
                         >
                             {isLoading ? (
                                 <><Loader2 size={16} className="animate-spin" />Saving...</>

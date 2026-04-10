@@ -8,6 +8,44 @@
            focus:ring-2 focus:ring-green-500 focus:border-green-500;
   }
 }
+
+/* =====================================================================
+   GLOBAL BUTTON COLOR TOKENS
+   Change ONLY these two variables to retheme every primary / danger
+   button across the entire app at once.
+   ===================================================================== */
+:root {
+  --btn-primary:       #107C41; /* blue-900  — all create / save / submit / filter buttons */
+  --btn-primary-hover: #107C41; /* blue-800  — hover state */
+  --btn-danger:        #dc2626; /* red-600   — all delete / destructive buttons */
+  --btn-danger-hover:  #b91c1c; /* red-700   — hover state */
+}
+
+/* These rules live outside any @layer so they win over Tailwind utilities */
+.btn-primary {
+  background-color: var(--btn-primary);
+  color: #ffffff;
+  transition: background-color 150ms ease;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--btn-primary-hover);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background-color: var(--btn-danger);
+  color: #ffffff;
+  transition: background-color 150ms ease;
+}
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--btn-danger-hover);
+}
+.btn-danger:disabled {
+  opacity: 0.5;
+}
 @keyframes slideUp {
   from {
     transform: translateY(100%);
@@ -114,4 +152,4 @@
 
 .custom-scrollbar-light::-webkit-scrollbar-thumb:hover {
   background: #cbd5e1;
-}
+}

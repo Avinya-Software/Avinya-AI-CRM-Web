@@ -182,7 +182,7 @@ const FollowUpForm = ({ leadId, onSuccess }: Props) => {
       <button
         onClick={handleSubmit}
         disabled={saving}
-        className="w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-800 transition disabled:opacity-60"
+        className="w-full btn-primary py-2 rounded-lg transition disabled:opacity-60"
       >
         {saving ? "Saving..." : "Save Follow Up"}
       </button>

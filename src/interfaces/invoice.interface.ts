@@ -40,7 +40,8 @@ export interface Invoice {
   termsAndConditions?: string;
   remainingPayment?: number;
   paidAmount?: number;
-  items: InvoiceItem[];
+  items?: InvoiceItem[];
+  orderItems?: any[];
 }
 
 export interface CreateInvoiceDto {

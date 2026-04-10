@@ -20,7 +20,7 @@ import { Settings } from "../../interfaces/setting.interface";
 import { Tenant } from "../../interfaces/tenant.interface";
 import { BankDetails } from "../../interfaces/bankDetail.interface";
 import { cn } from "../../lib/utils";
-import { Trash2, Plus, RefreshCw } from "lucide-react";
+import { Trash2, Plus, RefreshCw, X } from "lucide-react";
 
 interface SettingsModalProps {
   open: boolean;
@@ -138,7 +138,7 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-semibold transition-all",
                   activeTab === tab.id
-                    ? "bg-[#1853FF] text-white shadow-md shadow-blue-200"
+                    ? "btn-primary shadow-md"
                     : "bg-slate-100/80 text-slate-500 hover:bg-slate-100"
                 )}
               >
@@ -153,7 +153,7 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
           {activeTab === "basic" ? (
             isLoading ? (
               <div className="h-full flex flex-col items-center justify-center space-y-4">
-                <Loader2 className="h-10 w-10 text-[#1853FF] animate-spin" />
+                <Loader2 className="h-10 w-10 text-[var(--btn-primary)] animate-spin" />
                 <p className="text-slate-500 font-medium">Fetching settings...</p>
               </div>
             ) : (
@@ -171,7 +171,7 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                     <div className="space-y-6">
                       {/* Special QR Toggle Card */}
                       {qrSetting && (
-                        <Card className="border-[#D0E1FF] shadow-sm overflow-hidden border-2 bg-[#F2F7FF]/50">
+                        <Card className="border-blue-200 shadow-sm overflow-hidden border-2 bg-blue-50/50">
                           <CardContent className="p-6 flex items-center justify-between">
                             <div className="space-y-1">
                               <h3 className="text-base font-bold text-slate-800">Enable Payment QR</h3>
@@ -197,7 +197,7 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                               <Input
                                 value={upiSetting.value}
                                 onChange={(e) => handleDetailChange(upiSetting.settingID, "value", e.target.value)}
-                                className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[#1853FF]/20 transition-all font-mono text-sm"
+                                className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[var(--btn-primary)]/20 transition-all font-mono text-sm"
                                 placeholder="e.g. example@upi"
                               />
                             </div>
@@ -232,7 +232,7 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                                        <textarea
                                          value={getField(setting.value, editField)}
                                          onChange={(e) => handleDetailChange(setting.settingID, editField, e.target.value)}
-                                         className="w-full p-4 border border-slate-200 rounded-lg text-sm min-h-[150px] focus:ring-2 focus:ring-[#1853FF]/20 focus:border-[#1853FF] outline-none transition-all"
+                                         className="w-full p-4 border border-slate-200 rounded-lg text-sm min-h-[150px] focus:ring-2 focus:ring-[var(--btn-primary)]/20 focus:border-[var(--btn-primary)] outline-none transition-all"
                                          placeholder="Enter terms and conditions..."
                                        />
                                      ) : (
@@ -240,7 +240,7 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                                          type={hasLastNumber ? "number" : "text"}
                                          value={getField(setting.value, editField)}
                                          onChange={(e) => handleDetailChange(setting.settingID, editField, e.target.value)}
-                                         className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[#1853FF]/20 focus:border-[#1853FF] transition-all font-mono text-sm"
+                                         className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[var(--btn-primary)]/20 focus:border-[var(--btn-primary)] transition-all font-mono text-sm"
                                          placeholder={`Enter ${label.toLowerCase()}`}
                                        />
                                      )}
@@ -279,9 +279,9 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                                     </div>
                                   </div>
 
-                                  <div className="p-4 bg-[#F2F7FF] border border-[#D0E1FF] rounded-lg">
+                                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                                     <p className="text-sm text-slate-600 font-medium">
-                                      Preview: <span className="text-[#1853FF] font-bold tracking-wider">
+                                      Preview: <span className="text-[var(--btn-primary)] font-bold tracking-wider">
                                         {setting.preFix ?? ""}/{getField(setting.value, "FinancialYear", `${new Date().getFullYear()}-${(new Date().getFullYear() + 1).toString().slice(-2)}`)}/{String(Number(getField(setting.value, "LastNumber", 0)) + 1).padStart(setting.digits || 4, '0')}
                                       </span>
                                     </p>
@@ -333,7 +333,7 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
               <Button
                 onClick={handleUpdateAll}
                 disabled={!hasChanges || updateMutation.isPending}
-                className="px-10 h-12 bg-[#1853FF] hover:bg-[#1040D1] text-white font-bold shadow-lg shadow-blue-200 transition-all flex gap-2 rounded-lg"
+                className="px-10 h-12 btn-primary font-bold shadow-lg shadow-blue-200 transition-all flex gap-2 rounded-lg"
               >
                 {updateMutation.isPending ? (
                   <>
@@ -371,7 +371,7 @@ const CompanySettingsTab = ({ enabled }: { enabled: boolean }) => {
   if (isLoading) {
     return (
       <div className="h-full flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="h-10 w-10 text-[#1853FF] animate-spin" />
+        <Loader2 className="h-10 w-10 text-[var(--btn-primary)] animate-spin" />
         <p className="text-slate-500 font-medium">Loading company profile...</p>
       </div>
     );
@@ -444,7 +444,7 @@ const CompanySettingsTab = ({ enabled }: { enabled: boolean }) => {
             <textarea
               value={formData.address || ""}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="w-full p-4 border border-slate-200 rounded-lg text-sm min-h-[120px] focus:ring-2 focus:ring-[#1853FF]/20 focus:border-[#1853FF] outline-none transition-all"
+              className="w-full p-4 border border-slate-200 rounded-lg text-sm min-h-[120px] focus:ring-2 focus:ring-[var(--btn-primary)]/20 focus:border-[var(--btn-primary)] outline-none transition-all"
               placeholder="Full office address..."
             />
           </div>
@@ -461,7 +461,7 @@ const CompanySettingsTab = ({ enabled }: { enabled: boolean }) => {
             <Button
               onClick={handleSave}
               disabled={updateMutation.isPending}
-              className="px-10 h-11 bg-[#1853FF] hover:bg-[#1040D1] text-white font-bold shadow-lg shadow-blue-200 transition-all flex gap-2 rounded-lg"
+              className="px-10 h-11 btn-primary font-bold shadow-lg shadow-blue-200 transition-all flex gap-2 rounded-lg"
             >
               {updateMutation.isPending ? (
                 <>
@@ -492,6 +492,7 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
   const deleteMutation = useDeleteBankDetail();
 
   const [editingBanks, setEditingBanks] = useState<BankDetails[]>([]);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     if (banks) {
@@ -527,34 +528,93 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
   };
 
   const handleReset = (index: number) => {
-    if (banks && banks[index]) {
-      setEditingBanks(prev => prev.map((b, i) => i === index ? banks[index] : b));
+    const bank = editingBanks[index];
+    if (bank.bankAccountId) {
+      // Existing bank — restore original server data matched by ID
+      const original = banks?.find(b => b.bankAccountId === bank.bankAccountId);
+      if (original) {
+        setEditingBanks(prev => prev.map((b, i) => i === index ? original : b));
+      }
     } else {
-      setEditingBanks(prev => prev.filter((_, i) => i !== index));
+      // New unsaved row — clear all fields but keep the form open
+      setEditingBanks(prev => prev.map((b, i) =>
+        i === index
+          ? { tenantId, bankName: "", accountHolderName: "", accountNumber: "", ifscCode: "", branchName: "", isActive: true }
+          : b
+      ));
     }
   };
 
   const handleDelete = (bankAccountId: string) => {
-    if (confirm("Are you sure you want to delete this bank account?")) {
-      deleteMutation.mutate(bankAccountId);
-    }
+    setDeleteConfirmId(bankAccountId);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteConfirmId) return;
+    deleteMutation.mutate(deleteConfirmId, {
+      onSuccess: () => setDeleteConfirmId(null),
+      onError: () => setDeleteConfirmId(null),
+    });
   };
 
   if (isLoading) {
     return (
       <div className="h-full flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="h-10 w-10 text-[#1853FF] animate-spin" />
+        <Loader2 className="h-10 w-10 text-[var(--btn-primary)] animate-spin" />
         <p className="text-slate-500 font-medium">Loading bank accounts...</p>
       </div>
     );
   }
 
   return (
+    <>
+    {/* ── Delete Confirmation Modal ── */}
+    {deleteConfirmId && (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={() => setDeleteConfirmId(null)}
+        />
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col items-center text-center gap-5 animate-in zoom-in-95 duration-200">
+          {/* Icon */}
+          <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center">
+            <Trash2 className="w-7 h-7 text-red-500" />
+          </div>
+          {/* Text */}
+          <div>
+            <h3 className="text-base font-bold text-slate-800">Delete Bank Account?</h3>
+            <p className="text-sm text-slate-500 mt-1 leading-relaxed">
+              This action cannot be undone. The bank account will be permanently removed.
+            </p>
+          </div>
+          {/* Actions */}
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={() => setDeleteConfirmId(null)}
+              className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+              className="flex-1 btn-danger px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {deleteMutation.isPending
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</>
+                : <><Trash2 className="w-4 h-4" /> Delete</>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
     <div className="space-y-8 max-w-4xl mx-auto pb-20">
       <div className="flex justify-end">
-        <Button 
+        <Button
           onClick={handleAddBank}
-          className="bg-[#1853FF] hover:bg-[#1040D1] text-white font-bold flex gap-2 rounded-lg"
+          className="btn-primary font-bold flex gap-2 rounded-lg"
         >
           <Plus className="h-4 w-4" />
           Add Bank
@@ -567,12 +627,17 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
         </div>
       ) : (
         editingBanks.map((bank, index) => (
-          <Card key={bank.bankAccountId || `new-${index}`} className="border-slate-200 shadow-sm overflow-hidden border-2 transition-all hover:border-slate-300">
+          <Card key={bank.bankAccountId || `new-${index}`} className={`shadow-sm overflow-hidden border-2 transition-all ${bank.bankAccountId ? "border-slate-200 hover:border-slate-300" : "border-dashed border-blue-200 bg-blue-50/20"}`}>
             <CardHeader className="bg-slate-50/50 py-4 px-8 border-b flex flex-row items-center justify-between">
-              <CardTitle className="text-base font-bold text-slate-800 uppercase tracking-wide">
-                {bank.bankName || "NEW BANK ACCOUNT"}
-              </CardTitle>
-              {bank.bankAccountId && (
+              <div className="flex items-center gap-2">
+                {!bank.bankAccountId && (
+                  <span className="text-[10px] font-bold text-[var(--btn-primary)] bg-blue-100 px-2 py-0.5 rounded-full uppercase tracking-wide">New</span>
+                )}
+                <CardTitle className="text-base font-bold text-slate-800 uppercase tracking-wide">
+                  {bank.bankName || "New Bank Account"}
+                </CardTitle>
+              </div>
+              {bank.bankAccountId ? (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -580,6 +645,16 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
                   className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full"
                 >
                   <Trash2 className="h-5 w-5" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingBanks(prev => prev.filter((_, i) => i !== index))}
+                  className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full"
+                  title="Discard new bank"
+                >
+                  <X className="h-5 w-5" />
                 </Button>
               )}
             </CardHeader>
@@ -591,7 +666,7 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
                   <Input
                     value={bank.bankName}
                     onChange={(e) => handleFieldChange(index, "bankName", e.target.value)}
-                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[#1853FF]/10"
+                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[var(--btn-primary)]/10"
                     placeholder="e.g. SURAT NATIONAL BANK"
                   />
                 </div>
@@ -602,7 +677,7 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
                   <Input
                     value={bank.accountHolderName}
                     onChange={(e) => handleFieldChange(index, "accountHolderName", e.target.value)}
-                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[#1853FF]/10"
+                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[var(--btn-primary)]/10"
                   />
                 </div>
 
@@ -612,7 +687,7 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
                   <Input
                     value={bank.accountNumber}
                     onChange={(e) => handleFieldChange(index, "accountNumber", e.target.value)}
-                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[#1853FF]/10"
+                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[var(--btn-primary)]/10"
                   />
                 </div>
 
@@ -622,7 +697,7 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
                   <Input
                     value={bank.ifscCode}
                     onChange={(e) => handleFieldChange(index, "ifscCode", e.target.value)}
-                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[#1853FF]/10 uppercase"
+                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[var(--btn-primary)]/10 uppercase"
                   />
                 </div>
 
@@ -632,7 +707,7 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
                   <Input
                     value={bank.branchName}
                     onChange={(e) => handleFieldChange(index, "branchName", e.target.value)}
-                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[#1853FF]/10"
+                    className="h-12 bg-white border-slate-200 text-slate-800 focus:ring-[var(--btn-primary)]/10"
                   />
                 </div>
               </div>
@@ -667,7 +742,7 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
                 <Button
                   onClick={() => handleSave(index)}
                   disabled={addMutation.isPending || updateMutation.isPending}
-                  className="px-10 h-12 bg-[#1853FF] hover:bg-[#1040D1] text-white font-bold shadow-lg shadow-blue-200 transition-all flex gap-2 rounded-lg"
+                  className="px-10 h-12 btn-primary font-bold shadow-lg shadow-blue-200 transition-all flex gap-2 rounded-lg"
                 >
                   {(addMutation.isPending || updateMutation.isPending) ? (
                     <>
@@ -687,6 +762,7 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
         ))
       )}
     </div>
+    </>
   );
 };
 

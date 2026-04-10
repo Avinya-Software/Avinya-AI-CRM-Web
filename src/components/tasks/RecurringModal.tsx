@@ -281,7 +281,7 @@ const RecurringModal = ({
             <button
               type="button"
               onClick={() => setNeverEnds(!neverEnds)}
-              className={`relative w-12 h-6 rounded-full transition ${neverEnds ? "bg-blue-900" : "bg-slate-300"}`}
+              className={`relative w-12 h-6 rounded-full transition ${neverEnds ? "bg-[var(--btn-primary)]" : "bg-slate-300"}`}
             >
               <div
                 className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition transform shadow-sm ${neverEnds ? "translate-x-6" : "translate-x-0"
@@ -318,7 +318,7 @@ const RecurringModal = ({
           <button
             type="button"
             onClick={handleSave}
-            className="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition font-medium"
+            className="flex-1 px-4 py-2 btn-primary rounded-lg transition font-medium"
           >
             Set
           </button>
