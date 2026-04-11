@@ -419,6 +419,7 @@ const Projects = () => {
             setViewProjectData(null);
             handleEdit(p);
           }}
+          onSuccess={handleSuccess}
         />
       )}
     </>

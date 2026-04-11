@@ -9,13 +9,13 @@ export const useApproveUser = () => {
     mutationFn: (tenantId: string) =>
       approveUserApi(tenantId),
 
-    onSuccess: () => {
-      toast.success("Admin approved successfully");
+    onSuccess: (response: any) => {
+      toast.success(response?.statusMessage || "Admin approved successfully");
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (err: any) => {
       toast.error(
-        err?.response?.data?.message || "Failed to approve admin"
+        err?.response?.data?.statusMessage || err?.response?.data?.message || "Failed to approve admin"
       );
     },
   });

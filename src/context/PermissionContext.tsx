@@ -53,8 +53,13 @@ export const PermissionProvider = ({ children }: { children: ReactNode }) => {
     });
 
     const hasPermission = (module: string, action: Action): boolean => {
-        const normalizedModule = module.toLowerCase().trim();
+        let normalizedModule = module.toLowerCase().trim();
         const normalizedAction = action.toLowerCase().trim();
+
+        // Lead Followup permission is now tied to Lead permission
+        if (normalizedModule === "followup") {
+            normalizedModule = "lead";
+        }
 
         return permissions.some(
             (p) =>

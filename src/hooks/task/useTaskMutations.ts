@@ -17,12 +17,12 @@ export const useCreateTask = () => {
 
   return useMutation({
     mutationFn: createTask,
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("Task created successfully");
+      toast.success(response?.statusMessage || "Task created successfully");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to create task");
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to create task");
     },
   });
 };
@@ -33,12 +33,12 @@ export const useUpdateTask = () => {
   return useMutation({
     mutationFn: ({ occurrenceId, data }: { occurrenceId: number; data: any }) =>
       updateTask(occurrenceId, data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("Task updated successfully");
+      toast.success(response?.statusMessage || "Task updated successfully");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to update task");
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to update task");
     },
   });
 };
@@ -48,12 +48,12 @@ export const useDeleteTask = () => {
 
   return useMutation({
     mutationFn: deleteTask,
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("Task deleted successfully");
+      toast.success(response?.statusMessage || "Task deleted successfully");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to delete task");
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to delete task");
     },
   });
 };
@@ -64,12 +64,12 @@ export const useAddReminder = () => {
   return useMutation({
     mutationFn: ({ occurrenceId, data }: { occurrenceId: number; data: any }) =>
       addReminder(occurrenceId, data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("Reminder added successfully");
+      toast.success(response?.statusMessage || "Reminder added successfully");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to add reminder");
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to add reminder");
     },
   });
 };
@@ -80,12 +80,12 @@ export const useAddTaskUsingVoice = () => {
 
   return useMutation({
     mutationFn: createTaskUsingVoice,
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("Task created successfully using voice");
+      toast.success(response?.statusMessage || "Task created successfully using voice");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to create task");
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to create task");
     },
   });
 };

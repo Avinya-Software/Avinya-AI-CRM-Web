@@ -4,7 +4,6 @@ import dayjs from "dayjs";
 import { X, Edit2, Plus, Clock, CheckSquare, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { useProjectById } from "../../hooks/project/useProjectById";
 import type { Project } from "../../interfaces/project.interface";
 import Spinner from "../common/Spinner";
 import { useCreateTask } from "../../hooks/task/useTaskMutations";
@@ -40,9 +39,10 @@ interface Props {
   initialData?: Project | null;
   onClose: () => void;
   onEdit: (project: Project) => void;
+  onSuccess?: () => void;
 }
 
-const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit }: Props) => {
+const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit, onSuccess }: Props) => {
   const [tab, setTab] = useState<"overview" | "tasks">("overview");
   const [showAddTask, setShowAddTask] = useState(false);
 
@@ -57,22 +57,16 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit }: Props) =>
   const canEditProject = hasPermission("project", "edit");
   const canAddTask = hasPermission("task", "add");
 
-  const projectByIdMutation = useProjectById();
   const teamsDropdownMutation = useGetTeamsDropdown();
   const { mutate: addTask, isPending: addingTask } = useCreateTask();
-
-  useEffect(() => {
-    if (projectId) projectByIdMutation.mutate(projectId);
-  }, [projectId]);
 
   useEffect(() => {
     teamsDropdownMutation.mutate(undefined);
   }, []);
 
-  const { data: projectFetch, isPending: isLoading } = projectByIdMutation;
   const { data: teamResponse } = teamsDropdownMutation;
 
-  const project = projectFetch || initialData;
+  const project = initialData;
 
   const projectTeamName = project?.teamId
     ? teamResponse?.data?.find((t: any) => t.id === Number(project.teamId))?.name
@@ -106,29 +100,21 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit }: Props) =>
         onSuccess: () => {
           setShowAddTask(false);
           setTaskForm({ taskName: "", description: "", dueDate: "" });
-          toast.success("Task added");
+          toast.success("Task added successfully");
+          onClose();
+          // Refresh parent list
+          setTimeout(() => {
+            onSuccess?.(); 
+          }, 500);
         },
         onError: () => toast.error("Failed to add task"),
       }
     );
   };
 
-  if (isLoading && !project) {
-    return (
-      <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl p-8 flex items-center gap-3 shadow-2xl">
-          <Loader2 className="animate-spin text-blue-600" size={20} />
-          <span className="text-slate-600 text-sm">Loading project...</span>
-        </div>
-      </div>
-    );
-  }
-
   if (!project) return null;
 
-  const tasks = (projectFetch?.tasks && projectFetch.tasks.length > 0)
-    ? projectFetch.tasks
-    : (initialData?.tasks ?? []);
+  const tasks = project.tasks ?? [];
 
   const taskStats = {
     total: tasks.length,

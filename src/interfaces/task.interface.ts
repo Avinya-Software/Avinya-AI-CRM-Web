@@ -18,6 +18,7 @@ export type TaskScope = "Personal" | "Team";
 export interface TaskUpsertSheetProps {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   task: Task | null;
   scope?: TaskScope;
 }

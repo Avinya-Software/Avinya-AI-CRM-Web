@@ -9,12 +9,12 @@ export const useCreateOrder = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (data: CreateOrderDto) => createOrder(data),
-        onSuccess: () => {
+        onSuccess: (response: any) => {
             queryClient.invalidateQueries({ queryKey: ["orders"] });
-            toast.success("Order created successfully!");
+            toast.success(response?.statusMessage || "Order created successfully!");
         },
-        onError: () => {
-            toast.error("Failed to create order. Please try again.");
+        onError: (error: any) => {
+            toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to create order. Please try again.");
         },
     });
 };
@@ -25,12 +25,12 @@ export const useUpdateOrder = () => {
     return useMutation({
         mutationFn: ({ id, data }: { id: string; data: CreateOrderDto }) =>
             updateOrder(id, data),
-        onSuccess: () => {
+        onSuccess: (response: any) => {
             queryClient.invalidateQueries({ queryKey: ["orders"] });
-            toast.success("Order updated successfully!");
+            toast.success(response?.statusMessage || "Order updated successfully!");
         },
-        onError: () => {
-            toast.error("Failed to update order. Please try again.");
+        onError: (error: any) => {
+            toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to update order. Please try again.");
         },
     });
 };

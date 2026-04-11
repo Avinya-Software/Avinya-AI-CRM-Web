@@ -14,12 +14,12 @@ export const useUpdateTenant = () => {
 
   return useMutation({
     mutationFn: (tenant: Tenant) => updateTenant(tenant),
-    onSuccess: () => {
-      toast.success("Company settings updated successfully");
+    onSuccess: (response: any) => {
+      toast.success(response?.statusMessage || "Company settings updated successfully");
       queryClient.invalidateQueries({ queryKey: ["tenant"] });
     },
-    onError: () => {
-      toast.error("Failed to update company settings");
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to update company settings");
     }
   });
 };

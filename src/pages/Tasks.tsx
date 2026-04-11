@@ -30,10 +30,16 @@ const Tasks = () => {
   const canEditTask = hasPermission("task", "edit");
 
   const isMutating = useIsMutating();
-  const { mutate: createVoiceTask, isPending: isVoiceLoading } = useAddTaskUsingVoice();
+  const voiceTaskMutation = useAddTaskUsingVoice();
+  const isVoiceLoading = voiceTaskMutation.isPending;
 
   const handleVoiceSend = async (text: string) => {
-    if (text.trim()) createVoiceTask({ text });
+    if (text.trim()) {
+      voiceTaskMutation.mutate(
+        { text },
+        { onSuccess: refreshTasks }
+      );
+    }
     setOpenVoice(false);
   };
 
@@ -126,6 +132,12 @@ const Tasks = () => {
     pending: filteredTasks.filter((t) => t.status === TaskStatus.Pending),
     inProgress: filteredTasks.filter((t) => t.status === TaskStatus.InProgress),
     completed: filteredTasks.filter((t) => t.status === TaskStatus.Completed),
+  };
+
+  const refreshTasks = () => {
+    tasksMutation.mutate({ from, to, scope });
+    personalTasksMutation.mutate({ from, to, scope: "Personal" });
+    teamTasksMutation.mutate({ from, to, scope: "Team" });
   };
 
   return (
@@ -337,6 +349,7 @@ const Tasks = () => {
           setOpenTaskSheet(false);
           setSelectedTask(null);
         }}
+        onSuccess={refreshTasks}
         task={selectedTask}
         scope={scope}
       />

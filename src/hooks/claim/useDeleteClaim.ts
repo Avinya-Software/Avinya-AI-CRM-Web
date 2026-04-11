@@ -9,14 +9,14 @@ export const useDeleteClaim = () => {
     mutationFn: (claimId: string) =>
       deleteClaimApi(claimId),
 
-    onSuccess: () => {
-      toast.success("Claim deleted successfully");
+    onSuccess: (response: any) => {
+      toast.success(response?.statusMessage || "Claim deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["claims"] });
     },
 
     onError: (err: any) => {
       toast.error(
-        err?.response?.data?.message || "Failed to delete claim"
+        err?.response?.data?.statusMessage || err?.response?.data?.message || "Failed to delete claim"
       );
     },
   });

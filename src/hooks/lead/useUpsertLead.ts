@@ -14,8 +14,8 @@ export const useUpsertLead = () => {
       return upsertLeadApi(payload); // POST
     },
 
-    onSuccess: (data) => {
-      toast.success(data?.message ?? "Lead saved successfully");
+    onSuccess: (response: any) => {
+      toast.success(response?.statusMessage || response?.message || "Lead saved successfully");
 
       queryClient.invalidateQueries({
         queryKey: ["leads"],
@@ -26,11 +26,7 @@ export const useUpsertLead = () => {
     },
 
     onError: (error: any) => {
-      const msg =
-        error?.response?.data?.message ||
-        "Failed to save lead";
-
-      toast.error(msg);
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to save lead");
     },
   });
 };

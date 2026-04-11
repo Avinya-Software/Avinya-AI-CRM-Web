@@ -26,13 +26,13 @@ export const useCreateTeam = () => {
 
   return useMutation({
     mutationFn: createTeam,
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       qc.invalidateQueries({ queryKey: ["teams-dropdown"] });
       qc.invalidateQueries({ queryKey: ["teams"] });
-      toast.success("Team created successfully");
+      toast.success(response?.statusMessage || "Team created successfully");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to create team");
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to create team");
     },
   });
 };
@@ -46,12 +46,14 @@ export const useUpdateTeam = () => {
     mutationFn: ({ id, payload }: { id: number; payload: any }) =>
       updateTeam(id, payload),
 
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       qc.invalidateQueries({ queryKey: ["teams"] });
-      toast.success("Team updated successfully");
+      toast.success(response?.statusMessage || "Team updated successfully");
     },
 
-    onError: () => toast.error("Failed to update team"),
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to update team");
+    },
   });
 };
 
@@ -63,12 +65,14 @@ export const useDeleteTeam = () => {
   return useMutation({
     mutationFn: deleteTeam,
 
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       qc.invalidateQueries({ queryKey: ["teams"] });
-      toast.success("Team deleted successfully");
+      toast.success(response?.statusMessage || "Team deleted successfully");
     },
 
-    onError: () => toast.error("Failed to delete team"),
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to delete team");
+    },
   });
 };
 
@@ -86,13 +90,15 @@ export const useAddTeamMember = () => {
       payload: any;
     }) => addTeamMember(teamId, payload),
 
-    onSuccess: (_, vars) => {
+    onSuccess: (response: any, vars) => {
       qc.invalidateQueries({ queryKey: ["team-members", vars.teamId] });
       qc.invalidateQueries({ queryKey: ["teams"] });
-      toast.success("Member added");
+      toast.success(response?.statusMessage || "Member added");
     },
 
-    onError: () => toast.error("Failed to add member"),
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to add member");
+    },
   });
 };
 
@@ -110,12 +116,14 @@ export const useRemoveTeamMember = () => {
       memberId: string;
     }) => removeTeamMember(teamId, memberId),
 
-    onSuccess: (_, vars) => {
+    onSuccess: (response: any, vars) => {
       qc.invalidateQueries({ queryKey: ["team-members", vars.teamId] });
       qc.invalidateQueries({ queryKey: ["teams"] });
-      toast.success("Member removed");
+      toast.success(response?.statusMessage || "Member removed");
     },
 
-    onError: () => toast.error("Failed to remove member"),
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to remove member");
+    },
   });
 };

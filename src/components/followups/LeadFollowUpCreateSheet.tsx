@@ -34,8 +34,8 @@ const LeadFollowUpCreateSheet = ({
 
   // ✅ ALL hooks must be called before any conditional return
   const { hasPermission } = usePermissions();
-  const canAddFollowUp = hasPermission("followup", "add");
-  const canEditFollowUp = hasPermission("followup", "edit");
+  const canAddFollowUp = hasPermission("lead", "view");
+  const canEditFollowUp = hasPermission("lead", "view");
 
   const [formData, setFormData] = useState({
     followUpDate: "",

@@ -59,7 +59,7 @@ export const deleteOrder = async (id: string) => {
 
 // ── GET: Fetch order dropdown list ─────────────────────────────────
 export const getOrderStatusDropdown = async (): Promise<
-  ApiWrapper<OrderStatusDropdown[]>
+  OrderStatusDropdown[]
 > => {
   const response = await api.get("/Order/get-OrderStatus-dropdown");
   return response.data.data;
@@ -67,7 +67,7 @@ export const getOrderStatusDropdown = async (): Promise<
 
 // ── GET: Fetch order dropdown list ─────────────────────────────────
 export const getDesignStatusDropdown = async (): Promise<
-  ApiWrapper<DesignStatusDropdown[]>
+  DesignStatusDropdown[]
 > => {
   const response = await api.get("/Order/get-DesignStatus-dropdown");
   return response.data.data;

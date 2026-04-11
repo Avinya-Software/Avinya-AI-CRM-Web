@@ -9,14 +9,14 @@ export const useDeleteCustomer = () => {
     mutationFn: (customerId: string) =>
       deleteCustomerApi(customerId),
 
-    onSuccess: () => {
-      toast.success("Customer deleted successfully");
+    onSuccess: (response: any) => {
+      toast.success(response?.statusMessage || "Customer deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
 
     onError: (err: any) => {
       toast.error(
-        err?.response?.data?.message || "Failed to delete customer"
+        err?.response?.data?.statusMessage || err?.response?.data?.message || "Failed to delete customer"
       );
     },
   });

@@ -263,7 +263,7 @@ const LeadDetailSheet = ({
   const [editingFollowUp, setEditingFollowUp] = useState<any | null>(null); 
   const { hasPermission } = usePermissions();
   const canEditLead = hasPermission("lead", "edit");
-  const canAddFollowUp = hasPermission("followup", "add");
+  const canAddFollowUp = hasPermission("lead", "view");
   const canAddQuotation = hasPermission("quotation", "add");
 
   const leadId = lead?.leadID ?? lead?.leadId ?? null;

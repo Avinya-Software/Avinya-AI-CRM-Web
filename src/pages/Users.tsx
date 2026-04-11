@@ -73,7 +73,11 @@ const Users = () => {
 
     const handleApprove = (tenantId: string) => {
         if (!canApprove) return;
-        approveAdmin.mutate(tenantId);
+        approveAdmin.mutate(tenantId, {
+            onSuccess: () => {
+                usersMutation.mutate(filters);
+            }
+        });
     };
 
     // 🔐 If no view permission → block page
@@ -198,6 +202,7 @@ const Users = () => {
                         setOpenUserSheet(false);
                         setSelectedUser(null);
                     }}
+                    onSuccess={() => usersMutation.mutate(filters)}
                     user={selectedUser}
                 />
             ) : null}

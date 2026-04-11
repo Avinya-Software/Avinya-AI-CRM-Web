@@ -34,7 +34,7 @@ const Leads = () => {
   const canViewLead = hasPermission("lead", "view");
   const canAddLead = hasPermission("lead", "add");
   const canEditLead = hasPermission("lead", "edit");
-  const canAddFollowUp = hasPermission("followup", "add");
+  const canAddFollowUp = hasPermission("lead", "view");
   const canAddQuotation = hasPermission("quotation", "add");
   const canAddCustomer = hasPermission("customer", "add");
 

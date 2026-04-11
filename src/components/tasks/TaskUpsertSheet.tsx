@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 const TaskUpsertSheet = ({
   open,
   onClose,
+  onSuccess,
   task,
   scope: parentScope = "Personal",
 }: TaskUpsertSheetProps) => {
@@ -167,7 +168,12 @@ const TaskUpsertSheet = ({
           occurrenceId: task!.occurrenceId,
           data: { dueDateTime: formData.dueDateTime, status: formData.status, teamId: formData.teamId || undefined, assignToId: formData.assignToId || undefined },
         },
-        { onSuccess: () => onClose() }
+        {
+          onSuccess: () => {
+            onSuccess?.();
+            onClose();
+          }
+        }
       );
     } else {
       createTask.mutate(
@@ -188,7 +194,12 @@ const TaskUpsertSheet = ({
           teamId: formData.scope === "Team" ? formData.teamId : undefined,
           assignToId: formData.assignToId || undefined,
         },
-        { onSuccess: () => onClose() }
+        {
+          onSuccess: () => {
+            onSuccess?.();
+            onClose();
+          }
+        }
       );
     }
   };

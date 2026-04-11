@@ -143,7 +143,7 @@ const UserTable = ({
                                     {/* APPROVE ADMIN */}
                                     {canApprove &&
                                         user.role === "Admin" &&
-                                        !user.isActive &&
+                                        !user.isApproved &&
                                         onApprove && (
                                             <button
                                                 onClick={() =>

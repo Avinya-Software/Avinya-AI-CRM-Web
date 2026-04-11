@@ -20,15 +20,13 @@ export const useCreateFollowUp = () => {
 
   return useMutation({
     mutationFn: (data: CreateFollowUpDto) => createFollowUp(data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
-      toast.success("Follow-up created successfully");
+      toast.success(response?.statusMessage || "Follow-up created successfully");
     },
     onError: (error: any) => {
-      const message =
-        error?.response?.data?.message || "Failed to create follow-up";
-      toast.error(message);
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to create follow-up");
     },
   });
 };
@@ -45,15 +43,13 @@ export const useUpdateFollowUp = () => {
       followUpId: string;
       data: UpdateFollowUpDto;
     }) => updateFollowUp(followUpId, data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
-      toast.success("Follow-up updated successfully");
+      toast.success(response?.statusMessage || "Follow-up updated successfully");
     },
     onError: (error: any) => {
-      const message =
-        error?.response?.data?.message || "Failed to update follow-up";
-      toast.error(message);
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to update follow-up");
     },
   });
 };
@@ -70,14 +66,12 @@ export const useUpdateFollowUpStatus = () => {
       followUpId: string;
       status: string;
     }) => updateFollowUpStatus(followUpId, status),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
-      toast.success("Status updated successfully");
+      toast.success(response?.statusMessage || "Status updated successfully");
     },
     onError: (error: any) => {
-      const message =
-        error?.response?.data?.message || "Failed to update status";
-      toast.error(message);
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to update status");
     },
   });
 };
@@ -88,15 +82,13 @@ export const useDeleteFollowUp = () => {
 
   return useMutation({
     mutationFn: (followUpId: string) => deleteFollowUp(followUpId),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
-      toast.success("Follow-up deleted successfully");
+      toast.success(response?.statusMessage || "Follow-up deleted successfully");
     },
     onError: (error: any) => {
-      const message =
-        error?.response?.data?.message || "Failed to delete follow-up";
-      toast.error(message);
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to delete follow-up");
     },
   });
 };
@@ -108,10 +100,7 @@ export const useGetFollowUpById = () => {
       getFollowUpById(followUpId),
 
     onError: (error: any) => {
-      const message =
-        error?.response?.data?.message ||
-        "Failed to fetch follow-up details";
-      toast.error(message);
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to fetch follow-up details");
     },
   });
 };

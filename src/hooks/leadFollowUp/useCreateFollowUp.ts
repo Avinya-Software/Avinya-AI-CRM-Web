@@ -8,13 +8,13 @@ export const useCreateFollowUp = () => {
 
   return useMutation({
     mutationFn: createFollowUpApi,
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["leads"] });
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
-      toast.success("Follow-up created successfully");
+      toast.success(response?.statusMessage || "Follow-up created successfully");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to create follow-up");
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to create follow-up");
     },
   });
 };
