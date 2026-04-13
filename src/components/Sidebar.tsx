@@ -18,6 +18,7 @@ import {
   CheckSquare,
   DollarSign,
   Folder,
+  BarChart3,
 } from "lucide-react";
 
 import { useState, useEffect } from "react";
@@ -78,6 +79,7 @@ const GROUP_ICONS: Record<string, any> = {
   CRM: Users,
   "Work Management": Briefcase,
   Finance: DollarSign,
+  Reports: BarChart3,
   Other: Folder,
 };
 
@@ -97,7 +99,7 @@ const MODULE_GROUPS: Record<string, string> = {
   invoice: "Finance",
 };
 
-const GROUP_ORDER = ["CRM", "Work Management", "Finance", "Other"];
+const GROUP_ORDER = ["CRM", "Work Management", "Finance", "Reports", "Other"];
 
 /* ================= STATIC ADMIN ================= */
 
@@ -191,6 +193,20 @@ const Sidebar = () => {
       groups[group].push(item);
       return groups;
     }, {});
+
+  // Add static Reports group
+  groupedMenu["Reports"] = [
+    {
+      moduleKey: "lead-pipeline",
+      moduleName: "Lead Pipeline",
+      path: "/reports/lead-report",
+    },
+    {
+      moduleKey: "client-revenue",
+      moduleName: "Client Revenue",
+      path: "/reports/client-revenue",
+    },
+  ];
 
   /* ================= GROUP STATE ================= */
 
@@ -317,24 +333,41 @@ const Sidebar = () => {
                     </button>
 
                     {isOpen &&
-                      items.map((item: MenuItem) => {
-                        const Icon =
-                          MODULE_ICONS[item.moduleKey] || Icons.Box;
+                      (groupName !== "Reports"
+                        ? items.map((item: MenuItem) => {
+                          const Icon =
+                            MODULE_ICONS[item.moduleKey] || Icons.Box;
 
-                        return (
-                          <NavItem
-                            key={item.moduleKey}
-                            to={`/${item.moduleKey}s`}
-                            icon={<Icon size={18} />}
-                            label={
-                              item.moduleKey === "client"
-                                ? "Customers"
-                                : item.moduleName
-                            }
-                            isCollapsed={isCollapsed}
-                          />
-                        );
-                      })}
+                          return (
+                            <NavItem
+                              key={item.moduleKey}
+                              to={`/${item.moduleKey}s`}
+                              icon={<Icon size={18} />}
+                              label={
+                                item.moduleKey === "client"
+                                  ? "Customers"
+                                  : item.moduleName
+                              }
+                              isCollapsed={isCollapsed}
+                            />
+                          );
+                        })
+                        : items.map((item: any) => {
+                          const Icon =
+                            item.moduleKey === "lead-pipeline"
+                              ? BarChart3
+                              : Icons.Box;
+
+                          return (
+                            <NavItem
+                              key={item.moduleKey}
+                              to={item.path}
+                              icon={<Icon size={18} />}
+                              label={item.moduleName}
+                              isCollapsed={isCollapsed}
+                            />
+                          );
+                        }))}
                   </div>
                 );
               })
