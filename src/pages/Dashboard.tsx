@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
+
+const { RangePicker } = DatePicker;
+
 import {
   RefreshCcw,
   Flame,
@@ -309,44 +314,29 @@ const Dashboard = () => {
                 )}
 
                 {/* Custom date inputs */}
-                {activePreset === "custom" && (() => {
-                  const today = new Date().toISOString().split("T")[0];
-                  return (
-                    <div className="flex items-center gap-2 flex-wrap justify-end animate-in fade-in slide-in-from-top-1 w-full">
-                      <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
-                        <span className="text-[11px] text-slate-400 font-medium">From</span>
-                        <input
-                          id="dashboard-from-date"
-                          type="date"
-                          value={fromDate ?? ""}
-                          max={toDate ? (toDate < today ? toDate : today) : today}
-                          onChange={(e) => setFromDate(e.target.value || null)}
-                          className="bg-transparent text-slate-700 text-xs font-semibold outline-none cursor-pointer"
-                        />
-                      </div>
-                      <span className="text-slate-300 text-sm">→</span>
-                      <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
-                        <span className="text-[11px] text-slate-400 font-medium">To</span>
-                        <input
-                          id="dashboard-to-date"
-                          type="date"
-                          value={toDate ?? ""}
-                          min={fromDate ?? undefined}
-                          max={today}
-                          onChange={(e) => setToDate(e.target.value || null)}
-                          className="bg-transparent text-slate-700 text-xs font-semibold outline-none cursor-pointer"
-                        />
-                      </div>
-                      <button
-                        id="dashboard-apply-dates"
-                        onClick={applyFilter}
-                        className="px-4 py-1.5 rounded-lg btn-primary active:scale-95 text-xs font-bold tracking-wide shadow-md shadow-blue-100"
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  );
-                })()}
+                {activePreset === "custom" && (
+                  <div className="flex items-center gap-2 flex-wrap justify-end animate-in fade-in slide-in-from-top-1 w-full">
+                    <RangePicker
+                      id="dashboard-range-picker"
+                      className="h-10 rounded-lg border-slate-200 shadow-sm"
+                      value={[
+                        fromDate ? dayjs(fromDate) : null,
+                        toDate ? dayjs(toDate) : null,
+                      ]}
+                      onChange={(dates, dateStrings) => {
+                        setFromDate(dateStrings[0] || null);
+                        setToDate(dateStrings[1] || null);
+                      }}
+                    />
+                    <button
+                      id="dashboard-apply-dates"
+                      onClick={applyFilter}
+                      className="px-4 py-1.5 rounded-lg btn-primary active:scale-95 text-xs font-bold tracking-wide shadow-md shadow-blue-100 h-10"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -362,7 +352,7 @@ const Dashboard = () => {
         <section>
           <SectionHeader
             icon={<Flame className="w-4 h-4 text-red-500" />}
-            title="Today's Work"
+            title={activePreset === "today" ? "Today's Work" : activePreset === "this_week" ? "This Week's Work" : activePreset === "this_month" ? "This Month's Work" : "Work Summary"}
             subtitle="Click any card to view and act on it"
             badge={totalActions > 0 ? `${totalActions} items` : undefined}
             badgeColor="red"

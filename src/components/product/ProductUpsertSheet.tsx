@@ -19,8 +19,19 @@ interface Props {
 
 const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
   const { mutateAsync, isPending } = useUpsertProduct();
-  const { data: unitTypes, isLoading: unitLoading } = useUnitTypeDropdown();
-  const { data: taxCategories = [], isLoading: taxLoading } = useTaxCategories();
+  const unitTypeDropdownMutation = useUnitTypeDropdown();
+  const taxCategoriesMutation = useTaxCategories();
+
+  useEffect(() => {
+    if (open) {
+      unitTypeDropdownMutation.mutate(undefined);
+      taxCategoriesMutation.mutate(undefined);
+    }
+  }, [open]);
+
+  const { data: unitTypes, isPending: unitLoading } = unitTypeDropdownMutation;
+  const { data: taxCategoriesData, isPending: taxLoading } = taxCategoriesMutation;
+  const taxCategories = taxCategoriesData ?? [];
   // ✅ permissions
   const { hasPermission } = usePermissions();
   const isEdit = !!product;

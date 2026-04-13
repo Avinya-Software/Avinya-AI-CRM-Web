@@ -1,13 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BankDetails } from "../../interfaces/bankDetail.interface";
 import { getBankDetails, addBankDetail, updateBankDetail, deleteBankDetail } from "../../api/bankDetail.api";
 import { toast } from "react-hot-toast";
 
-export const useBankDetails = (tenantId?: string, enabled: boolean = true) => {
-  return useQuery<BankDetails[]>({
-    queryKey: ["bankDetails", tenantId],
-    queryFn: () => getBankDetails(tenantId!),
-    enabled: !!tenantId && enabled,
+export const useBankDetails = () => {
+  return useMutation<BankDetails[], Error, string>({
+    mutationFn: (tenantId: string) => getBankDetails(tenantId),
   });
 };
 

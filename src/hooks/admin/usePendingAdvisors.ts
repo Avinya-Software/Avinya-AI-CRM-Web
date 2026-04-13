@@ -1,9 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getPendingAdvisorsApi } from "../../api/admin.api";
 
 export const usePendingAdvisors = () => {
-  return useQuery({
-    queryKey: ["pending-advisors"],
-    queryFn: getPendingAdvisorsApi
+  return useMutation({
+    mutationFn: () => getPendingAdvisorsApi(),
   });
 };

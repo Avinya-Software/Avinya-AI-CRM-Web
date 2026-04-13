@@ -15,19 +15,17 @@ export const useCreateQuotation = () => {
 
   return useMutation({
     mutationFn: (data: CreateQuotationDto) => createQuotation(data),
-    onSuccess: (_, variables) => {
+    onSuccess: (response: any, variables) => {
       queryClient.invalidateQueries({ queryKey: ["quotations"] });
       queryClient.invalidateQueries({ queryKey: ["quotation-dropdown"] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
       if (variables.leadID) {
         queryClient.invalidateQueries({ queryKey: ["lead-detail", String(variables.leadID)] });
       }
-      toast.success("Quotation created successfully");
+      toast.success(response?.statusMessage || "Quotation created successfully");
     },
     onError: (error: any) => {
-      const message =
-        error?.response?.data?.message || "Failed to create quotation";
-      toast.error(message);
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to create quotation");
     },
   });
 };
@@ -44,18 +42,16 @@ export const useUpdateQuotation = () => {
       id: string;
       data: UpdateQuotationDto;
     }) => updateQuotation(id, data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["quotations"] });
       queryClient.invalidateQueries({ queryKey: ["quotation"] });
       queryClient.invalidateQueries({ queryKey: ["quotation-dropdown"] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
       queryClient.invalidateQueries({ queryKey: ["lead-detail"] });
-      toast.success("Quotation updated successfully");
+      toast.success(response?.statusMessage || "Quotation updated successfully");
     },
     onError: (error: any) => {
-      const message =
-        error?.response?.data?.message || "Failed to update quotation";
-      toast.error(message);
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to update quotation");
     },
   });
 };
@@ -66,16 +62,14 @@ export const useDeleteQuotation = () => {
 
   return useMutation({
     mutationFn: (id: string) => deleteQuotation(id),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["quotations"] });
       queryClient.invalidateQueries({ queryKey: ["quotation-dropdown"] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
-      toast.success("Quotation deleted successfully");
+      toast.success(response?.statusMessage || "Quotation deleted successfully");
     },
     onError: (error: any) => {
-      const message =
-        error?.response?.data?.message || "Failed to delete quotation";
-      toast.error(message);
+      toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to delete quotation");
     },
   });
 };

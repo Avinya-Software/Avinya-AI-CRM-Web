@@ -1,7 +1,6 @@
 // src/pages/Leads.tsx
 import { useEffect, useState } from "react";
 import { Filter, X } from "lucide-react";
-import { useSelector } from "react-redux";
 import { Toaster } from "react-hot-toast";
 
 import { useLeads } from "../hooks/lead/useLeads";
@@ -10,10 +9,9 @@ import Pagination from "../components/leads/Pagination";
 import LeadFilterSheet from "../components/leads/LeadFilterSheet";
 import LeadUpsertSheet from "../components/leads/LeadUpsertSheet";
 import LeadFollowUpCreateSheet from "../components/followups/LeadFollowUpCreateSheet";
-import CustomerUpsertSheet from "../components/customer/CustomerUpsertSheet";
 import { usePermissions } from "../context/PermissionContext";
+import { useAuth } from "../auth/useAuth";
 
-import type { RootState } from "../store";
 import QuotationUpsertSheet from "../components/quotation/Quotationupsertsheet ";
 
 import { useDebounce } from "../components/common/CommonHelper";
@@ -36,7 +34,7 @@ const Leads = () => {
   const canViewLead = hasPermission("lead", "view");
   const canAddLead = hasPermission("lead", "add");
   const canEditLead = hasPermission("lead", "edit");
-  const canAddFollowUp = hasPermission("followup", "add");
+  const canAddFollowUp = hasPermission("lead", "view");
   const canAddQuotation = hasPermission("quotation", "add");
   const canAddCustomer = hasPermission("customer", "add");
 
@@ -61,11 +59,17 @@ const Leads = () => {
   const [openCustomerSheet, setOpenCustomerSheet] = useState(false);
   const [leadForCustomer, setLeadForCustomer] = useState<any>(null);
 
-  const advisorId = useSelector((state: RootState) => state.auth.userId);
+  const { userId: advisorId } = useAuth();
 
-  const { data, isLoading, isFetching } = useLeads(filters);
+  const leadsMutation = useLeads();
 
   const debouncedSearchTerm = useDebounce(search, 500);
+
+  useEffect(() => {
+    leadsMutation.mutate(filters);
+  }, [filters]);
+
+  const { data, isPending: isLoading } = leadsMutation;
 
   useEffect(() => {
     setFilters(prev => {
@@ -230,7 +234,7 @@ const Leads = () => {
           {/* TABLE */}
           <LeadTable
             data={data?.data ?? []}
-            loading={isLoading || isFetching}
+            loading={isLoading}
             onAdd={canAddLead ? handleAddLead : undefined}
             onEdit={canEditLead ? handleEditLead : undefined}
             onRowClick={handleViewLeadDetails}
@@ -293,19 +297,7 @@ const Leads = () => {
         advisorId={advisorId}
       />
 
-      {/* CUSTOMER UPSERT */}
-      <CustomerUpsertSheet
-        open={openCustomerSheet}
-        leadId={leadForCustomer?.leadId}
-        onClose={() => {
-          setOpenCustomerSheet(false);
-          setLeadForCustomer(null);
-        }}
-        onSuccess={() => {
-          setOpenCustomerSheet(false);
-          setLeadForCustomer(null);
-        }}
-      />
+  
 
       {/* FOLLOW UP CREATE */}
       <LeadFollowUpCreateSheet

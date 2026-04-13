@@ -1,12 +1,9 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getLeadsApi } from "../../api/lead.api";
-import type { LeadFilters } from "../../interfaces/lead.interface";
-import type { LeadListResponse } from "../../interfaces/lead.interface";
+import type { LeadFilters, LeadListResponse } from "../../interfaces/lead.interface";
 
-export const useLeads = (filters: LeadFilters) => {
-  return useQuery<LeadListResponse>({
-    queryKey: ["leads", filters],
-    queryFn: () => getLeadsApi(filters),
-    placeholderData: keepPreviousData,
+export const useLeads = () => {
+  return useMutation<LeadListResponse, Error, LeadFilters>({
+    mutationFn: (filters: LeadFilters) => getLeadsApi(filters),
   });
 };

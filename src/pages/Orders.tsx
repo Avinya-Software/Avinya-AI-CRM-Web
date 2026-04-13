@@ -63,7 +63,13 @@ const Orders = () => {
     });
   }, [debouncedSearchTerm]);
 
-  const { data, isLoading, isFetching } = useOrders(filters);
+  const ordersMutation = useOrders();
+
+  useEffect(() => {
+    ordersMutation.mutate(filters);
+  }, [filters]);
+
+  const { data, isPending: isLoading } = ordersMutation;
   const hasActiveFilters =
     filters.status || filters.startDate || filters.endDate;
 
@@ -220,7 +226,7 @@ const Orders = () => {
 
         <OrderTable
           data={data?.data ?? []}
-          loading={isLoading || isFetching || isLoadingInvoice}
+          loading={isLoading || isLoadingInvoice}
           onView={handleViewOrder}
           onEdit={handleEditOrder}
           onDelete={handleDeleteOrder}

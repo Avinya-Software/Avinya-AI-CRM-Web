@@ -1,5 +1,5 @@
 // src/pages/Tasks.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Filter, X, Plus, Mic, User, Users } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { useTasks } from "../hooks/task/useTasks";
@@ -30,10 +30,16 @@ const Tasks = () => {
   const canEditTask = hasPermission("task", "edit");
 
   const isMutating = useIsMutating();
-  const { mutate: createVoiceTask, isPending: isVoiceLoading } = useAddTaskUsingVoice();
+  const voiceTaskMutation = useAddTaskUsingVoice();
+  const isVoiceLoading = voiceTaskMutation.isPending;
 
   const handleVoiceSend = async (text: string) => {
-    if (text.trim()) createVoiceTask({ text });
+    if (text.trim()) {
+      voiceTaskMutation.mutate(
+        { text },
+        { onSuccess: refreshTasks }
+      );
+    }
     setOpenVoice(false);
   };
 
@@ -62,7 +68,26 @@ const Tasks = () => {
   };
 
   const { from, to } = getDateRange();
-  const { data, isLoading, isFetching } = useTasks(from, to, scope);
+
+  const tasksMutation = useTasks();
+  const personalTasksMutation = useTasks();
+  const teamTasksMutation = useTasks();
+
+  useEffect(() => {
+    tasksMutation.mutate({ from, to, scope });
+  }, [from, to, scope]);
+
+  useEffect(() => {
+    personalTasksMutation.mutate({ from, to, scope: "Personal" });
+  }, [from, to]);
+
+  useEffect(() => {
+    teamTasksMutation.mutate({ from, to, scope: "Team" });
+  }, [from, to]);
+
+  const { data, isPending: isLoading } = tasksMutation;
+  const { data: personalData } = personalTasksMutation;
+  const { data: teamData } = teamTasksMutation;
 
   const filteredTasks = (data?.data || []).filter((task) => {
     if (filters.status && task.status !== filters.status) return false;
@@ -109,6 +134,12 @@ const Tasks = () => {
     completed: filteredTasks.filter((t) => t.status === TaskStatus.Completed),
   };
 
+  const refreshTasks = () => {
+    tasksMutation.mutate({ from, to, scope });
+    personalTasksMutation.mutate({ from, to, scope: "Personal" });
+    teamTasksMutation.mutate({ from, to, scope: "Team" });
+  };
+
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
@@ -134,10 +165,10 @@ const Tasks = () => {
                   <User size={14} />
                   My Tasks
                   <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Personal"
-                    ? "bg-blue-700 text-white"
+                    ? "bg-white text-slate-500"
                     : "bg-slate-100 text-slate-500"
                     }`}>
-                    {scope === "Personal" ? filteredTasks.length : "—"}
+                    {personalData?.data?.length ?? "—"}
                   </span>
                 </button>
 
@@ -151,10 +182,10 @@ const Tasks = () => {
                   <Users size={14} />
                   Team Tasks
                   <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold ${scope === "Team"
-                    ? "bg-blue-700 text-white"
+                    ? "bg-white text-slate-500"
                     : "bg-slate-100 text-slate-500"
                     }`}>
-                    {scope === "Team" ? filteredTasks.length : "—"}
+                    {teamData?.data?.length ?? "—"}
                   </span>
                 </button>
               </div>
@@ -266,7 +297,7 @@ const Tasks = () => {
             </div>
             <TaskList
               tasks={groupedTasks.pending}
-              loading={isLoading || isFetching || isMutating > 0}
+              loading={isLoading || isMutating > 0}
               onEdit={canEditTask ? handleEditTask : undefined}
             />
           </div>
@@ -281,7 +312,7 @@ const Tasks = () => {
             </div>
             <TaskList
               tasks={groupedTasks.inProgress}
-              loading={isLoading || isFetching || isMutating > 0}
+              loading={isLoading || isMutating > 0}
               onEdit={canEditTask ? handleEditTask : undefined}
             />
           </div>
@@ -296,7 +327,7 @@ const Tasks = () => {
             </div>
             <TaskList
               tasks={groupedTasks.completed}
-              loading={isLoading || isFetching || isMutating > 0}
+              loading={isLoading || isMutating > 0}
               onEdit={canEditTask ? handleEditTask : undefined}
             />
           </div>
@@ -318,6 +349,7 @@ const Tasks = () => {
           setOpenTaskSheet(false);
           setSelectedTask(null);
         }}
+        onSuccess={refreshTasks}
         task={selectedTask}
         scope={scope}
       />

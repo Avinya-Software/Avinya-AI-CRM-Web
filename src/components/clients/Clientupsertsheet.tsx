@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X ,Users} from "lucide-react";
 import toast from "react-hot-toast";
 
 import { createClientApi, updateClientApi } from "../../api/client.api";
@@ -38,11 +38,20 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
     }, [open]);
 
     /*   STATES & CITIES   */
-    const { data: states = [] } = useStates();
+    const statesMutation = useStates();
+    const citiesMutation = useCities();
     const [selectedStateId, setSelectedStateId] = useState<string>("");
-    const { data: cities = [] } = useCities(
-        selectedStateId ? Number(selectedStateId) : null
-    );
+
+    useEffect(() => {
+        if (open) statesMutation.mutate(undefined);
+    }, [open]);
+
+    useEffect(() => {
+        if (selectedStateId) citiesMutation.mutate(Number(selectedStateId));
+    }, [selectedStateId]);
+
+    const states: any[] = statesMutation.data ?? [];
+    const cities: any[] = citiesMutation.data ?? [];
 
     /*   FORM STATE   */
     const initialForm = {
@@ -163,174 +172,198 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
             />
 
             {/* SHEET */}
-            <div className="fixed top-0 right-0 h-screen w-[440px] bg-white z-[70] shadow-2xl flex flex-col animate-slideInRight">
+            <div className="fixed top-0 right-0 h-screen w-full max-w-[720px] bg-white z-[70] shadow-2xl flex flex-col animate-slideInRight">
 
                 {/* HEADER */}
-                <div className="px-6 py-4 border-b flex justify-between items-center">
-                    <h2 className="font-semibold text-lg">
-                        {client ? "Edit Customer" : "Add Customer"}
-                    </h2>
-                    <button onClick={onClose} disabled={saving}>
-                        <X size={20} />
+                <div className="px-6 py-4 border-b bg-white flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-[var(--btn-primary)]">
+                            <Users className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-base font-bold text-slate-800">
+                                {client ? "Edit Customer" : "Add New Customer"}
+                            </h2>
+                            <p className="text-xs text-slate-400">
+                                {client ? "Update customer information" : "Fill in the details to create a customer"}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        disabled={saving}
+                        className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-600"
+                    >
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* BODY */}
-                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
 
-                    <Input
-                        label="Company Name"
-                        required
-                        value={form.companyName}
-                        error={errors.companyName}
-                        onChange={(v: string) => setForm({ ...form, companyName: v })}
-                        disabled={isReadOnly}
-                    />
-
-                    <Input
-                        label="Contact Person"
-                        required
-                        value={form.contactPerson}
-                        error={errors.contactPerson}
-                        onChange={(v: string) => setForm({ ...form, contactPerson: v })}
-                        disabled={isReadOnly}
-                    />
-
-                    <Input
-                        label="Mobile"
-                        required
-                        value={form.mobile}
-                        error={errors.mobile}
-                        onChange={(v: string) =>
-                            setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })
-                        }
-                        disabled={isReadOnly}
-                    />
-
-                    <Input
-                        label="Email"
-                        value={form.email}
-                        error={errors.email}
-                        onChange={(v: string) => setForm({ ...form, email: v })}
-                        disabled={isReadOnly}
-                    />
-
-                    <Input
-                        label="GST No"
-                        value={form.gstNo}
-                        onChange={(v: string) => setForm({ ...form, gstNo: v.toUpperCase() })}
-                        disabled={isReadOnly}
-                    />
-
-                    <Textarea
-                        label="Billing Address"
-                        value={form.billingAddress}
-                        onChange={(v: string) => setForm({ ...form, billingAddress: v })}
-                        disabled={isReadOnly}
-                    />
-
-                    {/* STATE */}
-                    <div>
-                        <label className="text-sm font-medium">State</label>
-                        <select
-                            className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
-                            value={selectedStateId}
-                            onChange={(e) => handleStateChange(e.target.value)}
+                    {/* ── SECTION: Client Info ── */}
+                    <Section title="Client Information">
+                        <Input
+                            label="Company Name"
+                            required
+                            value={form.companyName}
+                            error={errors.companyName}
+                            onChange={(v: string) => setForm({ ...form, companyName: v })}
                             disabled={isReadOnly}
-                        >
-                            <option value="">Select State</option>
-                            {(states as any[]).map((s) => (
-                                <option key={s.stateID} value={s.stateID}>
-                                    {s.stateName}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                        />
 
-                    {/* CITY */}
-                    <div>
-                        <label className="text-sm font-medium">City</label>
-                        <select
-                            className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-400"
-                            value={form.cityID}
-                            disabled={!selectedStateId || isReadOnly}
-                            onChange={(e) => setForm({ ...form, cityID: e.target.value })}
-                        >
-                            <option value="">
-                                {selectedStateId ? "Select City" : "Select state first"}
-                            </option>
-                            {(cities as any[]).map((c) => (
-                                <option key={c.cityID} value={c.cityID}>
-                                    {c.cityName}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* CLIENT TYPE */}
-                    <div>
-                        <label className="text-sm font-medium">Customer Type</label>
-                        <select
-                            className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
-                            value={form.clientType}
-                            onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
+                        <Input
+                            label="Contact Person"
+                            required
+                            value={form.contactPerson}
+                            error={errors.contactPerson}
+                            onChange={(v: string) => setForm({ ...form, contactPerson: v })}
                             disabled={isReadOnly}
-                        >
-                            {CLIENT_TYPES.map((t) => (
-                                <option key={t.value} value={t.value}>{t.label}</option>
-                            ))}
-                        </select>
-                    </div>
+                        />
 
-                    {/* STATUS */}
-                    {isEdit && (
-                        <div className="flex items-center gap-3">
-                            <label className="text-sm font-medium">Status</label>
-                            <button
-                                type="button"
-                                onClick={() => !isReadOnly && setForm({ ...form, status: !form.status })}
+                        <div className="col-span-2 sm:col-span-1">
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Customer Type</label>
+                            <select
+                                className="input w-full disabled:bg-slate-50 disabled:text-slate-500"
+                                value={form.clientType}
+                                onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
                                 disabled={isReadOnly}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${form.status ? "bg-[var(--btn-primary)]" : "bg-gray-300"
-                                    }`}
                             >
-                                <span
-                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? "translate-x-6" : "translate-x-1"
-                                        }`}
-                                />
-                            </button>
-                            <span className="text-sm text-gray-600">
-                                {form.status ? "Active" : "Inactive"}
-                            </span>
+                                {CLIENT_TYPES.map((t) => (
+                                    <option key={t.value} value={t.value}>{t.label}</option>
+                                ))}
+                            </select>
                         </div>
-                    )}
 
-                    <Textarea
-                        label="Notes"
-                        value={form.notes}
-                        onChange={(v: string) => setForm({ ...form, notes: v })}
-                        disabled={isReadOnly}
-                    />
+                        <Input
+                            label="GST No"
+                            value={form.gstNo}
+                            onChange={(v: string) => setForm({ ...form, gstNo: v.toUpperCase() })}
+                            disabled={isReadOnly}
+                        />
+                    </Section>
+
+                    {/* ── SECTION: Contact Details ── */}
+                    <Section title="Contact Details">
+                        <Input
+                            label="Mobile"
+                            required
+                            value={form.mobile}
+                            error={errors.mobile}
+                            onChange={(v: string) =>
+                                setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })
+                            }
+                            disabled={isReadOnly}
+                        />
+
+                        <Input
+                            label="Email"
+                            value={form.email}
+                            error={errors.email}
+                            onChange={(v: string) => setForm({ ...form, email: v })}
+                            disabled={isReadOnly}
+                        />
+                    </Section>
+
+                    {/* ── SECTION: Location ── */}
+                    <Section title="Location">
+                        <div>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">State</label>
+                            <select
+                                className="input w-full disabled:bg-slate-50 disabled:text-slate-500"
+                                value={selectedStateId}
+                                onChange={(e) => handleStateChange(e.target.value)}
+                                disabled={isReadOnly}
+                            >
+                                <option value="">Select State</option>
+                                {(states as any[]).map((s) => (
+                                    <option key={s.stateID} value={s.stateID}>
+                                        {s.stateName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">City</label>
+                            <select
+                                className="input w-full disabled:bg-slate-50 disabled:text-slate-400"
+                                value={form.cityID}
+                                disabled={!selectedStateId || isReadOnly}
+                                onChange={(e) => setForm({ ...form, cityID: e.target.value })}
+                            >
+                                <option value="">
+                                    {selectedStateId ? "Select City" : "Select state first"}
+                                </option>
+                                {(cities as any[]).map((c) => (
+                                    <option key={c.cityID} value={c.cityID}>
+                                        {c.cityName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="col-span-2">
+                            <Textarea
+                                label="Billing Address"
+                                value={form.billingAddress}
+                                onChange={(v: string) => setForm({ ...form, billingAddress: v })}
+                                disabled={isReadOnly}
+                            />
+                        </div>
+                    </Section>
+
+                    {/* ── SECTION: Additional Info ── */}
+                    <Section title="Additional Info">
+                        <div className="col-span-2">
+                            <Textarea
+                                label="Notes"
+                                value={form.notes}
+                                onChange={(v: string) => setForm({ ...form, notes: v })}
+                                disabled={isReadOnly}
+                            />
+                        </div>
+
+                        {isEdit && (
+                            <div className="flex items-center gap-3">
+                                <label className="text-xs font-semibold text-slate-600">Status</label>
+                                <button
+                                    type="button"
+                                    onClick={() => !isReadOnly && setForm({ ...form, status: !form.status })}
+                                    disabled={isReadOnly}
+                                    className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors disabled:opacity-50 ${form.status ? "bg-[var(--btn-primary)]" : "bg-gray-300"
+                                        }`}
+                                >
+                                    <span
+                                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${form.status ? "translate-x-5" : "translate-x-1"
+                                            }`}
+                                    />
+                                </button>
+                                <span className="text-xs font-medium text-slate-600">
+                                    {form.status ? "Active" : "Inactive"}
+                                </span>
+                            </div>
+                        )}
+                    </Section>
                 </div>
 
                 {/* FOOTER */}
-                <div className="px-6 py-4 border-t flex gap-3">
+                <div className="px-6 py-4 border-t bg-slate-50 flex gap-3 shrink-0">
                     <button
-                        className="flex-1 border rounded-lg py-2 hover:bg-slate-50"
+                        className="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
                         onClick={onClose}
                         disabled={saving}
                     >
                         Cancel
                     </button>
 
-                    {/* Save button hidden in read-only mode */}
                     {!isReadOnly && (
                         <button
                             disabled={saving}
-                            className="flex-1 btn-primary rounded-lg py-2 flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="flex-1 btn-primary px-4 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
                             onClick={handleSave}
                         >
-                            {saving && <Spinner />}
-                            {saving ? "Saving..." : isEdit ? "Update" : "Save"}
+                            {saving ? <Spinner /> : isEdit ? "Update Customer" : "Save Customer"}
                         </button>
                     )}
                 </div>
@@ -341,32 +374,47 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
 
 export default ClientUpsertSheet;
 
-/*   HELPERS   */
+/* ================= HELPERS ================= */
+
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <div>
+        <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</span>
+            <div className="flex-1 h-px bg-slate-100" />
+        </div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            {children}
+        </div>
+    </div>
+);
 
 const Input = ({ label, required, value, error, type = "text", onChange, disabled }: any) => (
     <div>
-        <label className="text-sm font-medium">
+        <label className="text-xs font-semibold text-slate-600 mb-1 block">
             {label} {required && <span className="text-red-500">*</span>}
         </label>
         <input
             type={type}
-            className={`input w-full mt-1 ${error ? "border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
+            className={`input w-full ${error ? "border-red-400 focus:ring-red-500 focus:border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
         />
-        {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+        {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
     </div>
 );
 
-const Textarea = ({ label, value, onChange, disabled }: any) => (
+const Textarea = ({ label, required, value, error, onChange, disabled }: any) => (
     <div>
-        <label className="text-sm font-medium">{label}</label>
+        <label className="text-xs font-semibold text-slate-600 mb-1 block">
+            {label} {required && <span className="text-red-500">*</span>}
+        </label>
         <textarea
-            className="input w-full h-24 mt-1 disabled:bg-slate-50 disabled:text-slate-500"
+            className={`input w-full h-20 resize-none disabled:bg-slate-50 disabled:text-slate-500 ${error ? "border-red-400 focus:ring-red-500 focus:border-red-500" : ""}`}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
         />
+        {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
     </div>
 );

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { useAdvisorsByStatus } from "../hooks/admin/useAdvisorsByStatus";
 import TableSkeleton from "../components/common/TableSkeleton";
@@ -9,9 +9,13 @@ const AdminAdvisorsByStatusPage = () => {
   const [status, setStatus] = useState<StatusType>("approved");
   const [search, setSearch] = useState("");
 
-  const { data, isLoading } = useAdvisorsByStatus({
-    status
-  });
+  const advisorsByStatusMutation = useAdvisorsByStatus();
+
+  useEffect(() => {
+    advisorsByStatusMutation.mutate({ status });
+  }, [status]);
+
+  const { data, isPending: isLoading } = advisorsByStatusMutation;
 
   /*   SEARCH   */
   const filteredData = useMemo(() => {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Filter, X } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
@@ -37,7 +37,13 @@ const Users = () => {
     const [openFilterSheet, setOpenFilterSheet] = useState(false);
 
     /* API */
-    const { data, isLoading, isFetching } = useUsers(filters);
+    const usersMutation = useUsers();
+
+    useEffect(() => {
+        usersMutation.mutate(filters);
+    }, [filters]);
+
+    const { data, isPending: isLoading } = usersMutation;
     const approveAdmin = useApproveUser();
 
     /* HELPERS */
@@ -67,7 +73,11 @@ const Users = () => {
 
     const handleApprove = (tenantId: string) => {
         if (!canApprove) return;
-        approveAdmin.mutate(tenantId);
+        approveAdmin.mutate(tenantId, {
+            onSuccess: () => {
+                usersMutation.mutate(filters);
+            }
+        });
     };
 
     // 🔐 If no view permission → block page
@@ -157,7 +167,7 @@ const Users = () => {
                 {/* USERS TABLE */}
                 <UserTable
                     data={data?.data ?? []}
-                    loading={isLoading || isFetching}
+                    loading={isLoading}
                     onAdd={canCreate ? handleAddUser : undefined}
                     onEdit={canUpdate ? handleEditUser : undefined}
                     onApprove={canApprove ? handleApprove : undefined}
@@ -192,6 +202,7 @@ const Users = () => {
                         setOpenUserSheet(false);
                         setSelectedUser(null);
                     }}
+                    onSuccess={() => usersMutation.mutate(filters)}
                     user={selectedUser}
                 />
             ) : null}

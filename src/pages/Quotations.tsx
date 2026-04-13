@@ -56,7 +56,13 @@ const Quotations = () => {
         });
     }, [debouncedSearchTerm]);
 
-    const { data, isLoading, isFetching } = useQuotations(filters);
+    const quotationsMutation = useQuotations();
+
+    useEffect(() => {
+        quotationsMutation.mutate(filters);
+    }, [filters]);
+
+    const { data, isPending: isLoading } = quotationsMutation;
 
     const hasActiveFilters = filters.status || filters.startDate || filters.endDate;
 
@@ -185,7 +191,7 @@ const Quotations = () => {
                 {/* TABLE */}
                 <QuotationTable
                     data={data?.data ?? []}
-                    loading={isLoading || isFetching}
+                    loading={isLoading}
                     onView={handleViewQuotation}
                     onEdit={handleEditQuotation}
                     onAdd={handleAddQuotation}

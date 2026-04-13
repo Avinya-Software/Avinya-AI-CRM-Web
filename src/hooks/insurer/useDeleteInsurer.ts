@@ -9,14 +9,14 @@ export const useDeleteInsurer = () => {
     mutationFn: (insurerId: string) =>
       deleteInsurerApi(insurerId),
 
-    onSuccess: () => {
-      toast.success("Insurer deleted successfully");
+    onSuccess: (response: any) => {
+      toast.success(response?.statusMessage || "Insurer deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["insurers"] });
     },
 
     onError: (err: any) => {
       toast.error(
-        err?.response?.data?.message || "Failed to delete insurer"
+        err?.response?.data?.statusMessage || err?.response?.data?.message || "Failed to delete insurer"
       );
     },
   });

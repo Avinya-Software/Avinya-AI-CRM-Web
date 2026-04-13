@@ -1,10 +1,17 @@
 // src/components/tasks/TaskStats.tsx
+import { useEffect } from "react";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { useTasks } from "../../hooks/task/useTasks";
 import { TaskStatus } from "../../interfaces/task.interface";
 
 export const TaskStats = () => {
-    const { data } = useTasks();
+    const tasksMutation = useTasks();
+
+    useEffect(() => {
+        tasksMutation.mutate({});
+    }, []);
+
+    const { data } = tasksMutation;
     const tasks = data?.data || [];
 
     const stats = {

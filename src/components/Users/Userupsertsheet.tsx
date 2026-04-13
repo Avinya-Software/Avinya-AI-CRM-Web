@@ -14,10 +14,11 @@ import { decodeUserToken } from "../../lib/auth.utils";
 interface UserUpsertSheetProps {
     open: boolean;
     onClose: () => void;
+    onSuccess?: () => void;
     user: User | null;
 }
 
-const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
+const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProps) => {
     const queryClient = useQueryClient();
     const isEdit = !!user;
 
@@ -31,7 +32,8 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
     const currentUser = decodeUserToken(token);
     const isSuperAdmin = currentUser?.role === "SuperAdmin";
 
-    const { data: permissionModules = [] } = useUserPermissions();
+    const permissionModulesMutation = useUserPermissions();
+    const permissionModules = permissionModulesMutation.data ?? [];
 
     const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
 
@@ -45,7 +47,15 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
         permissionIds: selectedPermissions,
     });
 
-    const { data: companies = [] } = useCompanies();
+    const companiesMutation = useCompanies();
+    const companies = companiesMutation.data ?? [];
+
+    useEffect(() => {
+        if (open) {
+            permissionModulesMutation.mutate();
+            companiesMutation.mutate();
+        }
+    }, [open]);
 
     useEffect(() => {
         if (open && user) {
@@ -80,6 +90,7 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
             toast.success(isEdit ? "User updated successfully" : "User created successfully");
             queryClient.invalidateQueries({ queryKey: ["users"] });
             onClose();
+            onSuccess?.();
         },
         onError: (error: any) => {
             toast.error(error?.response?.data?.statusMessage || "Failed to save user");
@@ -92,6 +103,7 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
             toast.success(isEdit ? "User updated successfully" : "User created successfully");
             queryClient.invalidateQueries({ queryKey: ["users"] });
             onClose();
+            onSuccess?.();
         },
         onError: (error: any) => {
             toast.error(error?.response?.data?.statusMessage || "Failed to save user");
@@ -271,7 +283,9 @@ const UserUpsertSheet = ({ open, onClose, user }: UserUpsertSheetProps) => {
                             </h3>
 
                             <div className="max-h-72 overflow-y-auto space-y-3 pr-1">
-                                {permissionModules.map((module) => {
+                                {permissionModules
+                                    .filter(module => module.moduleKey !== "followup")
+                                    .map((module) => {
                                     const modulePermissionIds = module.permissions.map((p) => p.permissionId);
                                     const allSelected = modulePermissionIds.every((id) =>
                                         selectedPermissions.includes(id)

@@ -186,12 +186,14 @@ const Projects = () => {
     }
   }, [canView]);
   const debouncedSearchTerm = useDebounce(search, 500);
-  const { data, isLoading, isFetching, refetch } = useProjects({
-    pageNumber,
-    pageSize,
-    search: debouncedSearchTerm,
-    statusFilter,
-  });
+
+  const projectsMutation = useProjects();
+
+  useEffect(() => {
+    projectsMutation.mutate({ pageNumber, pageSize, search: debouncedSearchTerm, statusFilter });
+  }, [pageNumber, pageSize, debouncedSearchTerm, statusFilter]);
+
+  const { data, isPending: isLoading } = projectsMutation;
 
   const projects: Project[] = data?.data?.data ?? data?.data ?? [];
   const totalRecords: number = data?.data?.totalRecords ?? 0;
@@ -221,7 +223,7 @@ const Projects = () => {
   };
 
   const handleSuccess = () => {
-    refetch();
+    projectsMutation.mutate({ pageNumber, pageSize, search: debouncedSearchTerm, statusFilter });
     setOpenSheet(false);
     setSelectedProject(null);
   };
@@ -345,7 +347,7 @@ const Projects = () => {
         {/* CONTENT */}
         {viewMode === "grid" ? (
           <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {isLoading || isFetching ? (
+            {isLoading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
@@ -377,7 +379,7 @@ const Projects = () => {
         ) : (
           <ProjectTable
             data={projects}
-            loading={isLoading || isFetching}
+            loading={isLoading}
             onEdit={canUpdate ? handleEdit : () => { }}
             onView={handleView}
           />
@@ -417,6 +419,7 @@ const Projects = () => {
             setViewProjectData(null);
             handleEdit(p);
           }}
+          onSuccess={handleSuccess}
         />
       )}
     </>

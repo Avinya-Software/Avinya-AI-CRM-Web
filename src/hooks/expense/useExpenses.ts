@@ -1,5 +1,5 @@
 // src/hooks/expense/useExpenses.ts
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getExpensesApi } from "../../api/expense.api";
 
 interface UseExpensesParams {
@@ -11,10 +11,8 @@ interface UseExpensesParams {
   to?: string;
 }
 
-export const useExpenses = (params: UseExpensesParams) => {
-  return useQuery({
-    queryKey: ["expenses", params],
-    queryFn: () => getExpensesApi(params),
-    // keepPreviousData: true,
+export const useExpenses = () => {
+  return useMutation({
+    mutationFn: (params: UseExpensesParams) => getExpensesApi(params),
   });
 };

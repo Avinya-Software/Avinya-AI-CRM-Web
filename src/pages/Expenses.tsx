@@ -1,5 +1,5 @@
 // src/pages/Expenses.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 
 
@@ -27,14 +27,13 @@ const Expenses = () => {
     const [openSheet, setOpenSheet] = useState(false);
     const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
-    const { data, isLoading, isFetching, refetch } = useExpenses({
-        page,
-        pageSize,
-        status,
-        search,
-        from,
-        to,
-    });
+    const expensesMutation = useExpenses();
+
+    useEffect(() => {
+        expensesMutation.mutate({ page, pageSize, status, search, from, to });
+    }, [page, pageSize, status, search, from, to]);
+
+    const { data, isPending: isLoading } = expensesMutation;
 
     const expenses: Expense[] = data?.data?.data ?? [];
     const totalRecords: number = data?.data?.totalRecords ?? 0;
@@ -53,7 +52,7 @@ const Expenses = () => {
     };
 
     const handleSuccess = () => {
-        refetch();
+        expensesMutation.mutate({ page, pageSize, status, search, from, to });
         setOpenSheet(false);
         setSelectedExpense(null);
     };
@@ -125,7 +124,7 @@ const Expenses = () => {
                 {/* TABLE */}
                 <ExpenseTable
                     data={expenses}
-                    loading={isLoading || isFetching}
+                    loading={isLoading}
                     onEdit={canUpdate ? handleEdit : () => { }}
                 />
 

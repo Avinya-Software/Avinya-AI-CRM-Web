@@ -1,5 +1,5 @@
 // src/components/followups/LeadFollowUpBottomSheet.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useLeadFollowUps } from "../../hooks/followup/useFollowUps";
 import { useDeleteFollowUp, useUpdateFollowUpStatus } from "../../hooks/followup/useFollowUpMutations";
@@ -23,7 +23,13 @@ const LeadFollowUpBottomSheet = ({
   const [statusFilter, setStatusFilter] = useState("All");
   const [openCreateSheet, setOpenCreateSheet] = useState(false);
 
-  const { data, isLoading, refetch } = useLeadFollowUps(leadId);
+  const followUpsMutation = useLeadFollowUps();
+
+  useEffect(() => {
+    if (leadId) followUpsMutation.mutate(leadId);
+  }, [leadId]);
+
+  const { data, isPending: isLoading } = followUpsMutation;
   const { mutate: deleteFollowUp } = useDeleteFollowUp();
   const { mutate: updateStatus } = useUpdateFollowUpStatus();
 
@@ -114,7 +120,7 @@ const LeadFollowUpBottomSheet = ({
             </select>
 
             <button
-              onClick={() => refetch()}
+              onClick={() => { if (leadId) followUpsMutation.mutate(leadId); }}
               className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50"
             >
               Refresh
@@ -140,7 +146,7 @@ const LeadFollowUpBottomSheet = ({
         onClose={() => setOpenCreateSheet(false)}
         onSuccess={() => {
           setOpenCreateSheet(false);
-          refetch();
+          if (leadId) followUpsMutation.mutate(leadId);
         }}
       />
     </>

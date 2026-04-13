@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X } from "lucide-react";
 import { useUpsertLead } from "../../hooks/lead/useUpsertLead";
 import { useLeadStatuses } from "../../hooks/lead/useLeadStatuses";
@@ -27,8 +29,11 @@ const CLIENT_TYPES = [
 
 const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
   const { mutate, isPending } = useUpsertLead();
-  const { data: statuses } = useLeadStatuses();
-  const { data: sources } = useLeadSources();
+  const leadStatusesMutation = useLeadStatuses();
+  const leadSourcesMutation = useLeadSources();
+  const usersDropdownMutation = useUsersDropdown();
+  const statesMutation = useStates();
+  const citiesMutation = useCities();
   const isEdit = !!lead;
 
   /* ── PERMISSIONS ── */
@@ -43,6 +48,18 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
     return () => { document.body.style.overflow = "unset"; };
   }, [open]);
 
+  useEffect(() => {
+    if (open) {
+      leadStatusesMutation.mutate(undefined);
+      leadSourcesMutation.mutate(undefined);
+      usersDropdownMutation.mutate(undefined);
+      statesMutation.mutate(undefined);
+    }
+  }, [open]);
+
+  const statuses = leadStatusesMutation.data;
+  const sources = leadSourcesMutation.data;
+
   /* ── CUSTOMERS ── */
   const [customers, setCustomers] = useState<any[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -51,17 +68,19 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
     getCustomerDropdownApi().then(setCustomers);
   }, []);
 
-  const { data: usersResponse } = useUsersDropdown();
+  const usersResponse = usersDropdownMutation.data;
   const userOptions: ComboboxOption[] = (usersResponse ?? []).map(
     (u: any) => ({ value: u.id, label: u.fullName })
   );
 
   /* ── STATES & CITIES ── */
-  const { data: states = [] } = useStates();
   const [selectedStateId, setSelectedStateId] = useState<string>("");
-  const { data: cities = [] } = useCities(
-    selectedStateId ? Number(selectedStateId) : null
-  );
+  const states: any[] = statesMutation.data ?? [];
+  const cities: any[] = citiesMutation.data ?? [];
+
+  useEffect(() => {
+    if (selectedStateId) citiesMutation.mutate(Number(selectedStateId));
+  }, [selectedStateId]);
 
   /* ── FORM STATE ── */
   const initialForm = {
@@ -407,15 +426,23 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
               )}
 
               {!isEdit && (
-                <Input
-                  label="Next Follow-up Date"
-                  required
-                  type="datetime-local"
-                  value={form.nextFollowupDate}
-                  error={errors.nextFollowupDate}
-                  onChange={(v: any) => setForm({ ...form, nextFollowupDate: v })}
-                  disabled={isReadOnly}
-                />
+                <div className="flex flex-col gap-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Next Follow-up Date <span className="text-red-500">*</span>
+                  </label>
+                  <DatePicker
+                    showTime
+                    format="YYYY-MM-DD HH:mm"
+                    placeholder="Select date & time"
+                    className={`w-full h-10 rounded-lg ${errors.nextFollowupDate ? "border-red-500" : "border-slate-300"}`}
+                    value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
+                    onChange={(date, dateString) =>
+                      setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                    }
+                    disabled={isReadOnly}
+                  />
+                  {errors.nextFollowupDate && <p className="text-xs text-red-600 mt-1">{errors.nextFollowupDate}</p>}
+                </div>
               )}
             </div>
           </div>

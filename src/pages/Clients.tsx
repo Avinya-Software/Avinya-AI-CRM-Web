@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
 import { useClients } from "../hooks/client/useClients";
@@ -25,7 +25,15 @@ const Clients = () => {
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const debouncedSearchTerm = useDebounce(search, 500);
 
-    // 🔐 Block entire page if no view permission
+    const clientsMutation = useClients();
+
+    useEffect(() => {
+        clientsMutation.mutate({ page: pageNumber, pageSize, search: debouncedSearchTerm });
+    }, [pageNumber, pageSize, debouncedSearchTerm]);
+
+    const { data, isPending: isLoading } = clientsMutation;
+
+    // Block entire page if no view permission
     if (!canViewClient) {
         return (
             <div className="p-10 text-center text-slate-500">
@@ -33,12 +41,6 @@ const Clients = () => {
             </div>
         );
     }
-
-    const { data, isLoading, isFetching, refetch } = useClients(
-        pageNumber,
-        pageSize,
-        debouncedSearchTerm
-    );
 
     const handleAddClient = () => {
         if (!canAddClient) return;
@@ -54,7 +56,7 @@ const Clients = () => {
 
     const handleClientSuccess = () => {
         setOpenClientSheet(false);
-        refetch();
+        clientsMutation.mutate({ page: pageNumber, pageSize, search: debouncedSearchTerm });
         toast.success("Customer saved successfully!");
     };
 
@@ -111,7 +113,7 @@ const Clients = () => {
                 {/* TABLE */}
                 <ClientTable
                     data={data?.data ?? []}
-                    loading={isLoading || isFetching}
+                    loading={isLoading}
                     onEdit={canEditClient ? handleEditClient : undefined}
                 />
 

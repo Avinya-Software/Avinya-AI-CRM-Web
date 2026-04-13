@@ -1,7 +1,8 @@
-// src/components/tasks/RecurringModal.tsx
 import { useState, useEffect } from "react";
 import { X, Calendar, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 interface RecurringModalProps {
   open: boolean;
@@ -296,11 +297,12 @@ const RecurringModal = ({
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Ends On
               </label>
-              <input
-                type="date"
-                value={endsOn}
-                onChange={(e) => setEndsOn(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border-2 border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 font-medium"
+              <DatePicker
+                className="w-full h-11 border-2 border-slate-300 rounded-lg"
+                format="YYYY-MM-DD"
+                placeholder="Select end date"
+                value={endsOn ? dayjs(endsOn) : null}
+                onChange={(date, dateString) => setEndsOn(Array.isArray(dateString) ? dateString[0] : dateString)}
               />
             </div>
           )}

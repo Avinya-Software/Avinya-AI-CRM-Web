@@ -1,5 +1,7 @@
 // src/components/quotations/QuotationUpsertSheet.tsx
 import { useState, useEffect } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X, Save, Loader2, Plus, Trash2 } from "lucide-react";
 import { Quotation, TaxCategory } from "../../interfaces/quotation.interface";
 import { ProductDropdown } from "../../interfaces/product.interface";
@@ -7,11 +9,10 @@ import { useClientsDropdown } from "../../hooks/client/useClients";
 import { useSettings } from "../../hooks/setting/useSettings";
 import { useProductDropdown } from "../../hooks/product/useProductDropdown";
 import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store";
 import { useCreateQuotation, useUpdateQuotation } from "../../hooks/quotation/Usequotationmutations ";
 import { usePermissions } from "../../context/PermissionContext";
 import { useQuotationDropdown } from "../../hooks/quotation/useQuotations";
+import { useAuth } from "../../auth/useAuth";
 
 interface QuotationUpsertSheetProps {
     open: boolean;
@@ -54,7 +55,7 @@ const QuotationUpsertSheet = ({
     if (open && isEdit && !canEditQuotation) return null;
     if (open && !isEdit && !canAddQuotation) return null;
 
-    const createdBy = useSelector((state: RootState) => (state.auth as any).userId ?? (state.auth as any).advisorId ?? "");
+    const { userId: createdBy = "" } = useAuth();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -85,10 +86,24 @@ const QuotationUpsertSheet = ({
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const { data: clients = [] } = useClientsDropdown();
-    const { data: settings = [] } = useSettings();
-    const { data: products = [] } = useProductDropdown();
-    const { data: taxCategories = [] } = useTaxCategories();
+    const clientsDropdownMutation = useClientsDropdown();
+    const settingsMutation = useSettings();
+    const productDropdownMutation = useProductDropdown();
+    const taxCategoriesMutation = useTaxCategories();
+
+    useEffect(() => {
+        if (open) {
+            clientsDropdownMutation.mutate(undefined);
+            settingsMutation.mutate(undefined);
+            productDropdownMutation.mutate(undefined);
+            taxCategoriesMutation.mutate(undefined);
+        }
+    }, [open]);
+
+    const clients: any[] = clientsDropdownMutation.data ?? [];
+    const settings: any[] = settingsMutation.data ?? [];
+    const products: any[] = productDropdownMutation.data ?? [];
+    const taxCategories: any[] = taxCategoriesMutation.data ?? [];
 
     const createQuotation = useCreateQuotation();
     const updateQuotation = useUpdateQuotation();
@@ -319,7 +334,7 @@ const QuotationUpsertSheet = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
-            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] overflow-y-auto">
                 {/* HEADER */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 sticky top-0 bg-white z-10">
                     <h2 className="text-xl font-semibold text-slate-900">
@@ -360,11 +375,14 @@ const QuotationUpsertSheet = ({
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Quotation Date
                             </label>
-                            <input
-                                type="date"
-                                value={formData.quotationDate}
-                                onChange={(e) => setFormData({ ...formData, quotationDate: e.target.value })}
-                                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            <DatePicker
+                                className="w-full h-10 border-slate-300 rounded-lg"
+                                format="YYYY-MM-DD"
+                                placeholder="Select quotation date"
+                                value={formData.quotationDate ? dayjs(formData.quotationDate) : null}
+                                onChange={(date, dateString) =>
+                                    setFormData({ ...formData, quotationDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
                             />
                         </div>
                     </div>
@@ -374,12 +392,14 @@ const QuotationUpsertSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Valid Till
                         </label>
-                        <input
-                            type="date"
-                            value={formData.validTill}
-                            onChange={(e) => setFormData({ ...formData, validTill: e.target.value })}
-                            className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.validTill ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:ring-blue-500"
-                                }`}
+                        <DatePicker
+                            className={`w-full h-10 rounded-lg ${errors.validTill ? "border-red-500" : "border-slate-300"}`}
+                            format="YYYY-MM-DD"
+                            placeholder="Select valid till date"
+                            value={formData.validTill ? dayjs(formData.validTill) : null}
+                            onChange={(date, dateString) =>
+                                setFormData({ ...formData, validTill: Array.isArray(dateString) ? dateString[0] : dateString })
+                            }
                         />
                         {errors.validTill && <p className="text-red-500 text-xs mt-1">{errors.validTill}</p>}
                     </div>

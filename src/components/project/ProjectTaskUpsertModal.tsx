@@ -1,5 +1,6 @@
-// src/components/project/ProjectTaskUpsertModal.tsx
 import React, { useState, useEffect } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X, Save, Loader2, Calendar, Users } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCreateTask } from "../../hooks/task/useTaskMutations";
@@ -165,17 +166,20 @@ const ProjectTaskUpsertModal = ({
                     </div>
 
                     {/* DUE DATE & TIME */}
-                    <div>
+                    <div className="flex flex-col gap-1">
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             <Calendar size={14} className="inline mr-1" />
                             Due Date & Time <span className="text-red-500">*</span>
                         </label>
-                        <input
-                            type="datetime-local"
-                            value={formData.dueDate}
-                            onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                            className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.dueDate ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:ring-blue-500"
-                                }`}
+                        <DatePicker
+                            className={`w-full h-10 rounded-lg ${errors.dueDate ? "border-red-500" : "border-slate-300"}`}
+                            showTime
+                            format="YYYY-MM-DD HH:mm"
+                            placeholder="Select due date & time"
+                            value={formData.dueDate ? dayjs(formData.dueDate) : null}
+                            onChange={(date, dateString) =>
+                                setFormData({ ...formData, dueDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                            }
                         />
                         {errors.dueDate && <p className="text-red-500 text-xs mt-1">{errors.dueDate}</p>}
                     </div>

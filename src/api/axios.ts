@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getToken, clearToken, clearUserId } from "../utils/token";
+import { storage } from "../utils/storage";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL
@@ -7,7 +7,7 @@ const api = axios.create({
 
 // ── Request interceptor: attach Bearer token ─────────────────────────────────
 api.interceptors.request.use((config) => {
-  const token = getToken();
+  const token = storage.getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -22,14 +22,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    const currentToken = getToken();
+    const currentToken = storage.getToken();
 
     // Only redirect to login if we got 401 AND we don't have a token
     // (meaning our token really is missing/invalid at a fundamental level).
     // If we DO have a token and get 401, it's likely a permissions/business error — let it propagate.
     if (status === 401 && !currentToken) {
-      clearToken();
-      clearUserId();
+      storage.clearToken();
+      storage.clearUserId();
       window.location.href = "/login";
     }
 

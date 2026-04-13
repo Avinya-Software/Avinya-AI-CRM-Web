@@ -9,14 +9,14 @@ export const useDeleteLead = () => {
     mutationFn: (leadId: string) =>
       deleteLeadApi(leadId),
 
-    onSuccess: () => {
-      toast.success("Lead deleted successfully");
+    onSuccess: (response: any) => {
+      toast.success(response?.statusMessage || "Lead deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["leads"] });
     },
 
     onError: (err: any) => {
       toast.error(
-        err?.response?.data?.message || "Failed to delete lead"
+        err?.response?.data?.statusMessage || err?.response?.data?.message || "Failed to delete lead"
       );
     },
   });

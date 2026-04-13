@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { usePendingCompanies } from "../hooks/admin/usePendingCompanies";
@@ -9,8 +9,14 @@ import TableSkeleton from "../components/common/TableSkeleton";
 type ActionType = "approve" | "reject" | null;
 
 const AdminDashboard = () => {
-  const { data, isLoading } = usePendingCompanies();
+  const pendingCompaniesMutation = usePendingCompanies();
   const approveMutation = useApproveAdvisor();
+
+  useEffect(() => {
+    pendingCompaniesMutation.mutate(undefined);
+  }, []);
+
+  const { data, isPending: isLoading } = pendingCompaniesMutation;
   const deleteMutation = useDeleteAdvisor();
 
   const [selectedUserId, setSelectedUserId] =

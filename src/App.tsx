@@ -9,15 +9,9 @@ import { Toaster } from "react-hot-toast";
 
 /* -------- PAGES -------- */
 import Dashboard from "./pages/Dashboard";
-import Customers from "./pages/Customers";
-import Policies from "./pages/Policies";
-import Renewals from "./pages/Renewals";
-import Claims from "./pages/Claims";
 import Settings from "./pages/Settings";
 import Lead from "./pages/Lead";
 import Product from "./pages/Product";
-import Campaign from "./pages/Campaign ";
-import Insurer from "./pages/Insurer";
 import TasksPage from "./pages/TasksPage";
 import AdminAdvisorsByStatusPage from "./pages/AdminAdvisorsByStatusPage";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -40,6 +34,8 @@ import QuickBooksSuccess from "./pages/QuickBooksSuccess";
 import QuickBookCustomers from "./pages/QuickBookCustomers";
 import QuickBookInvoices from "./pages/QuickBookInvoices";
 import Invoices from "./pages/Invoices";
+import LeadPipelineReport from "./pages/reports/LeadPipelineReport";
+import ClientRevenueReport from "./pages/reports/ClientRevenueReport";
 
 function App() {
   return (
@@ -112,15 +108,7 @@ function App() {
               }
             />
 
-            {/* followup:view (mapped to Customers) */}
-            <Route
-              path="/customers"
-              element={
-                <RBACProtectedRoute module="followup" action="view">
-                  <Customers />
-                </RBACProtectedRoute>
-              }
-            />
+           
 
             {/* followup:view (mapped to Customers) */}
             <Route
@@ -194,24 +182,6 @@ function App() {
             />
 
 
-            <Route
-              path="/policies"
-              element={
-                <RBACProtectedRoute module="order" action="view">
-                  <Policies />
-                </RBACProtectedRoute>
-              }
-            />
-
-            {/* TODO: Add insurer module to backend */}
-            <Route path="/insurer" element={<Insurer />} />
-
-            {/* TODO: Add renewals module to backend */}
-            <Route path="/renewals" element={<Renewals />} />
-
-            {/* TODO: Add claims module to backend */}
-            <Route path="/claims" element={<Claims />} />
-
             {/* settings:view */}
             <Route
               path="/settings"
@@ -222,15 +192,6 @@ function App() {
               }
             />
 
-            {/* campaign:view */}
-            <Route
-              path="/campaign"
-              element={
-                <RBACProtectedRoute module="campaign" action="view">
-                  <Campaign />
-                </RBACProtectedRoute>
-              }
-            />
 
             {/* TODO: Add products module to backend */}
             <Route path="/products" element={<Product />} />
@@ -254,6 +215,23 @@ function App() {
             />
             <Route path="/quickbooks-success" element={<QuickBooksSuccess />} />
             <Route path="/ai-assistant" element={<AIAssistant />} />
+
+            <Route
+              path="/reports/lead-report"
+              element={
+                <RBACProtectedRoute module="lead" action="view">
+                  <LeadPipelineReport />
+                </RBACProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports/client-revenue"
+              element={
+                <RBACProtectedRoute module="client" action="view">
+                  <ClientRevenueReport />
+                </RBACProtectedRoute>
+              }
+            />
 
             {/* -------- ADMIN ROUTES -------- */}
             <Route path="/admin" element={<AdminDashboard />} />

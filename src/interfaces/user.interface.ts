@@ -8,6 +8,7 @@ export interface User {
   tenantId: string;
   tenantName: string;
   isActive: boolean;
+  isApproved?: boolean;
   createdAt: string;
   password: string; 
    permissionIds: number[]; 

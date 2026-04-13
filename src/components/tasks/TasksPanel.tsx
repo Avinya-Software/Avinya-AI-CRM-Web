@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { CheckCircle, Clock, Calendar } from "lucide-react";
 import { usePendingSystemEvents } from "../../hooks/system-events/usePendingSystemEvents";
 import { useAcknowledgeSystemEvent } from "../../hooks/system-events/useAcknowledgeSystemEvent";
@@ -9,7 +10,13 @@ import { usePermissions } from "../../context/PermissionContext";
  * ===================================================== */
 
 const TasksPanel = () => {
-  const { data: events = [], isLoading } = usePendingSystemEvents();
+  const pendingEventsMutation = usePendingSystemEvents();
+
+  useEffect(() => {
+    pendingEventsMutation.mutate(undefined);
+  }, []);
+
+  const { data: events = [], isPending: isLoading } = pendingEventsMutation;
   const acknowledgeMutation = useAcknowledgeSystemEvent();
   const { hasPermission } = usePermissions();
   const canEditTask = hasPermission("task", "edit");

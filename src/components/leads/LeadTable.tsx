@@ -60,7 +60,7 @@ const LeadTable = ({
 
   const canEditLead = hasPermission("lead", "edit");
   const canDeleteLead = hasPermission("lead", "delete");
-  const canAddFollowUp = hasPermission("followup", "add");
+  const canAddFollowUp = hasPermission("lead", "view");
   const canAddQuotation = hasPermission("quotation", "add");
 
   const [openLead, setOpenLead] = useState<Lead | null>(null);
@@ -276,7 +276,7 @@ const LeadTable = ({
           />
 
           {/* Add Follow-Up */}
-          {canAddFollowUp &&
+          {/* {canAddFollowUp &&
             openLead.statusName !== "Lost" && (
               <MenuItem
                 label="Add Follow-Up"
@@ -284,7 +284,7 @@ const LeadTable = ({
                   handleAction(() => handleAddFollowUp(openLead))
                 }
               />
-            )}
+            )} */}
 
           {/* View Follow-Up */}
           <MenuItem

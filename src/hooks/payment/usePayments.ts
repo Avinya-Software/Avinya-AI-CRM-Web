@@ -1,32 +1,26 @@
 // src/hooks/payment/usePayments.ts
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { 
-  createPayment, 
-  getPaymentById, 
-  getPaymentsByInvoiceId, 
-  updatePayment 
+import {
+  createPayment,
+  getPaymentById,
+  getPaymentsByInvoiceId,
+  updatePayment
 } from "../../api/payment.api";
 import { CreatePaymentDto, UpdatePaymentDto } from "../../interfaces/payment.interface";
 
 // ── Fetch payments by invoice ID ──────────────────────────────────────
-export const usePayments = (invoiceId: string | null) => {
-  return useQuery({
-    queryKey: ['payments', invoiceId],
-    queryFn: () => getPaymentsByInvoiceId(invoiceId!),
-    enabled: !!invoiceId,
-    staleTime: 30000,
+export const usePayments = () => {
+  return useMutation({
+    mutationFn: (invoiceId: string) => getPaymentsByInvoiceId(invoiceId),
   });
 };
 
 // ── Fetch single payment by ID ────────────────────────────────────────
-export const usePayment = (id: string | null) => {
-  return useQuery({
-    queryKey: ["payment", id],
-    queryFn: () => getPaymentById(id!),
-    enabled: !!id,
-    staleTime: 30000,
+export const usePayment = () => {
+  return useMutation({
+    mutationFn: (id: string) => getPaymentById(id),
   });
 };
 
@@ -36,7 +30,6 @@ export const useCreatePayment = () => {
   return useMutation({
     mutationFn: (data: CreatePaymentDto) => createPayment(data),
     onSuccess: (data) => {
-      // Invalidate both payments list for that invoice and general invoices list (to update balance)
       queryClient.invalidateQueries({ queryKey: ["payments", data.invoiceID] });
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["invoice", data.invoiceID] });

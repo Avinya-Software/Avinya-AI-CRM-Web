@@ -9,15 +9,14 @@ export const useDeleteCampaign = () => {
     mutationFn: (campaignId: string) =>
       deleteCampaignApi(campaignId),
 
-    onSuccess: () => {
-      toast.success("Campaign deleted successfully");
+    onSuccess: (response: any) => {
+      toast.success(response?.statusMessage || "Campaign deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
     },
 
     onError: (err: any) => {
       toast.error(
-        err?.response?.data?.message ||
-          "Failed to delete campaign"
+        err?.response?.data?.statusMessage || err?.response?.data?.message || "Failed to delete campaign"
       );
     },
   });

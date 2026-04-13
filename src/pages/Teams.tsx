@@ -1,5 +1,5 @@
 // src/pages/Teams.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -36,8 +36,16 @@ const Teams = () => {
   const [membersOpen, setMembersOpen] = useState(false);
   const [membersTeam, setMembersTeam] = useState<Team | null>(null);
 
-  const { data: teamsData, isLoading } = useTeams();
-  const { data: usersData } = useUsersDropdown();
+  const teamsMutation = useTeams();
+  const usersDropdownMutation = useUsersDropdown();
+
+  useEffect(() => {
+    teamsMutation.mutate(undefined);
+    usersDropdownMutation.mutate(undefined);
+  }, []);
+
+  const { data: teamsData, isPending: isLoading } = teamsMutation;
+  const { data: usersData } = usersDropdownMutation;
 
   const teams = teamsData?.data ?? [];
 

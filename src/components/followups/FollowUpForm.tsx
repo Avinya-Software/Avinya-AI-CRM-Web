@@ -1,4 +1,6 @@
 import { useRef, useState, useEffect } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { createFollowUpApi } from "../../api/leadFollowUp.api";
 import toast from "react-hot-toast";
 
@@ -7,16 +9,11 @@ interface Props {
   onSuccess: () => void;
 }
 
-/* 🔧 Helper: current datetime for <input type="datetime-local" /> */
-const getNowForDateTimeLocal = () => {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  return now.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
-};
+
 
 const FollowUpForm = ({ leadId, onSuccess }: Props) => {
   const [followUpDate, setFollowUpDate] = useState<string>(
-    getNowForDateTimeLocal() // ✅ DEFAULT TODAY
+    dayjs().format("YYYY-MM-DD HH:mm") // ✅ DEFAULT TODAY
   );
   const [nextFollowUpDate, setNextFollowUpDate] = useState("");
   const [remark, setRemark] = useState("");
@@ -100,26 +97,20 @@ const FollowUpForm = ({ leadId, onSuccess }: Props) => {
   return (
     <div className="space-y-4">
       {/* FOLLOW UP DATE */}
-      <div>
+      <div className="flex flex-col gap-1">
         <label className="text-sm font-medium">
           Follow Up Date <span className="text-red-500">*</span>
         </label>
-
-        <div
-          onClick={() => followUpRef.current?.showPicker()}
-          className="cursor-pointer"
-        >
-          <input
-            ref={followUpRef}
-            type="datetime-local"
-            className={`input w-full ${
-              errors.followUpDate ? "border-red-500" : ""
-            }`}
-            value={followUpDate}
-            onChange={(e) => setFollowUpDate(e.target.value)}
-          />
-        </div>
-
+        <DatePicker
+          showTime
+          format="YYYY-MM-DD HH:mm"
+          placeholder="Select date & time"
+          className={`w-full h-10 ${errors.followUpDate ? "border-red-500" : ""}`}
+          value={followUpDate ? dayjs(followUpDate) : null}
+          onChange={(date, dateString) =>
+            setFollowUpDate(Array.isArray(dateString) ? dateString[0] : dateString)
+          }
+        />
         {errors.followUpDate && (
           <p className="text-xs text-red-600 mt-1">
             {errors.followUpDate}
@@ -128,27 +119,20 @@ const FollowUpForm = ({ leadId, onSuccess }: Props) => {
       </div>
 
       {/* NEXT FOLLOW UP DATE */}
-      <div>
+      <div className="flex flex-col gap-1">
         <label className="text-sm font-medium">
           Next Follow Up Date <span className="text-red-500">*</span>
         </label>
-
-        <div
-          onClick={() => nextFollowUpRef.current?.showPicker()}
-          className="cursor-pointer"
-        >
-          <input
-            ref={nextFollowUpRef}
-            type="datetime-local"
-            min={followUpDate || undefined}
-            className={`input w-full ${
-              errors.nextFollowUpDate ? "border-red-500" : ""
-            }`}
-            value={nextFollowUpDate}
-            onChange={(e) => setNextFollowUpDate(e.target.value)}
-          />
-        </div>
-
+        <DatePicker
+          showTime
+          format="YYYY-MM-DD HH:mm"
+          placeholder="Select date & time"
+          className={`w-full h-10 ${errors.nextFollowUpDate ? "border-red-500" : ""}`}
+          value={nextFollowUpDate ? dayjs(nextFollowUpDate) : null}
+          onChange={(date, dateString) =>
+            setNextFollowUpDate(Array.isArray(dateString) ? dateString[0] : dateString)
+          }
+        />
         {errors.nextFollowUpDate && (
           <p className="text-xs text-red-600 mt-1">
             {errors.nextFollowUpDate}

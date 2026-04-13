@@ -1,19 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Settings } from "../../interfaces/setting.interface";
 import { getSettings, updateSetting } from "../../api/setting.api";
 import { toast } from "react-hot-toast";
 
-export const useSettings = (search?: string, enabled: boolean = true) => {
-  return useQuery<Settings[]>({
-    queryKey: ["settings", search],
-    queryFn: () => getSettings(search),
-    enabled: !!enabled,
+export const useSettings = () => {
+  return useMutation<Settings[], Error, string | undefined>({
+    mutationFn: (search?: string) => getSettings(search),
   });
 };
 
 export const useUpdateSetting = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (dto: Settings) => updateSetting(dto),
     onSuccess: (data, variables) => {
@@ -25,4 +23,3 @@ export const useUpdateSetting = () => {
     }
   });
 };
-

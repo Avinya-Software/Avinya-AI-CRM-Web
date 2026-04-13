@@ -1,10 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getPolicyDropdownApi } from "../../api/policy.api";
 
-export const usePolicyDropdown = (customerId?: string) => {
-  return useQuery({
-    queryKey: ["policy-dropdown", customerId], // 👈 IMPORTANT
-    queryFn: () => getPolicyDropdownApi(customerId),
-    enabled: true, // always fetch (backend handles null)
+export const usePolicyDropdown = () => {
+  return useMutation({
+    mutationFn: (customerId?: string) => getPolicyDropdownApi(customerId),
   });
 };

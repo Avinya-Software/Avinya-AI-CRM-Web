@@ -1,5 +1,7 @@
 // src/components/invoice/PaymentCreateSheet.tsx
 import { useState, useEffect } from "react";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { X, Save, Loader2, IndianRupee, Calendar, CreditCard, FileText, CheckCircle2, History } from "lucide-react";
 import { CreatePaymentDto, Payment } from "../../interfaces/payment.interface";
 import { useCreatePayment, usePayments } from "../../hooks/payment";
@@ -24,7 +26,13 @@ const PAYMENT_METHODS = [
 
 const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
   const createPayment = useCreatePayment();
-  const { data: previousPayments = [], isLoading: loadingPayments } = usePayments(invoice?.invoiceID || null);
+  const paymentsMutation = usePayments();
+
+  useEffect(() => {
+    if (invoice?.invoiceID) paymentsMutation.mutate(invoice.invoiceID);
+  }, [invoice?.invoiceID]);
+
+  const { data: previousPayments = [], isPending: loadingPayments } = paymentsMutation;
 
   const [formData, setFormData] = useState<CreatePaymentDto>({
     invoiceID: invoice?.invoiceID || "",
@@ -132,18 +140,20 @@ const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
             </h3>
             <div className="space-y-6">
               <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
-                    <Calendar size={14} className="text-slate-400" /> Payment Date
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.paymentDate}
-                    onChange={e => setFormData({ ...formData, paymentDate: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
-                  />
-                </div>
+                  <div className="flex flex-col">
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
+                      <Calendar size={14} className="text-slate-400" /> Payment Date
+                    </label>
+                    <DatePicker
+                      className="w-full h-[42px] border-slate-200 rounded-xl focus:border-blue-500 transition-all font-medium"
+                      format="YYYY-MM-DD"
+                      placeholder="Select payment date"
+                      value={formData.paymentDate ? dayjs(formData.paymentDate) : null}
+                      onChange={(date, dateString) =>
+                        setFormData({ ...formData, paymentDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                      }
+                    />
+                  </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>

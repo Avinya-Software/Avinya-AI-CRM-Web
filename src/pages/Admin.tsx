@@ -11,8 +11,6 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useLoginAdvisor } from "../hooks/advisor/useLoginAdvisor";
 import { useLoginAdmin } from "../hooks/admin/useLoginAdmin";
-import { useDispatch } from "react-redux";
-import { loginSuccess } from "../store/authSlice";
 
 type LoginErrors = {
   email?: string;
@@ -24,7 +22,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<LoginErrors>({});
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const {
@@ -72,14 +69,6 @@ const Login = () => {
           const data = res.data;
 
           localStorage.setItem("token", data.token);
-
-          dispatch(
-            loginSuccess({
-              advisorId: null,
-              fullName: "Super Admin",
-              email: data.email
-            })
-          );
 
           navigate("/admin");
         }

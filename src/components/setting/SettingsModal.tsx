@@ -34,7 +34,15 @@ const TABS = [
 ];
 
 export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
-  const { data: serverSettings, isLoading } = useSettings(undefined, open);
+  const settingsMutation = useSettings();
+
+  useEffect(() => {
+    if (open) {
+      settingsMutation.mutate(undefined);
+    }
+  }, [open]);
+
+  const { data: serverSettings, isPending: isLoading } = settingsMutation;
   const updateMutation = useUpdateSetting();
   const [localSettings, setLocalSettings] = useState<Settings[]>([]);
   const [activeTab, setActiveTab] = useState("basic");
@@ -358,9 +366,17 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
 const CompanySettingsTab = ({ enabled }: { enabled: boolean }) => {
   const { token } = useAuth();
   const claims = decodeUserToken(token);
-  const { data: tenant, isLoading } = useTenant(claims?.tenantId, enabled);
+  const tenantMutation = useTenant();
   const updateMutation = useUpdateTenant();
   const [formData, setFormData] = useState<Tenant | null>(null);
+
+  useEffect(() => {
+    if (enabled && claims?.tenantId) {
+      tenantMutation.mutate(claims.tenantId);
+    }
+  }, [enabled, claims?.tenantId]);
+
+  const { data: tenant, isPending: isLoading } = tenantMutation;
 
   useEffect(() => {
     if (tenant) {
@@ -486,13 +502,21 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
   const { token } = useAuth();
   const claims = decodeUserToken(token);
   const tenantId = claims?.tenantId;
-  const { data: banks, isLoading } = useBankDetails(tenantId, enabled);
+  const bankDetailsMutation = useBankDetails();
   const addMutation = useAddBankDetail();
   const updateMutation = useUpdateBankDetail();
   const deleteMutation = useDeleteBankDetail();
 
   const [editingBanks, setEditingBanks] = useState<BankDetails[]>([]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (enabled && tenantId) {
+      bankDetailsMutation.mutate(tenantId);
+    }
+  }, [enabled, tenantId]);
+
+  const { data: banks, isPending: isLoading } = bankDetailsMutation;
 
   useEffect(() => {
     if (banks) {

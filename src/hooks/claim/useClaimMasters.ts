@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   getClaimTypesApi,
   getClaimStagesApi,
@@ -6,19 +6,16 @@ import {
 } from "../../api/claim-master.api";
 
 export const useClaimTypes = () =>
-  useQuery({
-    queryKey: ["claim-types"],
-    queryFn: getClaimTypesApi,
+  useMutation({
+    mutationFn: () => getClaimTypesApi(),
   });
 
 export const useClaimStages = () =>
-  useQuery({
-    queryKey: ["claim-stages"],
-    queryFn: getClaimStagesApi,
+  useMutation({
+    mutationFn: () => getClaimStagesApi(),
   });
 
 export const useClaimHandlers = () =>
-  useQuery({
-    queryKey: ["claim-handlers"],
-    queryFn: getClaimHandlersApi,
+  useMutation({
+    mutationFn: () => getClaimHandlersApi(),
   });

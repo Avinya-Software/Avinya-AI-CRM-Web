@@ -6,7 +6,6 @@ const MODULE_ROUTE_MAP: { module: string; route: string }[] = [
   { module: "lead", route: "/leads" },
   { module: "quotation", route: "/quotations" },
   { module: "user", route: "/users" },
-  { module: "followup", route: "/customers" },
   { module: "client", route: "/clients" },
   { module: "task", route: "/tasks" },
   { module: "team", route: "/teams" },
