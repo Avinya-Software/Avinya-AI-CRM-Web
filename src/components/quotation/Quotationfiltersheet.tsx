@@ -1,7 +1,8 @@
 // src/components/quotations/QuotationFilterSheet.tsx
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { QuotationFilters, QuotationStatus } from "../../interfaces/quotation.interface";
+import { QuotationFilters, QuotationStatus, QuotationStatusDropdownItem } from "../../interfaces/quotation.interface";
+import { useQuotationStatusDropdown } from "../../hooks/quotation/useQuotations";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
 
@@ -20,6 +21,7 @@ const QuotationFilterSheet = ({
     onApply,
     onClear,
 }: QuotationFilterSheetProps) => {
+    const { data: statusData = [] } = useQuotationStatusDropdown();
     // Local state — changes don't hit API until "Apply" is clicked
     const [localFilters, setLocalFilters] = useState<QuotationFilters>(filters);
 
@@ -87,10 +89,11 @@ const QuotationFilterSheet = ({
                             className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         >
                             <option value="">All Statuses</option>
-                            <option value="Draft">Draft</option>
-                            <option value="Sent">Sent</option>
-                            <option value="Accepted">Accepted</option>
-                            <option value="Rejected">Rejected</option>
+                            {(statusData as QuotationStatusDropdownItem[]).map((s) => (
+                                <option key={s.quotationStatusID} value={s.quotationStatusID}>
+                                    {s.statusName}
+                                </option>
+                            ))}
                         </select>
                     </div>
 

@@ -27,6 +27,7 @@ const { RangePicker } = DatePicker;
 
 import { useQuotationReport, useQuotationLifecycleReport } from "../../hooks/reports/useQuotationReport";
 import { useClientsDropdown } from "../../hooks/client/useClients";
+import { useQuotationStatusDropdown } from "../../hooks/quotation/useQuotations";
 import { QuotationReportFilter } from "../../interfaces/report.interface";
 import QuotationLifecycleModal from "../../components/reports/QuotationLifecycleModal";
 
@@ -41,6 +42,7 @@ const QuotationReport: React.FC = () => {
   const { data: reportResponse, mutate: fetchReport, isPending: isLoading } = useQuotationReport();
   const { data: lifecycleResponse, mutate: fetchLifecycle, isPending: isLoadingLifecycle } = useQuotationLifecycleReport();
   const { data: clients, mutate: fetchClients } = useClientsDropdown();
+  const { data: statusData, isPending: isLoadingStatuses } = useQuotationStatusDropdown();
 
   useEffect(() => {
     fetchClients();
@@ -179,19 +181,22 @@ const QuotationReport: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-12">
       {/* HEADER SECTION */}
-      <div className="bg-white border-b border-slate-200 px-8 py-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="p-1.5 bg-[#107C41] rounded-lg text-white">
-                <BarChart3 size={18} />
-              </span>
-              <h1 className="text-xl font-black text-slate-800 tracking-tight">Quotation Report</h1>
+      <div className="bg-white border-b border-slate-100 px-6 py-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#107C41] rounded-lg shadow-emerald-100 shadow-lg font-bold text-white">
+              <BarChart3 className="w-5 h-5" />
             </div>
-            <div className="flex items-center gap-3">
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Conversion Analysis & Watchlist</p>
-               <span className="h-1 w-1 rounded-full bg-slate-200" />
-               <p className="text-[10px] font-bold text-[#107C41] uppercase tracking-widest leading-none">Live Data</p>
+            <div>
+              <h1 className="text-xl font-bold text-slate-900 leading-tight">
+                Quotation Report
+              </h1>
+              <p className="text-[10px] text-[#107C41] font-black uppercase tracking-widest leading-none mt-1">
+                {activePreset === 'custom' && filters.dateFrom && filters.dateTo
+                  ? `${format(new Date(filters.dateFrom), "dd MMM")} - ${format(new Date(filters.dateTo), "dd MMM yyyy")}`
+                  : `Conversion Analysis & Watchlist`
+                }
+              </p>
             </div>
           </div>
 
@@ -226,6 +231,20 @@ const QuotationReport: React.FC = () => {
                 />
               </div>
             )}
+            
+            {/* Status Dropdown */}
+            <Select
+               placeholder="ALL STATUS"
+               className="min-w-[140px] h-10 shadow-sm"
+               allowClear
+               onChange={(val) => handleFilterChange("quotationStatusId", val)}
+               style={{ height: '34px' }}
+               loading={isLoadingStatuses}
+            >
+               {statusData?.map((s: any) => (
+                 <Select.Option key={s.quotationStatusID} value={s.quotationStatusID}>{s.statusName}</Select.Option>
+               ))}
+            </Select>
 
             {/* Client Searchable Dropdown */}
             <Select

@@ -7,6 +7,7 @@ import {
   UpdateQuotationDto,
   QuotationFilters,
   QuotationDropdownItem,
+  QuotationStatusDropdownItem,
   PaginatedResponse,
 } from "../interfaces/quotation.interface";
 import { ApiWrapper } from "../interfaces/admin.interface";
@@ -36,6 +37,14 @@ export const getQuotationById = async (
 ): Promise<ApiWrapper<Quotation>> => {
   const response = await api.get(`/Quotation/${id}`);
   return response.data;
+};
+
+// ── GET: Fetch quotation status dropdown list ──────────────────────
+export const getQuotationStatusDropdown = async (): Promise<
+  QuotationStatusDropdownItem[]
+> => {
+  const response = await api.get("/Quotation/get-quotation-dropdown-list");
+  return response.data.data;
 };
 
 // ── GET: Fetch quotation dropdown list ─────────────────────────────

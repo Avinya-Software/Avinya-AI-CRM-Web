@@ -36,6 +36,7 @@ import { useClientRevenueReport, useClientDrillDown } from "../../hooks/reports/
 import { useStates } from "../../hooks/state/useStates";
 import { useClientsDropdown } from "../../hooks/client/useClients";
 import { ClientReportFilter } from "../../interfaces/report.interface";
+import Client360Modal from "../../components/clients/Client360Modal";
 
 const ClientRevenueReport: React.FC = () => {
   const [filters, setFilters] = useState<ClientReportFilter>({
@@ -47,6 +48,7 @@ const ClientRevenueReport: React.FC = () => {
   const [activePreset, setActivePreset] = useState<string>("this_month");
   const [drillDownClientId, setDrillDownClientId] = useState<string | null>(null);
   const [showDrillDown, setShowDrillDown] = useState(false);
+  const [isClient360Open, setIsClient360Open] = useState(false);
 
   const { data: reportResponse, mutate: fetchReport, isPending: isLoading } = useClientRevenueReport();
   const { data: drillDownResponse, mutate: fetchDrillDown, isPending: isDrillDownLoading } = useClientDrillDown();
@@ -144,6 +146,7 @@ const ClientRevenueReport: React.FC = () => {
       bgColor: "bg-emerald-50",
       iconColor: "text-emerald-700",
       icon: <Users className="w-5 h-5" />,
+      onClick: () => setIsClient360Open(true)
     },
     {
       label: "Total Revenue",
@@ -256,11 +259,10 @@ const ClientRevenueReport: React.FC = () => {
                  (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
                }
             >
-               {clients?.map((c: any) => (
+                {clients?.map((c: any) => (
                  <Select.Option key={c.clientID} value={c.clientID}>{c.companyName}</Select.Option>
                ))}
             </Select>
-
 
             <button 
               onClick={handleExport}
@@ -286,7 +288,8 @@ const ClientRevenueReport: React.FC = () => {
           {kpis.map((kpi, i) => (
             <div
               key={i}
-              className={`bg-white border border-slate-100 p-5 rounded-xl shadow-sm hover:shadow-md transition-all group flex flex-col justify-between h-32 relative overflow-hidden`}
+              onClick={kpi.onClick}
+              className={`bg-white border border-slate-100 p-5 rounded-xl shadow-sm hover:shadow-md transition-all group flex flex-col justify-between h-32 relative overflow-hidden ${kpi.onClick ? 'cursor-pointer active:scale-95 border-emerald-100/50 hover:border-emerald-200' : ''}`}
             >
               <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-full opacity-50 group-hover:scale-110 transition-transform" />
 
@@ -444,127 +447,7 @@ const ClientRevenueReport: React.FC = () => {
           </div>
         </div>
 
-        {/* Client 360 Summary Table */}
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-           <div className="px-6 py-5 bg-white border-b border-slate-50 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <Activity size={18} className="text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-800 text-sm">Client 360 Summary</h3>
-                  <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Full Journey Metrics</p>
-                </div>
-              </div>
-            </div>
 
-            <div className="overflow-x-auto overflow-y-auto max-h-[500px] custom-scrollbar-light">
-               <table className="w-full text-left border-collapse min-w-[1200px]">
-                  <thead className="sticky top-0 z-20 bg-slate-50 shadow-sm">
-                    <tr className="text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
-                      <th className="px-6 py-4 bg-slate-50 whitespace-nowrap">Client Name</th>
-                      <th className="px-6 py-4 bg-slate-50 text-center">Leads</th>
-                      <th className="px-6 py-4 bg-slate-50 text-center">Quotes</th>
-                      <th className="px-6 py-4 bg-slate-50 text-center">Orders</th>
-                      <th className="px-6 py-4 bg-slate-50 text-right">Invoiced</th>
-                      <th className="px-6 py-4 bg-slate-50 text-right">Collected</th>
-                      <th className="px-6 py-4 bg-slate-50 text-right">Remaining</th>
-                      <th className="px-6 py-4 bg-slate-50 text-center">Last Activity</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {reportData?.client360.map((client, idx) => (
-                      <tr 
-                        key={idx} 
-                        className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
-                        onClick={() => handleDrillDown(client.clientId)}
-                      >
-                        <td className="px-6 py-4 sticky left-0 z-10 bg-white group-hover:bg-slate-50 transition-colors border-r border-slate-50">
-                           <div className="flex flex-col">
-                             <span className="text-xs font-bold text-[#107C41]">{client.companyName}</span>
-                             <span className="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">{client.contactPerson || "No Contact"}</span>
-                             {(client.cityName || client.stateName) && (
-                               <span className="text-[8px] text-slate-400 font-medium">
-                                 {client.cityName}{client.cityName && client.stateName ? ", " : ""}{client.stateName}
-                               </span>
-                             )}
-                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                           <span className="text-xs font-black text-slate-600">{client.totalLeads}</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                           <span className="text-xs font-black text-slate-600">{client.totalQuotations}</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                           <span className="text-xs font-black text-slate-600">{client.totalOrders}</span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                           <span className="text-xs font-black text-slate-900">₹{client.totalInvoiced.toLocaleString()}</span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                           <span className="text-xs font-black text-emerald-600">₹{client.totalCollected.toLocaleString()}</span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                           <span className={`text-xs font-black ${(client.remainingPayment ?? 0) > 0 ? 'text-rose-600' : 'text-slate-300'}`}>₹{(client.remainingPayment ?? 0).toLocaleString()}</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                           <span className="text-[10px] font-bold text-slate-400">{client.lastOrderDate ? format(new Date(client.lastOrderDate), "dd MMM yy") : "No Orders"}</span>
-                        </td>
-                      </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Pagination Controls */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-               <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Page Size</span>
-                  <select 
-                    className="bg-white border border-slate-200 text-[10px] font-bold text-slate-600 px-2 py-1 rounded focus:outline-none"
-                    value={filters.pageSize}
-                    onChange={(e) => {
-                      const newFilters = { ...filters, pageSize: parseInt(e.target.value), pageNumber: 1 };
-                      setFilters(newFilters);
-                      fetchReport(newFilters);
-                    }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                  </select>
-               </div>
-
-               <div className="flex items-center gap-2">
-                  <button 
-                    disabled={filters.pageNumber === 1}
-                    onClick={() => {
-                      const newFilters = { ...filters, pageNumber: (filters.pageNumber ?? 1) - 1 };
-                      setFilters(newFilters);
-                      fetchReport(newFilters);
-                    }}
-                    className="p-1.5 bg-white border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 disabled:opacity-30 transition-all"
-                  >
-                    <ChevronRight size={14} className="rotate-180" />
-                  </button>
-                  <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest px-3">
-                    Page {filters.pageNumber}
-                  </span>
-                  <button 
-                    disabled={!reportData?.client360 || reportData.client360.length < (filters.pageSize ?? 10)}
-                    onClick={() => {
-                      const newFilters = { ...filters, pageNumber: (filters.pageNumber ?? 1) + 1 };
-                      setFilters(newFilters);
-                      fetchReport(newFilters);
-                    }}
-                    className="p-1.5 bg-white border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 disabled:opacity-30 transition-all"
-                  >
-                    <ChevronRight size={14} />
-                  </button>
-               </div>
-            </div>
-        </div>
       </div>
 
       {/* DRILL DOWN MODAL */}
@@ -803,6 +686,19 @@ const ClientRevenueReport: React.FC = () => {
           )}
         </div>
       </Modal>
+      <Client360Modal
+        isOpen={isClient360Open}
+        onClose={() => setIsClient360Open(false)}
+        data={reportData?.client360 || []}
+        isLoading={isLoading}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onDrillDown={(clientId) => {
+          setIsClient360Open(false);
+          handleDrillDown(clientId);
+        }}
+        totalRecords={reportData?.kpi.totalClients}
+      />
     </div>
   );
 };

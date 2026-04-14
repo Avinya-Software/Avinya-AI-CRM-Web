@@ -86,6 +86,11 @@ export interface UpdateQuotationDto {
   items?: QuotationItem[];
 }
 
+export interface QuotationStatusDropdownItem {
+  quotationStatusID: string;
+  statusName: string;
+}
+
 export interface QuotationDropdownItem {
   id: string;
   quotationNo: string;

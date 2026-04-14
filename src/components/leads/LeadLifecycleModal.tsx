@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
+import ReportModalFooter from "../common/ReportModalFooter";
 import { format } from "date-fns";
 import * as XLSX from 'xlsx';
 import { LeadLifecycleReportItem, LeadPipelineFilter } from "../../interfaces/report.interface";
@@ -300,49 +301,14 @@ const LeadLifecycleModal: React.FC<LeadLifecycleModalProps> = ({
           </div>
         </div>
 
-        {/* Dynamic Footer with Pager */}
-        <div className="px-8 py-5 border-t border-slate-100 bg-white flex items-center justify-between shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.03)] relative z-10">
-          
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={handlePrevPage}
-              disabled={currentPage === 1 || isLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft size={16} /> Previous
-            </button>
-            
-            <div className="flex items-center gap-2">
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Page</span>
-               <div className="w-10 h-8 flex items-center justify-center bg-[#107C41] text-white rounded-lg text-xs font-bold shadow-md shadow-emerald-100">
-                 {currentPage}
-               </div>
-            </div>
-
-            <button 
-              onClick={handleNextPage}
-              disabled={!hasNextPage || isLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-[#107C41] text-[#107C41] text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              Next <ChevronRight size={16} />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3">
-             <button 
-              onClick={onClose}
-              className="px-8 py-2.5 bg-slate-50 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={onClose}
-              className="px-8 py-2.5 bg-[#107C41] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-100 active:scale-95 transition-all"
-            >
-              Close 
-            </button>
-          </div>
-        </div>
+        <ReportModalFooter
+          currentPage={currentPage}
+          onNext={handleNextPage}
+          onPrev={handlePrevPage}
+          onClose={onClose}
+          hasNextPage={hasNextPage}
+          isLoading={isLoading}
+        />
 
       </div>
     </div>

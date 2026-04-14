@@ -42,27 +42,17 @@ const Quotations = () => {
     const [orderFromQuotation, setOrderFromQuotation] = useState<any>(null);
     const [openOrderSheet, setOpenOrderSheet] = useState(false);
 
-    const debouncedSearchTerm = useDebounce(searchInput, 500);
+      const debouncedSearchTerm = useDebounce(searchInput, 500);
 
     useEffect(() => {
         setFilters(prev => {
             if (prev.search === debouncedSearchTerm) return prev;
-
-            return {
-                ...prev,
-                search: debouncedSearchTerm,
-                page: 1,
-            };
+            return { ...prev, search: debouncedSearchTerm, page: 1 };
         });
     }, [debouncedSearchTerm]);
 
-    const quotationsMutation = useQuotations();
-
-    useEffect(() => {
-        quotationsMutation.mutate(filters);
-    }, [filters]);
-
-    const { data, isPending: isLoading } = quotationsMutation;
+    // Pass filters here; useQuery handles the "mutation" logic automatically
+    const { data, isPending: isLoading } = useQuotations(filters);
 
     const hasActiveFilters = filters.status || filters.startDate || filters.endDate;
 

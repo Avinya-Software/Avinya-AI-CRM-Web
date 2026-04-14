@@ -1,13 +1,19 @@
 // src/hooks/quotation/useQuotations.ts
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { QuotationFilters } from "../../interfaces/quotation.interface";
-import { getQuotationById, getQuotationDropdown, getQuotations } from "../../api/Quotation.api";
+import {
+  getQuotationById,
+  getQuotationDropdown,
+  getQuotations,
+  getQuotationStatusDropdown
+} from "../../api/Quotation.api";
 
 // ── Fetch quotations with filters ──────────────────────────────────
-export const useQuotations = () => {
-  return useMutation({
-    mutationFn: (filters: QuotationFilters) => getQuotations(filters),
+export const useQuotations = (filters: QuotationFilters) => {
+  return useQuery({
+    queryKey: ["quotations", filters],
+    queryFn: () => getQuotations(filters),
   });
 };
 
@@ -22,5 +28,13 @@ export const useQuotation = () => {
 export const useQuotationDropdown = () => {
   return useMutation({
     mutationFn: () => getQuotationDropdown(),
+  });
+};
+
+// ── Fetch quotation status dropdown list ───────────────────────────
+export const useQuotationStatusDropdown = () => {
+  return useQuery({
+    queryKey: ["quotation-status-dropdown"],
+    queryFn: () => getQuotationStatusDropdown(),
   });
 };

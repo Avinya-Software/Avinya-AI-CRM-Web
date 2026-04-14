@@ -34,9 +34,7 @@ import QuickBooksSuccess from "./pages/QuickBooksSuccess";
 import QuickBookCustomers from "./pages/QuickBookCustomers";
 import QuickBookInvoices from "./pages/QuickBookInvoices";
 import Invoices from "./pages/Invoices";
-import LeadPipelineReport from "./pages/reports/LeadPipelineReport";
-import ClientRevenueReport from "./pages/reports/ClientRevenueReport";
-import QuotationReport from "./pages/reports/QuotationReport";
+import ReportsOverview from "./pages/ReportsOverview";
 
 function App() {
   return (
@@ -218,28 +216,8 @@ function App() {
             <Route path="/ai-assistant" element={<AIAssistant />} />
 
             <Route
-              path="/reports/lead-report"
-              element={
-                <RBACProtectedRoute module="lead" action="view">
-                  <LeadPipelineReport />
-                </RBACProtectedRoute>
-              }
-            />
-            <Route
-              path="/reports/client-revenue"
-              element={
-                <RBACProtectedRoute module="client" action="view">
-                  <ClientRevenueReport />
-                </RBACProtectedRoute>
-              }
-            />
-            <Route
-              path="/reports/quotations"
-              element={
-                <RBACProtectedRoute module="quotation" action="view">
-                  <QuotationReport />
-                </RBACProtectedRoute>
-              }
+              path="/reports"
+              element={<ReportsOverview />}
             />
 
             {/* -------- ADMIN ROUTES -------- */}

@@ -108,6 +108,7 @@ export interface ClientReportFilter {
   clientId?: string;
   clientType?: number;
   stateId?: number;
+  invoiceStatusId?: number;
   pageNumber?: number;
   pageSize?: number;
 }
@@ -278,13 +279,23 @@ export interface QuotationLifecycleItemProduct {
   lineTotal: number;
 }
 
+export interface QuotationLifecycleInvoice {
+  invoiceID: string;
+  invoiceNo: string;
+  invoiceDate: string;
+  grandTotal: number;
+  paidAmount: number;
+  remainingPayment: number;
+  statusName: string;
+}
+
 export interface QuotationLifecycleItemOrder {
   orderID: string;
   orderNo: string;
   orderDate: string;
   grandTotal: number;
   statusName: string;
-  invoices: any[]; // Adjust if invoice structure is known
+  invoices: QuotationLifecycleInvoice[];
 }
 
 export interface QuotationLifecycleReportItem {
@@ -310,4 +321,276 @@ export interface ReportResponse<T> {
   statusCode: number;
   statusMessage: string;
   data: T;
+}
+
+export interface OrderReportKpi {
+  totalOrders: number;
+  pendingOrders: number;
+  inProgressOrders: number;
+  readyOrders: number;
+  deliveredOrders: number;
+  overdueOrders: number;
+  deliveryRate: number;
+  onTimeDeliveryRate: number;
+  totalOrderValue: number;
+  totalInvoicedValue: number;
+  pendingInvoiceValue: number;
+  avgOrderValue: number;
+  avgDaysToDeliver: number;
+}
+
+export interface OrderStatusBreakdown {
+  statusName: string;
+  count: number;
+  totalValue: number;
+  percentage: number;
+}
+
+
+
+export interface OrderProductBreakdown {
+  productName: string;
+  category: string;
+  totalOrders: number;
+  totalQuantity: number;
+  totalRevenue: number;
+  revenueShare: number;
+}
+
+export interface OrderClientSummary {
+  clientId: string;
+  companyName: string;
+  totalOrders: number;
+  deliveredOrders: number;
+  overdueOrders: number;
+  totalValue: number;
+  isInvoiceCreated: boolean;
+}
+
+
+
+export interface OrderOverdueRow {
+  orderNo: string;
+  companyName: string;
+  grandTotal: number;
+  orderDate: string;
+  expectedDeliveryDate: string;
+  daysOverdue: number;
+  orderStatus: string;
+  isInvoiceCreated: boolean;
+}
+
+export interface OrderPendingInvoiceRow {
+  orderNo: string;
+  companyName: string;
+  grandTotal: number;
+  orderDate: string;
+  orderStatus: string;
+  daysSinceOrder: number;
+}
+
+export interface OrderMonthlyTrend {
+  year: number;
+  month: number;
+  monthName: string;
+  totalOrders: number;
+  delivered: number;
+  overdue: number;
+  totalValue: number;
+}
+
+export interface OrderReportFilter {
+  dateFrom?: string;
+  dateTo?: string;
+  orderStatusId?: number;
+  designStatusId?: number;
+  clientId?: string;
+  assignedDesignTo?: string;
+  firmId?: number;
+  overdueOnly?: boolean;
+}
+
+export interface OrderReportData {
+  kpi: OrderReportKpi;
+  statusBreakdown: OrderStatusBreakdown[];
+  productBreakdown: OrderProductBreakdown[];
+  clientSummary: OrderClientSummary[];
+  overdueList: OrderOverdueRow[];
+  pendingInvoiceList: OrderPendingInvoiceRow[];
+  monthlyTrend: OrderMonthlyTrend[];
+  appliedFilters: any;
+}
+export interface OrderLifecycleInvoice {
+  invoiceID: string;
+  invoiceNo: string;
+  invoiceDate: string;
+  grandTotal: number;
+  paidAmount: number;
+  statusName: string;
+}
+
+export interface OrderLifecyclePayment {
+  paymentID: string;
+  invoiceID: string;
+  paymentDate: string;
+  amount: number;
+  paymentMode: string;
+  transactionRef: string | null;
+}
+
+export interface OrderLifecycleProduct {
+  productID: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface OrderLifecycleItem {
+  orderID: string;
+  orderNo: string;
+  orderDate: string;
+  clientName: string;
+  statusName: string;
+  grandTotal: number;
+  items: OrderLifecycleProduct[];
+  invoices: OrderLifecycleInvoice[];
+  payments: OrderLifecyclePayment[];
+}
+
+export interface OrderLifecycleReportData {
+  pageNumber: number;
+  pageSize: number;
+  totalRecords: number;
+  totalPages: number;
+  data: OrderLifecycleItem[];
+}
+
+export interface FinanceReportKPI {
+  totalInvoiced: number;
+  totalCollected: number;
+  totalOutstanding: number;
+  totalOverdue: number;
+  collectionRate: number;
+  totalExpenses: number;
+  netPosition: number;
+  grossProfitMargin: number;
+  totalInvoices: number;
+  paidInvoices: number;
+  partialInvoices: number;
+  unpaidInvoices: number;
+  overdueInvoices: number;
+  totalPaymentRecords: number;
+  totalExpenseRecords: number;
+}
+
+export interface FinanceInvoiceStatusBreakdown {
+  statusName: string;
+  count: number;
+  totalValue: number;
+  totalPaid: number;
+  totalOutstanding: number;
+  percentage: number;
+}
+
+export interface FinanceInvoiceAging {
+  bucket: string;
+  count: number;
+  outstanding: number;
+  percentage: number;
+}
+
+export interface FinanceClientOutstanding {
+  clientId: string;
+  companyName: string;
+  totalInvoices: number;
+  totalInvoiced: number;
+  totalPaid: number;
+  outstanding: number;
+  overdue: number;
+}
+
+export interface FinancePaymentModeBreakdown {
+  paymentMode: string;
+  count: number;
+  totalAmount: number;
+  percentage: number;
+}
+
+export interface FinanceRecentPayment {
+  invoiceNo: string;
+  companyName: string;
+  amount: number;
+  paymentMode: string;
+  transactionRef: string;
+  receivedBy: string;
+  paymentDate: string;
+}
+
+export interface FinanceExpenseCategoryBreakdown {
+  categoryName: string;
+  count: number;
+  totalAmount: number;
+  percentage: number;
+}
+
+export interface FinanceExpensePaymentBreakdown {
+  paymentMode: string;
+  count: number;
+  totalAmount: number;
+  percentage: number;
+}
+
+export interface FinanceExpenseMonthlyTrend {
+  year: number;
+  month: number;
+  monthName: string;
+  totalAmount: number;
+  count: number;
+}
+
+export interface FinanceTopExpense {
+  categoryName: string;
+  description: string;
+  amount: number;
+  paymentMode: string;
+  addedBy: string;
+  expenseDate: string;
+  status: string;
+}
+
+export interface FinanceMonthlyTrend {
+  year: number;
+  month: number;
+  monthName: string;
+  totalInvoiced: number;
+  totalCollected: number;
+  totalExpenses: number;
+  netPosition: number;
+}
+
+export interface FinanceReportFilter {
+  dateFrom?: string;
+  dateTo?: string;
+  invoiceStatusId?: number;
+  clientId?: string;
+  expenseCategoryId?: number;
+  paymentMode?: string;
+  overdueOnly?: boolean;
+}
+
+export interface FinanceReportData {
+  summary: FinanceReportKPI;
+  invoiceStatusBreakdown: FinanceInvoiceStatusBreakdown[];
+  invoiceAging: FinanceInvoiceAging[];
+  clientOutstanding: FinanceClientOutstanding[];
+  overdueInvoices: any[];
+  paymentModeBreakdown: FinancePaymentModeBreakdown[];
+  recentPayments: FinanceRecentPayment[];
+  expenseCategoryBreakdown: FinanceExpenseCategoryBreakdown[];
+  expensePaymentBreakdown: FinanceExpensePaymentBreakdown[];
+  expenseMonthlyTrend: FinanceExpenseMonthlyTrend[];
+  topExpenses: FinanceTopExpense[];
+  monthlyTrend: FinanceMonthlyTrend[];
+  appliedFilters: any;
 }

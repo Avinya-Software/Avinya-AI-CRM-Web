@@ -79,7 +79,6 @@ const GROUP_ICONS: Record<string, any> = {
   CRM: Users,
   "Work Management": Briefcase,
   Finance: DollarSign,
-  Reports: BarChart3,
   Other: Folder,
 };
 
@@ -99,7 +98,7 @@ const MODULE_GROUPS: Record<string, string> = {
   invoice: "Finance",
 };
 
-const GROUP_ORDER = ["CRM", "Work Management", "Finance", "Reports", "Other"];
+const GROUP_ORDER = ["CRM", "Work Management", "Finance", "Other"];
 
 /* ================= STATIC ADMIN ================= */
 
@@ -193,25 +192,6 @@ const Sidebar = () => {
       groups[group].push(item);
       return groups;
     }, {});
-
-  // Add static Reports group
-  groupedMenu["Reports"] = [
-    {
-      moduleKey: "lead-pipeline",
-      moduleName: "Lead Report",
-      path: "/reports/lead-report",
-    },
-    {
-      moduleKey: "client-revenue",
-      moduleName: "Client Revenue",
-      path: "/reports/client-revenue",
-    },
-    {
-      moduleKey: "quotation-report",
-      moduleName: "Quotations",
-      path: "/reports/quotations",
-    },
-  ];
 
   /* ================= GROUP STATE ================= */
 
@@ -338,8 +318,7 @@ const Sidebar = () => {
                     </button>
 
                     {isOpen &&
-                      (groupName !== "Reports"
-                        ? items.map((item: MenuItem) => {
+                        items.map((item: MenuItem) => {
                           const Icon =
                             MODULE_ICONS[item.moduleKey] || Icons.Box;
 
@@ -356,36 +335,22 @@ const Sidebar = () => {
                               isCollapsed={isCollapsed}
                             />
                           );
-                        })
-                        : items.map((item: any) => {
-                          const Icon =
-                            item.moduleKey === "lead-pipeline"
-                              ? Icons.BarChart3
-                              : item.moduleKey === "client-revenue"
-                              ? Icons.TrendingUp
-                              : item.moduleKey === "quotation-report"
-                              ? Icons.FileText
-                              : Icons.Box;
-
-                          return (
-                            <NavItem
-                              key={item.moduleKey}
-                              to={item.path}
-                              icon={<Icon size={18} />}
-                              label={item.moduleName}
-                              isCollapsed={isCollapsed}
-                            />
-                          );
-                        }))}
+                        })}
                   </div>
                 );
               })
             ) : (
-              // ✅ FALLBACK UI (no blank screen)
               <div className="px-4 py-2 text-xs text-slate-500">
                 Loading menu...
               </div>
             )}
+
+            <NavItem
+              to="/reports"
+              icon={<BarChart3 size={18} />}
+              label="Reports"
+              isCollapsed={isCollapsed}
+            />
 
             <div className="border-t border-slate-800 my-4 pt-4" />
 

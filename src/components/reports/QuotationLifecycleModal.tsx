@@ -15,6 +15,7 @@ import {
   Package,
   Receipt
 } from "lucide-react";
+import ReportModalFooter from "../common/ReportModalFooter";
 import { format } from "date-fns";
 import * as XLSX from 'xlsx';
 import { QuotationLifecycleReportItem, QuotationReportFilter } from "../../interfaces/report.interface";
@@ -260,11 +261,35 @@ const QuotationLifecycleModal: React.FC<QuotationLifecycleModalProps> = ({
                                <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-2 flex items-center gap-1">
                                  <Receipt size={10} /> Invoices
                                </p>
-                               <div className="space-y-2">
-                                  {order.invoices.map((inv: any, i: number) => (
-                                    <div key={i} className="flex items-center justify-between bg-slate-50 p-2 rounded-lg">
-                                       <span className="text-[10px] font-bold text-slate-600">{inv.invoiceNo}</span>
-                                       <span className="text-[10px] font-black text-slate-900">₹{inv.amount.toLocaleString()}</span>
+                               <div className="space-y-3">
+                                  {order.invoices.map((inv, i) => (
+                                    <div key={i} className="bg-slate-50 border border-slate-100 p-3 rounded-xl hover:bg-white hover:border-[#107C41]/20 transition-all flex items-center justify-between group">
+                                       <div className="flex items-center gap-3">
+                                          <div className="p-1.5 bg-white rounded-lg border border-slate-50 group-hover:border-emerald-100">
+                                            <Receipt size={14} className="text-emerald-500" />
+                                          </div>
+                                          <div>
+                                             <span className="text-[10px] font-black text-slate-800 block leading-none uppercase">{inv.invoiceNo}</span>
+                                             <span className="text-[9px] font-bold text-slate-400 block mt-1">{format(new Date(inv.invoiceDate), "dd MMM yyyy")}</span>
+                                          </div>
+                                       </div>
+                                       <div className="flex items-center gap-6">
+                                          <div className="text-right">
+                                             <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Total</p>
+                                             <p className="text-[10px] font-black text-slate-900">₹{inv.grandTotal.toLocaleString()}</p>
+                                          </div>
+                                          <div className="text-right">
+                                             <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Settled</p>
+                                             <p className="text-[10px] font-black text-emerald-600">₹{inv.paidAmount.toLocaleString()}</p>
+                                          </div>
+                                          <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
+                                            inv.statusName === 'Paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                            inv.statusName === 'Partial' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                            'bg-rose-50 text-rose-600 border-rose-100'
+                                          }`}>
+                                            {inv.statusName}
+                                          </div>
+                                       </div>
                                     </div>
                                   ))}
                                </div>
@@ -279,51 +304,14 @@ const QuotationLifecycleModal: React.FC<QuotationLifecycleModalProps> = ({
             )) : <div className="py-40 text-center text-slate-300 font-bold uppercase tracking-widest">No data available</div>}
           </div>
         </div>
-
-        {/* Dynamic Footer with Pager */}
-        <div className="px-8 py-5 border-t border-slate-100 bg-white flex items-center justify-between shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.03)] relative z-10">
-          
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={handlePrevPage}
-              disabled={currentPage === 1 || isLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft size={16} /> Previous
-            </button>
-            
-            <div className="flex items-center gap-2">
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Page</span>
-               <div className="w-10 h-8 flex items-center justify-center bg-[#107C41] text-white rounded-lg text-xs font-bold shadow-md shadow-emerald-100">
-                 {currentPage}
-               </div>
-            </div>
-
-            <button 
-              onClick={handleNextPage}
-              disabled={!hasNextPage || isLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-[#107C41] text-[#107C41] text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              Next <ChevronRight size={16} />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3">
-             <button 
-              onClick={onClose}
-              className="px-8 py-2.5 bg-slate-50 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all font-bold"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={onClose}
-              className="px-8 py-2.5 bg-[#107C41] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-100 active:scale-95 transition-all font-bold"
-            >
-              Close 
-            </button>
-          </div>
-        </div>
-
+        <ReportModalFooter
+          currentPage={currentPage}
+          onNext={handleNextPage}
+          onPrev={handlePrevPage}
+          onClose={onClose}
+          hasNextPage={hasNextPage}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );

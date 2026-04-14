@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
 import { X, Save, Loader2, Plus, Trash2 } from "lucide-react";
-import { Quotation, TaxCategory } from "../../interfaces/quotation.interface";
+import { Quotation, TaxCategory, QuotationStatusDropdownItem } from "../../interfaces/quotation.interface";
 import { ProductDropdown } from "../../interfaces/product.interface";
 import { useClientsDropdown } from "../../hooks/client/useClients";
 import { useSettings } from "../../hooks/setting/useSettings";
@@ -11,7 +11,7 @@ import { useProductDropdown } from "../../hooks/product/useProductDropdown";
 import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
 import { useCreateQuotation, useUpdateQuotation } from "../../hooks/quotation/Usequotationmutations ";
 import { usePermissions } from "../../context/PermissionContext";
-import { useQuotationDropdown } from "../../hooks/quotation/useQuotations";
+import { useQuotationStatusDropdown } from "../../hooks/quotation/useQuotations";
 import { useAuth } from "../../auth/useAuth";
 
 interface QuotationUpsertSheetProps {
@@ -48,7 +48,7 @@ const QuotationUpsertSheet = ({
 
     const canAddQuotation = hasPermission("quotation", "add");
     const canEditQuotation = hasPermission("quotation", "edit");
-    const { data: quatationStatusData = [] } = useQuotationDropdown();
+    const { data: statusData = [] } = useQuotationStatusDropdown();
     const isEdit = !!quotation;
 
     //  Block unauthorized access
@@ -590,9 +590,10 @@ const QuotationUpsertSheet = ({
                                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                 className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             >
-                                {(quatationStatusData as any[]).map((o) => (
+                                <option value="">Select Status</option>
+                                {(statusData as QuotationStatusDropdownItem[]).map((o) => (
                                     <option key={o.quotationStatusID} value={o.quotationStatusID}>
-                                        {o.statusName || "Unknown"}
+                                        {o.statusName}
                                     </option>
                                 ))}
                             </select>
@@ -600,7 +601,7 @@ const QuotationUpsertSheet = ({
                     )}
 
                     {/* Rejected Notes — shown only when status is Rejected */}
-                    {isEdit && formData.status === (quatationStatusData as any[]).find(s => s.statusName === "Rejected")?.value && (
+                    {isEdit && formData.status === (statusData as QuotationStatusDropdownItem[]).find(s => s.statusName === "Rejected")?.quotationStatusID && (
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Rejected Notes
