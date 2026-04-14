@@ -198,13 +198,18 @@ const Sidebar = () => {
   groupedMenu["Reports"] = [
     {
       moduleKey: "lead-pipeline",
-      moduleName: "Lead Pipeline",
+      moduleName: "Lead Report",
       path: "/reports/lead-report",
     },
     {
       moduleKey: "client-revenue",
       moduleName: "Client Revenue",
       path: "/reports/client-revenue",
+    },
+    {
+      moduleKey: "quotation-report",
+      moduleName: "Quotations",
+      path: "/reports/quotations",
     },
   ];
 
@@ -355,7 +360,11 @@ const Sidebar = () => {
                         : items.map((item: any) => {
                           const Icon =
                             item.moduleKey === "lead-pipeline"
-                              ? BarChart3
+                              ? Icons.BarChart3
+                              : item.moduleKey === "client-revenue"
+                              ? Icons.TrendingUp
+                              : item.moduleKey === "quotation-report"
+                              ? Icons.FileText
                               : Icons.Box;
 
                           return (

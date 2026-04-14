@@ -36,6 +36,7 @@ import QuickBookInvoices from "./pages/QuickBookInvoices";
 import Invoices from "./pages/Invoices";
 import LeadPipelineReport from "./pages/reports/LeadPipelineReport";
 import ClientRevenueReport from "./pages/reports/ClientRevenueReport";
+import QuotationReport from "./pages/reports/QuotationReport";
 
 function App() {
   return (
@@ -229,6 +230,14 @@ function App() {
               element={
                 <RBACProtectedRoute module="client" action="view">
                   <ClientRevenueReport />
+                </RBACProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports/quotations"
+              element={
+                <RBACProtectedRoute module="quotation" action="view">
+                  <QuotationReport />
                 </RBACProtectedRoute>
               }
             />

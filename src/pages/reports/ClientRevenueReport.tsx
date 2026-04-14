@@ -11,16 +11,28 @@ import {
   IndianRupee, 
   AlertCircle,
   ChevronRight,
-  Globe
+  Globe,
+  Plus,
+  Search,
+  Maximize2,
+  X
 } from "lucide-react";
-import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears } from "date-fns";
-import { DatePicker } from "antd";
+import { 
+  format, 
+  startOfMonth, 
+  endOfMonth, 
+  subMonths, 
+  startOfYear, 
+  endOfYear, 
+  subYears 
+} from "date-fns";
+import { DatePicker, Modal, Spin, Table, Tag, Tabs, Select } from "antd";
 import dayjs from "dayjs";
 import * as XLSX from 'xlsx';
 
 const { RangePicker } = DatePicker;
 
-import { useClientRevenueReport } from "../../hooks/reports/useClientReport";
+import { useClientRevenueReport, useClientDrillDown } from "../../hooks/reports/useClientReport";
 import { useStates } from "../../hooks/state/useStates";
 import { useClientsDropdown } from "../../hooks/client/useClients";
 import { ClientReportFilter } from "../../interfaces/report.interface";
@@ -29,10 +41,15 @@ const ClientRevenueReport: React.FC = () => {
   const [filters, setFilters] = useState<ClientReportFilter>({
     dateFrom: format(startOfMonth(new Date()), "yyyy-MM-dd"),
     dateTo: format(endOfMonth(new Date()), "yyyy-MM-dd"),
+    pageNumber: 1,
+    pageSize: 10
   });
   const [activePreset, setActivePreset] = useState<string>("this_month");
+  const [drillDownClientId, setDrillDownClientId] = useState<string | null>(null);
+  const [showDrillDown, setShowDrillDown] = useState(false);
 
   const { data: reportResponse, mutate: fetchReport, isPending: isLoading } = useClientRevenueReport();
+  const { data: drillDownResponse, mutate: fetchDrillDown, isPending: isDrillDownLoading } = useClientDrillDown();
   const { data: states, mutate: fetchStates } = useStates();
   const { data: clients, mutate: fetchClients } = useClientsDropdown();
 
@@ -41,6 +58,12 @@ const ClientRevenueReport: React.FC = () => {
     fetchStates();
     fetchClients();
   }, []);
+
+  const handleDrillDown = (clientId: string) => {
+    setDrillDownClientId(clientId);
+    setShowDrillDown(true);
+    fetchDrillDown(clientId);
+  };
 
   const handleFilterChange = (key: keyof ClientReportFilter, value: any) => {
     const newFilters = { ...filters, [key]: value || undefined };
@@ -81,7 +104,7 @@ const ClientRevenueReport: React.FC = () => {
       { Metric: "Total Clients", Value: reportData.kpi.totalClients },
       { Metric: "Total Revenue", Value: reportData.kpi.totalInvoiced },
       { Metric: "Total Collected", Value: reportData.kpi.totalCollected },
-      { Metric: "Total Outstanding", Value: reportData.kpi.totalOutstanding },
+      { Metric: "Total Remaining", Value: reportData.kpi.totalRemainingPayment ?? 0 },
       { Metric: "Avg Order Value", Value: reportData.kpi.averageOrderValue },
     ];
 
@@ -95,7 +118,7 @@ const ClientRevenueReport: React.FC = () => {
     const agingSheet = reportData.agingList.map(a => ({
       "Client": a.companyName,
       "Invoice No": a.invoiceNo,
-      "Outstanding": a.outstanding,
+      "Remaining": a.remainingPayment,
       "Due Date": format(new Date(a.dueDate), "dd-MM-yyyy"),
       "Overdue Days": a.daysOverdue,
       "Status": a.invoiceStatus
@@ -134,9 +157,9 @@ const ClientRevenueReport: React.FC = () => {
       icon: <TrendingUp className="w-5 h-5" />,
     },
     {
-      label: "Outstanding",
-      value: `₹${((reportData?.kpi.totalOutstanding ?? 0) / 1000).toFixed(1)}K`,
-      realValue: `₹${reportData?.kpi.totalOutstanding.toLocaleString()}`,
+      label: "Remaining Payment",
+      value: `₹${((reportData?.kpi.totalRemainingPayment ?? 0) / 1000).toFixed(1)}K`,
+      realValue: `₹${(reportData?.kpi.totalRemainingPayment ?? 0).toLocaleString()}`,
       trend: "unpaid invoices",
       trendType: "down",
       color: "text-rose-600",
@@ -145,8 +168,19 @@ const ClientRevenueReport: React.FC = () => {
       icon: <AlertCircle className="w-5 h-5" />,
     },
     {
+      label: "Total Orders",
+      value: reportData?.kpi.totalOrders ?? 0,
+      trend: "total fulfilled",
+      trendType: "neutral",
+      color: "text-amber-600",
+      bgColor: "bg-amber-50",
+      iconColor: "text-amber-700",
+      icon: <Activity className="w-5 h-5" />,
+    },
+    {
       label: "Avg Order Value",
       value: `₹${((reportData?.kpi.averageOrderValue ?? 0) / 1000).toFixed(1)}K`,
+      realValue: `₹${(reportData?.kpi.averageOrderValue ?? 0).toLocaleString()}`,
       trend: "per order avg",
       trendType: "neutral",
       color: "text-purple-600",
@@ -180,24 +214,23 @@ const ClientRevenueReport: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Date Preset */}
-            <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-              <select
-                className="appearance-none bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider px-3 py-1.5 focus:outline-none cursor-pointer"
-                value={activePreset}
-                onChange={(e) => handleDatePreset(e.target.value)}
-              >
-                <option value="this_month">This Month</option>
-                <option value="last_month">Last Month</option>
-                <option value="this_year">This Year</option>
-                <option value="last_year">Last Year</option>
-                <option value="custom">Custom Range</option>
-              </select>
-            </div>
+            <Select
+               value={activePreset}
+               className="min-w-[140px] h-10 shadow-sm"
+               onChange={(val) => handleDatePreset(val)}
+               style={{ height: '34px' }}
+            >
+               <Select.Option value="this_month">THIS MONTH</Select.Option>
+               <Select.Option value="last_month">LAST MONTH</Select.Option>
+               <Select.Option value="this_year">THIS YEAR</Select.Option>
+               <Select.Option value="last_year">LAST YEAR</Select.Option>
+               <Select.Option value="custom">CUSTOM RANGE</Select.Option>
+            </Select>
 
             {activePreset === "custom" && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 h-10 bg-white border border-slate-200 rounded-xl px-2 shadow-sm">
                 <RangePicker
-                  className="h-8 rounded-lg border-slate-200 text-xs shadow-sm"
+                  className="border-none text-xs"
                   onChange={(dates, dateStrings) => {
                     if (dates) {
                       const newFilters = { ...filters, dateFrom: dateStrings[0], dateTo: dateStrings[1] };
@@ -210,32 +243,23 @@ const ClientRevenueReport: React.FC = () => {
             )}
 
             {/* Client Filter */}
-            <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-              <select
-                className="appearance-none bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider px-3 py-1.5 focus:outline-none cursor-pointer max-w-[150px]"
-                value={filters.clientId || ""}
-                onChange={(e) => handleFilterChange("clientId", e.target.value)}
-              >
-                <option value="">All Clients</option>
-                {clients?.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.companyName}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* State Filter */}
-            <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-              <select
-                className="appearance-none bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider px-3 py-1.5 focus:outline-none cursor-pointer"
-                value={filters.stateId || ""}
-                onChange={(e) => handleFilterChange("stateId", e.target.value ? parseInt(e.target.value) : undefined)}
-              >
-                <option value="">All States</option>
-                {states?.map((s: any) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+               showSearch
+               placeholder="ALL CLIENTS"
+               className="min-w-[200px] h-10 shadow-sm"
+               allowClear
+               optionFilterProp="children"
+               value={filters.clientId || undefined}
+               onChange={(val) => handleFilterChange("clientId", val)}
+               style={{ height: '34px' }}
+               filterOption={(input, option) =>
+                 (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+               }
+            >
+               {clients?.map((c: any) => (
+                 <Select.Option key={c.clientID} value={c.clientID}>{c.companyName}</Select.Option>
+               ))}
+            </Select>
 
 
             <button 
@@ -258,7 +282,7 @@ const ClientRevenueReport: React.FC = () => {
 
       <div className="px-6 py-6 space-y-6">
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {kpis.map((kpi, i) => (
             <div
               key={i}
@@ -270,7 +294,7 @@ const ClientRevenueReport: React.FC = () => {
                 <div className={`p-2 rounded-lg ${kpi.bgColor} ${kpi.iconColor}`}>
                   {kpi.icon}
                 </div>
-                <span className={`text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest ${
+                <span className={`text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest ${
                   kpi.trendType === 'up' ? 'bg-emerald-100 text-emerald-700' :
                   kpi.trendType === 'down' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
                 }`}>
@@ -280,7 +304,7 @@ const ClientRevenueReport: React.FC = () => {
 
               <div className="relative z-10 mt-auto flex items-end justify-between">
                 <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">{kpi.label}</p>
-                <h3 className={`text-2xl font-black ${kpi.color} leading-none`}>
+                <h3 className={`text-sm font-black ${kpi.color} leading-none`}>
                   {kpi.value}
                 </h3>
               </div>
@@ -383,7 +407,7 @@ const ClientRevenueReport: React.FC = () => {
                         <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">{item.invoiceNo}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-xs font-black text-slate-900 font-mono">₹{item.outstanding.toLocaleString()}</span>
+                        <span className="text-xs font-black text-slate-900 font-mono">₹{item.remainingPayment.toLocaleString()}</span>
                       </td>
                       <td className="px-6 py-4 text-center">
                          <div className="flex flex-col items-center">
@@ -444,17 +468,26 @@ const ClientRevenueReport: React.FC = () => {
                       <th className="px-6 py-4 bg-slate-50 text-center">Orders</th>
                       <th className="px-6 py-4 bg-slate-50 text-right">Invoiced</th>
                       <th className="px-6 py-4 bg-slate-50 text-right">Collected</th>
-                      <th className="px-6 py-4 bg-slate-50 text-right">Outstanding</th>
+                      <th className="px-6 py-4 bg-slate-50 text-right">Remaining</th>
                       <th className="px-6 py-4 bg-slate-50 text-center">Last Activity</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {reportData?.client360.map((client, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                      <tr 
+                        key={idx} 
+                        className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                        onClick={() => handleDrillDown(client.clientId)}
+                      >
                         <td className="px-6 py-4 sticky left-0 z-10 bg-white group-hover:bg-slate-50 transition-colors border-r border-slate-50">
                            <div className="flex flex-col">
                              <span className="text-xs font-bold text-[#107C41]">{client.companyName}</span>
                              <span className="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">{client.contactPerson || "No Contact"}</span>
+                             {(client.cityName || client.stateName) && (
+                               <span className="text-[8px] text-slate-400 font-medium">
+                                 {client.cityName}{client.cityName && client.stateName ? ", " : ""}{client.stateName}
+                               </span>
+                             )}
                            </div>
                         </td>
                         <td className="px-6 py-4 text-center">
@@ -473,18 +506,303 @@ const ClientRevenueReport: React.FC = () => {
                            <span className="text-xs font-black text-emerald-600">₹{client.totalCollected.toLocaleString()}</span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                           <span className={`text-xs font-black ${client.outstanding > 0 ? 'text-rose-600' : 'text-slate-300'}`}>₹{client.outstanding.toLocaleString()}</span>
+                           <span className={`text-xs font-black ${(client.remainingPayment ?? 0) > 0 ? 'text-rose-600' : 'text-slate-300'}`}>₹{(client.remainingPayment ?? 0).toLocaleString()}</span>
                         </td>
                         <td className="px-6 py-4 text-center">
                            <span className="text-[10px] font-bold text-slate-400">{client.lastOrderDate ? format(new Date(client.lastOrderDate), "dd MMM yy") : "No Orders"}</span>
                         </td>
                       </tr>
                     ))}
-                  </tbody>
-               </table>
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Page Size</span>
+                  <select 
+                    className="bg-white border border-slate-200 text-[10px] font-bold text-slate-600 px-2 py-1 rounded focus:outline-none"
+                    value={filters.pageSize}
+                    onChange={(e) => {
+                      const newFilters = { ...filters, pageSize: parseInt(e.target.value), pageNumber: 1 };
+                      setFilters(newFilters);
+                      fetchReport(newFilters);
+                    }}
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+               </div>
+
+               <div className="flex items-center gap-2">
+                  <button 
+                    disabled={filters.pageNumber === 1}
+                    onClick={() => {
+                      const newFilters = { ...filters, pageNumber: (filters.pageNumber ?? 1) - 1 };
+                      setFilters(newFilters);
+                      fetchReport(newFilters);
+                    }}
+                    className="p-1.5 bg-white border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 disabled:opacity-30 transition-all"
+                  >
+                    <ChevronRight size={14} className="rotate-180" />
+                  </button>
+                  <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest px-3">
+                    Page {filters.pageNumber}
+                  </span>
+                  <button 
+                    disabled={!reportData?.client360 || reportData.client360.length < (filters.pageSize ?? 10)}
+                    onClick={() => {
+                      const newFilters = { ...filters, pageNumber: (filters.pageNumber ?? 1) + 1 };
+                      setFilters(newFilters);
+                      fetchReport(newFilters);
+                    }}
+                    className="p-1.5 bg-white border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 disabled:opacity-30 transition-all"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+               </div>
             </div>
         </div>
       </div>
+
+      {/* DRILL DOWN MODAL */}
+      <Modal
+        title={null}
+        open={showDrillDown}
+        onCancel={() => setShowDrillDown(false)}
+        footer={null}
+        closeIcon={null}
+        width={1000}
+        className="drill-down-modal"
+        centered
+        destroyOnClose
+      >
+        <div className="p-1">
+          {isDrillDownLoading ? (
+            <div className="flex flex-col items-center justify-center py-24">
+              <Spin size="large" />
+              <p className="mt-4 text-xs font-bold text-slate-400 animate-pulse uppercase tracking-widest">Compiling Full History...</p>
+            </div>
+          ) : drillDownResponse?.data ? (
+            <div className="space-y-6">
+              {/* Header Info */}
+              <div className="flex items-start justify-between border-b border-slate-100 pb-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-[#107C41] rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-inner uppercase">
+                    {drillDownResponse.data.companyName?.substring(0, 2)}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900 leading-tight">{drillDownResponse.data.companyName}</h2>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest">
+                        Overview of client activities and revenue
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-6">
+                  <div className="text-right">
+                     <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Total Invoiced</p>
+                     <p className="text-2xl font-black text-[#107C41]">
+                       ₹{drillDownResponse.data.invoices?.reduce((acc: number, curr: any) => acc + curr.totalAmount, 0).toLocaleString()}
+                     </p>
+                  </div>
+                  <button 
+                    onClick={() => setShowDrillDown(false)}
+                    className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: "Total Leads", value: drillDownResponse.data.leads?.length ?? 0, color: "text-blue-600", bg: "bg-blue-50" },
+                  { label: "Quotations", value: drillDownResponse.data.quotations?.length ?? 0, color: "text-purple-600", bg: "bg-purple-50" },
+                  { label: "Actual Orders", value: drillDownResponse.data.orders?.length ?? 0, color: "text-amber-600", bg: "bg-amber-50" },
+                  { label: "Pending Dues", value: `₹${drillDownResponse.data.invoices?.reduce((acc: number, curr: any) => acc + curr.balanceAmount, 0).toLocaleString()}`, color: "text-rose-600", bg: "bg-rose-50" },
+                ].map((stat, i) => (
+                  <div key={i} className={`${stat.bg} p-4 rounded-xl border border-transparent hover:border-slate-100 transition-all`}>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                    <p className={`text-sm font-black ${stat.color}`}>{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Content Tabs */}
+              <Tabs
+                defaultActiveKey="invoices"
+                className="drill-down-tabs"
+                items={[
+                  {
+                    key: 'leads',
+                    label: <span className="text-[10px] font-black uppercase tracking-widest px-2">Leads</span>,
+                    children: (
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar-light">
+                        {drillDownResponse.data.leads?.map((lead: any, i: number) => (
+                          <div key={i} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:shadow-sm transition-all group">
+                             <div className="flex items-center gap-4">
+                                <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-blue-100 transition-colors">
+                                   <Target size={16} className="text-blue-500" />
+                                </div>
+                                <div>
+                                   <p className="text-xs font-black text-slate-800 uppercase">{lead.leadNo}</p>
+                                   <p className="text-[10px] text-slate-400 font-bold uppercase">{format(new Date(lead.date), "dd MMM yyyy, HH:mm")}</p>
+                                </div>
+                             </div>
+                             <div className="text-right">
+                                <Tag className="m-0 border-none font-black text-[9px] uppercase tracking-tighter bg-blue-100 text-blue-600">{lead.status}</Tag>
+                                <p className="text-[9px] text-slate-400 mt-1 font-bold">Assigned to: {lead.assignedTo}</p>
+                             </div>
+                          </div>
+                        ))}
+                        {(!drillDownResponse.data.leads || drillDownResponse.data.leads.length === 0) && (
+                          <div className="py-20 text-center text-slate-300 text-[10px] font-black uppercase tracking-widest">No leads recorded</div>
+                        )}
+                      </div>
+                    )
+                  },
+                  {
+                    key: 'quotations',
+                    label: <span className="text-[10px] font-black uppercase tracking-widest px-2">Quotations</span>,
+                    children: (
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar-light">
+                        {drillDownResponse.data.quotations?.map((quote: any, i: number) => (
+                          <div key={i} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:shadow-sm transition-all group">
+                             <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-100/50">
+                                <div className="flex items-center gap-4">
+                                   <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-purple-100 transition-colors">
+                                      <Activity size={16} className="text-purple-500" />
+                                   </div>
+                                   <div>
+                                      <p className="text-xs font-black text-slate-800 uppercase">{quote.quotationNo}</p>
+                                      <p className="text-[10px] text-slate-400 font-bold uppercase">{format(new Date(quote.date), "dd MMM yyyy")}</p>
+                                   </div>
+                                </div>
+                                <div className="text-right">
+                                   <p className="text-xs font-black text-[#107C41]">₹{quote.totalAmount?.toLocaleString()}</p>
+                                   <Tag className="m-0 border-none font-black text-[9px] uppercase tracking-tighter bg-purple-100 text-purple-600 mt-1">{quote.status}</Tag>
+                                </div>
+                             </div>
+                             <div className="grid grid-cols-1 gap-2">
+                                {quote.items?.map((item: any, idx: number) => (
+                                  <div key={idx} className="flex items-center justify-between text-[10px] font-bold px-3 py-1.5 bg-white rounded-lg border border-slate-50">
+                                     <span className="text-slate-600">{item.productName} × {item.quantity}</span>
+                                     <span className="text-slate-900">₹{item.total?.toLocaleString()}</span>
+                                  </div>
+                                ))}
+                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  },
+                  {
+                    key: 'orders',
+                    label: <span className="text-[10px] font-black uppercase tracking-widest px-2">Orders</span>,
+                    children: (
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar-light">
+                        {drillDownResponse.data.orders?.map((order: any, i: number) => (
+                          <div key={i} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:shadow-sm transition-all group">
+                             <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-100/50">
+                                <div className="flex items-center gap-4">
+                                   <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-amber-100 transition-colors">
+                                      <Target size={16} className="text-amber-500" />
+                                   </div>
+                                   <div>
+                                      <p className="text-xs font-black text-slate-800 uppercase">{order.orderNo}</p>
+                                      <p className="text-[10px] text-slate-400 font-bold uppercase">{format(new Date(order.date), "dd MMM yyyy")}</p>
+                                   </div>
+                                </div>
+                                <div className="text-right">
+                                   <p className="text-xs font-black text-slate-900">₹{order.totalAmount?.toLocaleString()}</p>
+                                   <Tag className="m-0 border-none font-black text-[9px] uppercase tracking-tighter bg-amber-100 text-amber-600 mt-1">{order.status || "CONFIRMED"}</Tag>
+                                </div>
+                             </div>
+                             <div className="grid grid-cols-1 gap-2">
+                                {order.items?.map((item: any, idx: number) => (
+                                  <div key={idx} className="flex items-center justify-between text-[10px] font-bold px-3 py-1.5 bg-white rounded-lg border border-slate-50">
+                                     <span className="text-slate-600">{item.productName} × {item.quantity}</span>
+                                     <span className="text-slate-900">₹{item.total?.toLocaleString()}</span>
+                                  </div>
+                                ))}
+                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  },
+                  {
+                    key: 'invoices',
+                    label: <span className="text-[10px] font-black uppercase tracking-widest px-2">Invoices</span>,
+                    children: (
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar-light">
+                        {drillDownResponse.data.invoices?.map((invoice: any, i: number) => (
+                          <div key={i} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:shadow-sm transition-all group">
+                             <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                   <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-emerald-100 transition-colors">
+                                      <Clock size={16} className="text-emerald-500" />
+                                   </div>
+                                   <div>
+                                      <p className="text-xs font-black text-slate-800 uppercase">{invoice.invoiceNo}</p>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                         <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Date: {format(new Date(invoice.date), "dd MMM yy")}</span>
+                                         <span className="text-[9px] text-rose-400 font-bold uppercase tracking-tight border-l border-slate-200 pl-2">Due: {format(new Date(invoice.dueDate), "dd MMM yy")}</span>
+                                      </div>
+                                   </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-8">
+                                   <div className="text-right">
+                                      <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Invoiced</p>
+                                      <p className="text-xs font-black text-slate-900">₹{invoice.totalAmount?.toLocaleString()}</p>
+                                   </div>
+                                   <div className="text-right">
+                                      <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Paid</p>
+                                      <p className="text-xs font-black text-emerald-600">₹{invoice.paidAmount?.toLocaleString()}</p>
+                                   </div>
+                                   <div className="text-right">
+                                      <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Balance</p>
+                                      <p className={`text-xs font-black ${invoice.balanceAmount > 0 ? 'text-rose-600' : 'text-slate-300'}`}>₹{invoice.balanceAmount?.toLocaleString()}</p>
+                                   </div>
+                                </div>
+                             </div>
+                             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                                <Tag className={`m-0 border-none font-black text-[9px] uppercase tracking-widest px-3 py-1 ${
+                                   invoice.status === 'Pending' ? 'bg-amber-100 text-amber-600' : 
+                                   invoice.status === 'Receive' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600'
+                                }`}>
+                                   {invoice.status}
+                                </Tag>
+                                {invoice.balanceAmount > 0 && (
+                                   <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
+                                      <div 
+                                        className="h-full bg-emerald-500" 
+                                        style={{ width: `${(invoice.paidAmount / invoice.totalAmount) * 100}%` }}
+                                      ></div>
+                                   </div>
+                                )}
+                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  }
+                ]}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-24 text-slate-300">
+               <AlertCircle size={48} className="opacity-20 mb-4" />
+               <p className="text-[10px] font-black uppercase tracking-widest">No data available for this client</p>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };

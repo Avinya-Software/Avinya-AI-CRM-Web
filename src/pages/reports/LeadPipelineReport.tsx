@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {BarChart3,Layers,PieChart,Clock,ArrowDownToLine,Activity,Target,Flame,RefreshCcw,} from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears } from "date-fns";
-import { DatePicker } from "antd";
+import { DatePicker, Select } from "antd";
 import * as XLSX from 'xlsx';
 
 const { RangePicker } = DatePicker;
@@ -184,24 +184,24 @@ const LeadPipelineReport: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-              <select
-                className="appearance-none bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider px-3 py-1.5 focus:outline-none cursor-pointer"
-                value={activePreset}
-                onChange={(e) => handleDatePreset(e.target.value)}
-              >
-                <option value="this_month">This Month</option>
-                <option value="last_month">Last Month</option>
-                <option value="this_year">This Year</option>
-                <option value="last_year">Last Year</option>
-                <option value="custom">Custom Range</option>
-              </select>
-            </div>
+            {/* Date Preset */}
+            <Select
+               value={activePreset}
+               className="min-w-[140px] h-10 shadow-sm"
+               onChange={(val) => handleDatePreset(val)}
+               style={{ height: '34px' }}
+            >
+               <Select.Option value="this_month">THIS MONTH</Select.Option>
+               <Select.Option value="last_month">LAST MONTH</Select.Option>
+               <Select.Option value="this_year">THIS YEAR</Select.Option>
+               <Select.Option value="last_year">LAST YEAR</Select.Option>
+               <Select.Option value="custom">CUSTOM RANGE</Select.Option>
+            </Select>
 
             {activePreset === "custom" && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 h-10 bg-white border border-slate-200 rounded-xl px-2 shadow-sm">
                 <RangePicker
-                  className="h-8 rounded-lg border-slate-200 text-xs shadow-sm"
+                  className="border-none text-xs"
                   onChange={(dates, dateStrings) => {
                     if (dates) {
                       const newFilters = { ...filters, dateFrom: dateStrings[0], dateTo: dateStrings[1] };
@@ -214,31 +214,37 @@ const LeadPipelineReport: React.FC = () => {
               </div>
             )}
 
-            <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-              <select
-                className="appearance-none bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider px-3 py-1.5 focus:outline-none cursor-pointer"
-                value={filters.leadSourceId || ""}
-                onChange={(e) => handleFilterChange("leadSourceId", e.target.value)}
-              >
-                <option value="">All Sources</option>
-                {sources?.map((s: any) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
+            {/* Source Filter */}
+            <Select
+               showSearch
+               placeholder="ALL SOURCES"
+               className="min-w-[160px] h-10 shadow-sm"
+               allowClear
+               optionFilterProp="children"
+               value={filters.leadSourceId || undefined}
+               onChange={(val) => handleFilterChange("leadSourceId", val)}
+               style={{ height: '34px' }}
+            >
+               {sources?.map((s: any) => (
+                 <Select.Option key={s.id} value={s.id}>{s.name}</Select.Option>
+               ))}
+            </Select>
 
-            <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-              <select
-                className="appearance-none bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider px-3 py-1.5 focus:outline-none cursor-pointer"
-                value={filters.assignedTo || ""}
-                onChange={(e) => handleFilterChange("assignedTo", e.target.value)}
-              >
-                <option value="">All Users</option>
-                {users?.map((u: any) => (
-                  <option key={u.id} value={u.fullName}>{u.fullName}</option>
-                ))}
-              </select>
-            </div>
+            {/* User Filter */}
+            <Select
+               showSearch
+               placeholder="ALL USERS"
+               className="min-w-[160px] h-10 shadow-sm"
+               allowClear
+               optionFilterProp="children"
+               value={filters.assignedTo || undefined}
+               onChange={(val) => handleFilterChange("assignedTo", val)}
+               style={{ height: '34px' }}
+            >
+               {users?.map((u: any) => (
+                 <Select.Option key={u.id} value={u.fullName}>{u.fullName}</Select.Option>
+               ))}
+            </Select>
               <button 
                 onClick={handleGlobalExport}
                 className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all uppercase tracking-wider"

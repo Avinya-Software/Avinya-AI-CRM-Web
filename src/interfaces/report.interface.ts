@@ -108,6 +108,8 @@ export interface ClientReportFilter {
   clientId?: string;
   clientType?: number;
   stateId?: number;
+  pageNumber?: number;
+  pageSize?: number;
 }
 
 export interface ClientRevenueKPI {
@@ -115,7 +117,7 @@ export interface ClientRevenueKPI {
   activeClients: number;
   totalInvoiced: number;
   totalCollected: number;
-  totalOutstanding: number;
+  totalRemainingPayment: number;
   totalOverdue: number;
   averageOrderValue: number;
   totalOrders: number;
@@ -129,7 +131,7 @@ export interface TopClientItem {
   totalOrders: number;
   totalInvoiced: number;
   totalCollected: number;
-  outstanding: number;
+  remainingPayment: number;
   revenueShare: number;
 }
 
@@ -150,7 +152,7 @@ export interface Client360Item {
   totalProjects: number;
   totalInvoiced: number;
   totalCollected: number;
-  outstanding: number;
+  remainingPayment: number;
   totalExpectedValue: number;
   preferredPaymentMode: string;
   avgDaysToPayment: number;
@@ -162,7 +164,7 @@ export interface Client360Item {
 export interface AgingItem {
   companyName: string;
   invoiceNo: string;
-  outstanding: number;
+  remainingPayment: number;
   dueDate: string;
   daysOverdue: number;
   invoiceStatus: string;
@@ -184,6 +186,126 @@ export interface ClientRevenueReportData {
   appliedFilters: any;
 }
 
+export interface QuotationKPI {
+  totalQuotations: number;
+  sentQuotations: number;
+  acceptedQuotations: number;
+  rejectedQuotations: number;
+  expiredQuotations: number;
+  pendingQuotations: number;
+  acceptanceRate: number;
+  rejectionRate: number;
+  totalQuotedValue: number;
+  acceptedValue: number;
+  rejectedValue: number;
+  avgQuotationValue: number;
+}
+
+export interface QuotationStatusBreakdown {
+  statusName: string;
+  count: number;
+  totalValue: number;
+  percentage: number;
+}
+
+export interface QuotationProductBreakdown {
+  productName: string;
+  category: string;
+  timesQuoted: number;
+  totalQuotedValue: number;
+  timesConverted: number;
+  conversionRate: number;
+}
+
+export interface QuotationClientSummary {
+  clientId: string;
+  companyName: string;
+  totalQuotations: number;
+  acceptedQuotations: number;
+  rejectedQuotations: number;
+  totalQuotedValue: number;
+  acceptedValue: number;
+  acceptanceRate: number;
+}
+
+export interface QuotationExpiryListItem {
+  quotationNo: string;
+  companyName: string;
+  grandTotal: number;
+  validTill: string;
+  daysOverdue: number;
+  statusName: string;
+  createdBy: string;
+}
+
+export interface QuotationMonthlyTrend {
+  year: number;
+  month: number;
+  monthName: string;
+  totalSent: number;
+  accepted: number;
+  rejected: number;
+  totalValue: number;
+  acceptedValue: number;
+}
+
+export interface QuotationReportData {
+  kpi: QuotationKPI;
+  statusBreakdown: QuotationStatusBreakdown[];
+  productBreakdown: QuotationProductBreakdown[];
+  clientSummary: QuotationClientSummary[];
+  expiryList: QuotationExpiryListItem[];
+  rejectionList: any[];
+  monthlyTrend: QuotationMonthlyTrend[];
+  appliedFilters: any;
+}
+
+export interface QuotationReportFilter {
+  dateFrom?: string;
+  dateTo?: string;
+  quotationStatusId?: string;
+  clientId?: string;
+  createdBy?: string;
+  firmId?: number;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface QuotationLifecycleItemProduct {
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface QuotationLifecycleItemOrder {
+  orderID: string;
+  orderNo: string;
+  orderDate: string;
+  grandTotal: number;
+  statusName: string;
+  invoices: any[]; // Adjust if invoice structure is known
+}
+
+export interface QuotationLifecycleReportItem {
+  quotationID: string;
+  quotationNo: string;
+  quotationDate: string;
+  clientName: string;
+  statusName: string;
+  grandTotal: number;
+  createdBy: string;
+  items: QuotationLifecycleItemProduct[];
+  orders: QuotationLifecycleItemOrder[];
+}
+
+export interface QuotationLifecycleReportData {
+  data: QuotationLifecycleReportItem[];
+  totalPages: number;
+  totalRecords: number;
+}
+
+// Or if it's just an array, we can use QuotationLifecycleReportItem[] directly
 export interface ReportResponse<T> {
   statusCode: number;
   statusMessage: string;
