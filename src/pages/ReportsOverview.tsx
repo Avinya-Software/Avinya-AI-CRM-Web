@@ -5,6 +5,7 @@ import ClientRevenueReport from "./reports/ClientRevenueReport";
 import QuotationReport from "./reports/QuotationReport";
 import OrderReport from "./reports/OrderReport";
 import FinanceReport from "./reports/FinanceReport";
+import TaskProjectReport from "./reports/TaskProjectReport";
 
 const ReportsOverview: React.FC = () => {
   return (
@@ -57,6 +58,15 @@ const ReportsOverview: React.FC = () => {
               children: (
                 <div className="min-h-screen bg-slate-50 -mx-6 -mt-4">
                   <FinanceReport />
+                </div>
+              ),
+            },
+            {
+              key: "6",
+              label: <span className="font-semibold">Projects & Tasks</span>,
+              children: (
+                <div className="min-h-screen bg-slate-50 -mx-6 -mt-4">
+                  <TaskProjectReport />
                 </div>
               ),
             },

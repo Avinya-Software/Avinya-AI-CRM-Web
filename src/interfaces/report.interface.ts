@@ -594,3 +594,146 @@ export interface FinanceReportData {
   monthlyTrend: FinanceMonthlyTrend[];
   appliedFilters: any;
 }
+
+export interface TaskProjectReportFilter {
+  dateFrom?: string;
+  dateTo?: string;
+  projectStatusId?: number;
+  priorityId?: number;
+  clientId?: string;
+  projectManagerId?: string;
+  teamId?: number;
+  taskScope?: string;
+  assignedTo?: string;
+  atRiskOnly?: boolean;
+  projectId?: string;
+}
+
+export interface TaskProjectSummary {
+  totalProjects: number;
+  activeProjects: number;
+  completedProjects: number;
+  onHoldProjects: number;
+  atRiskProjects: number;
+  projectCompletionRate: number;
+  totalEstimatedValue: number;
+  avgProjectProgress: number;
+  totalTasks: number;
+  pendingTasks: number;
+  inProgressTasks: number;
+  completedTasks: number;
+  skippedTasks: number;
+  overdueTasks: number;
+  slaBreachedTasks: number;
+  taskCompletionRate: number;
+  slaBreachRate: number;
+  avgTaskCompletionHours: number;
+}
+
+export interface ProjectStatusBreakdown {
+  statusName: string;
+  count: number;
+  percentage: number;
+  totalEstValue: number;
+}
+
+export interface ProjectPriorityBreakdown {
+  priorityName: string;
+  count: number;
+  atRisk: number;
+  percentage: number;
+}
+
+export interface ProjectDetailItem {
+  projectId: string;
+  projectName: string;
+  companyName: string;
+  projectManager: string;
+  teamName: string;
+  statusName: string;
+  priorityName: string;
+  progressPercent: number;
+  startDate: string | null;
+  deadline: string | null;
+  daysRemaining: number;
+  estimatedValue: number | null;
+  totalTasks: number;
+  completedTasks: number;
+  overdueTasks: number;
+  isAtRisk: boolean;
+}
+
+export interface ProjectTeamSummary {
+  teamId: number;
+  teamName: string;
+  managerName: string;
+  totalProjects: number;
+  activeProjects: number;
+  completedProjects: number;
+  avgProgress: number;
+}
+
+export interface TaskStatusBreakdown {
+  status: string;
+  count: number;
+  percentage: number;
+}
+
+export interface TaskScopeBreakdown {
+  scope: string;
+  total: number;
+  completed: number;
+  overdue: number;
+  completionRate: number;
+}
+
+export interface TaskUserWorkload {
+  userId: string;
+  userName: string;
+  totalTasks: number;
+  pendingTasks: number;
+  completedTasks: number;
+  overdueTasks: number;
+  completionRate: number;
+}
+
+export interface OverdueTaskItem {
+  taskOccurrenceId: number;
+  title: string;
+  assignedTo: string;
+  scope: string;
+  priority: string;
+  projectName: string;
+  dueDateTime: string;
+  hoursOverdue: number;
+  status: string;
+  slaBreached: boolean;
+}
+
+export interface TaskMonthlyTrend {
+  year: number;
+  month: number;
+  monthName: string;
+  totalCreated: number;
+  completed: number;
+  overdue: number;
+  slaBreached: number;
+  completionRate: number;
+}
+
+export interface TaskProjectReportData {
+  summary: TaskProjectSummary;
+  projectStatusBreakdown: ProjectStatusBreakdown[];
+  projectPriorityBreakdown: ProjectPriorityBreakdown[];
+  projectDetails: ProjectDetailItem[];
+  projectsAtRisk: ProjectDetailItem[];
+  projectTeamSummary: ProjectTeamSummary[];
+  taskStatusBreakdown: TaskStatusBreakdown[];
+  taskScopeBreakdown: TaskScopeBreakdown[];
+  taskUserWorkload: TaskUserWorkload[];
+  overdueTasks: OverdueTaskItem[];
+  slaBreaches: any[];
+  recurringSeries: any[];
+  taskMonthlyTrend: TaskMonthlyTrend[];
+  appliedFilters: any;
+}

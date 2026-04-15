@@ -14,7 +14,9 @@ import {
   OrderReportData,
   OrderLifecycleReportData,
   FinanceReportFilter,
-  FinanceReportData
+  FinanceReportData,
+  TaskProjectReportFilter,
+  TaskProjectReportData
 } from "../interfaces/report.interface";
 
 export const getLeadPipelineReport = async (filter: LeadPipelineFilter) => {
@@ -150,6 +152,26 @@ export const getFinanceReport = async (filter: FinanceReportFilter) => {
 
   const response = await axiosInstance.get<ReportResponse<FinanceReportData>>(
     `/Report/finance?${params.toString()}`
+  );
+  return response.data;
+};
+
+export const getTaskProjectReport = async (filter: TaskProjectReportFilter) => {
+  const params = new URLSearchParams();
+  if (filter.dateFrom) params.append("dateFrom", filter.dateFrom);
+  if (filter.dateTo) params.append("dateTo", filter.dateTo);
+  if (filter.projectStatusId !== undefined && filter.projectStatusId !== null) params.append("projectStatusId", filter.projectStatusId.toString());
+  if (filter.priorityId !== undefined && filter.priorityId !== null) params.append("priorityId", filter.priorityId.toString());
+  if (filter.clientId) params.append("clientId", filter.clientId);
+  if (filter.projectManagerId) params.append("projectManagerId", filter.projectManagerId);
+  if (filter.teamId !== undefined && filter.teamId !== null) params.append("teamId", filter.teamId.toString());
+  if (filter.taskScope) params.append("taskScope", filter.taskScope);
+  if (filter.assignedTo) params.append("assignedTo", filter.assignedTo);
+  if (filter.atRiskOnly !== undefined && filter.atRiskOnly !== null) params.append("atRiskOnly", filter.atRiskOnly.toString());
+  if (filter.projectId) params.append("projectId", filter.projectId);
+
+  const response = await axiosInstance.get<ReportResponse<TaskProjectReportData>>(
+    `/Report/task-project?${params.toString()}`
   );
   return response.data;
 };
