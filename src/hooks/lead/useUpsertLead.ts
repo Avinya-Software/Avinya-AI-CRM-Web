@@ -23,6 +23,9 @@ export const useUpsertLead = () => {
       queryClient.invalidateQueries({
         queryKey: ["lead-summary"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["lead-detail"],
+      });
     },
 
     onError: (error: any) => {

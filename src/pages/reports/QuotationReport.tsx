@@ -292,29 +292,34 @@ const QuotationReport: React.FC = () => {
             <div 
               key={i} 
               onClick={kpi.label === "Total Sent" ? openLifecycle : undefined}
-              className={`bg-white border border-slate-200 p-6 rounded-xl shadow-sm transition-all flex flex-col justify-between group h-32 ${kpi.label === "Total Sent" ? "cursor-pointer hover:border-[#107C41] hover:bg-slate-50" : "hover:border-[#107C41]/30"}`}
+              className={`bg-white border border-slate-100 p-5 rounded-xl shadow-sm hover:shadow-md transition-all group flex flex-col justify-between h-32 relative overflow-hidden ${kpi.label === "Total Sent" ? "cursor-pointer active:scale-[0.98] border-emerald-100/50 hover:border-emerald-200" : "cursor-default"}`}
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{kpi.label}</p>
-                  <h3 className={`text-1xl font-black ${kpi.color} tracking-tighter`}>{kpi.value}</h3>
-                </div>
+              <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-full opacity-50 group-hover:scale-110 transition-transform" />
+
+              <div className="flex items-center justify-between relative z-10 w-full">
                 <div className={`p-2 rounded-lg ${kpi.bgColor} ${kpi.iconColor}`}>
                   {kpi.icon}
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest ${
-                  kpi.trendType === 'up' ? 'bg-emerald-50 text-emerald-700' : 
-                  kpi.trendType === 'down' ? 'bg-rose-50 text-rose-700' : 'bg-slate-50 text-slate-500'
+                <span className={`text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest ${
+                  kpi.trendType === 'up' ? 'bg-emerald-100 text-emerald-700' : 
+                  kpi.trendType === 'down' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {kpi.trend}
                 </span>
-                {kpi.label === "Total Sent" && (
-                   <span className="text-[9px] font-bold text-[#107C41] uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                     View Report <ChevronRight size={10} />
-                   </span>
-                )}
+              </div>
+
+              <div className="relative z-10 mt-auto flex items-end justify-between">
+                <div>
+                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">{kpi.label}</p>
+                  {kpi.label === "Total Sent" && (
+                    <span className="text-[9px] font-bold text-[#107C41] uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      View Report <ChevronRight size={10} />
+                    </span>
+                  )}
+                </div>
+                <h3 className={`text-2xl font-black ${kpi.color} leading-none`}>
+                  {kpi.value}
+                </h3>
               </div>
             </div>
           ))}

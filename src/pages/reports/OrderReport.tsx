@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Package, 
-  Target, 
-  Clock, 
-  ArrowDownToLine, 
-  RefreshCcw, 
-  TrendingUp, 
-  IndianRupee, 
+import {
+  Package,
+  Target,
+  Clock,
+  ArrowDownToLine,
+  RefreshCcw,
+  TrendingUp,
+  IndianRupee,
   ChevronRight,
   PieChart,
   ShoppingCart,
@@ -107,7 +107,7 @@ const OrderReport: React.FC = () => {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(kpiData), "Summary");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientSummarySheet), "Client Summary");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(overdueSheet), "Overdue List");
-    
+
     XLSX.writeFile(wb, `Order_Report_${format(new Date(), "ddMMyyyy")}.xlsx`);
   };
 
@@ -184,21 +184,21 @@ const OrderReport: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2">
             <Select
-               value={activePreset}
-               className="min-w-[140px] h-10 shadow-sm"
-               onChange={(val) => handleDatePreset(val)}
-               style={{ height: '34px' }}
+              value={activePreset}
+              className="min-w-[140px] h-10 shadow-sm"
+              onChange={(val) => handleDatePreset(val)}
+              style={{ height: '34px' }}
             >
-               <Select.Option value="this_month">THIS MONTH</Select.Option>
-               <Select.Option value="last_month">LAST MONTH</Select.Option>
-               <Select.Option value="this_year">THIS YEAR</Select.Option>
-               <Select.Option value="last_year">LAST YEAR</Select.Option>
-               <Select.Option value="custom">CUSTOM RANGE</Select.Option>
+              <Select.Option value="this_month">THIS MONTH</Select.Option>
+              <Select.Option value="last_month">LAST MONTH</Select.Option>
+              <Select.Option value="this_year">THIS YEAR</Select.Option>
+              <Select.Option value="last_year">LAST YEAR</Select.Option>
+              <Select.Option value="custom">CUSTOM RANGE</Select.Option>
             </Select>
 
             {activePreset === 'custom' && (
               <div className="flex items-center bg-white border border-slate-200 rounded-xl px-1 shadow-sm h-10">
-                <RangePicker 
+                <RangePicker
                   size="small"
                   className="border-none bg-transparent"
                   onChange={(dates, dateStrings) => {
@@ -213,38 +213,38 @@ const OrderReport: React.FC = () => {
             )}
 
             <Select
-               showSearch
-               placeholder="ALL CLIENTS"
-               className="min-w-[200px] h-10 shadow-sm"
-               allowClear
-               optionFilterProp="children"
-               onChange={(val) => handleFilterChange("clientId", val)}
-               style={{ height: '34px' }}
-               filterOption={(input, option) =>
-                 (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
-               }
+              showSearch
+              placeholder="ALL CLIENTS"
+              className="min-w-[200px] h-10 shadow-sm"
+              allowClear
+              optionFilterProp="children"
+              onChange={(val) => handleFilterChange("clientId", val)}
+              style={{ height: '34px' }}
+              filterOption={(input, option) =>
+                (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+              }
             >
-               {clients?.map((c: any) => (
-                 <Select.Option key={c.clientID} value={c.clientID}>{c.companyName}</Select.Option>
-               ))}
+              {clients?.map((c: any) => (
+                <Select.Option key={c.clientID} value={c.clientID}>{c.companyName}</Select.Option>
+              ))}
             </Select>
 
             <div className="flex items-center gap-2">
-               <button 
-                 onClick={handleExport}
-                 style={{ height: '34px' }}
-                 className="flex items-center gap-2 h-10 bg-white border border-slate-200 hover:border-[#107C41] hover:text-[#107C41] text-slate-600 px-6 rounded-md text-[11px] font-bold transition-all uppercase tracking-widest shadow-sm"
-               >
-                 <ArrowDownToLine size={14} className="text-[#107C41]" />
-                 Excel
-               </button>
+              <button
+                onClick={handleExport}
+                style={{ height: '34px' }}
+                className="flex items-center gap-2 h-10 bg-white border border-slate-200 hover:border-[#107C41] hover:text-[#107C41] text-slate-600 px-6 rounded-md text-[11px] font-bold transition-all uppercase tracking-widest shadow-sm"
+              >
+                <ArrowDownToLine size={14} className="text-[#107C41]" />
+                Excel
+              </button>
 
-               <button
-                 onClick={() => fetchReport(filters)}
-                 className="w-10 h-10 flex items-center justify-center bg-[#107C41] text-white rounded-xl hover:bg-[#0d6334] transition-all shadow-lg shadow-emerald-100/50 active:scale-95"
-               >
-                 <RefreshCcw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-               </button>
+              <button
+                onClick={() => fetchReport(filters)}
+                className="w-10 h-10 flex items-center justify-center bg-[#107C41] text-white rounded-xl hover:bg-[#0d6334] transition-all shadow-lg shadow-emerald-100/50 active:scale-95"
+              >
+                <RefreshCcw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
             </div>
           </div>
         </div>
@@ -257,24 +257,27 @@ const OrderReport: React.FC = () => {
             <div 
               key={i} 
               onClick={kpi.onClick}
-              className={`bg-white border border-slate-200 p-6 rounded-xl shadow-sm transition-all flex flex-col justify-between group h-32 hover:border-[#107C41]/30 ${kpi.onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+              className={`bg-white border border-slate-100 p-5 rounded-xl shadow-sm hover:shadow-md transition-all group flex flex-col justify-between h-32 relative overflow-hidden ${kpi.onClick ? 'cursor-pointer active:scale-[0.98] border-emerald-100/50 hover:border-emerald-200' : 'cursor-default'}`}
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{kpi.label}</p>
-                  <h3 className={`text-1xl font-black ${kpi.color} tracking-tighter`}>{kpi.value}</h3>
-                </div>
-                <div className={`p-2 rounded-lg ${kpi.bgColor} ${kpi.iconColor} group-hover:scale-110 transition-transform`}>
+              <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-full opacity-50 group-hover:scale-110 transition-transform" />
+
+              <div className="flex items-center justify-between relative z-10 w-full">
+                <div className={`p-2 rounded-lg ${kpi.bgColor} ${kpi.iconColor}`}>
                   {kpi.icon}
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest ${
-                  kpi.trendType === 'up' ? 'bg-emerald-50 text-emerald-700' : 
-                  kpi.trendType === 'down' ? 'bg-rose-50 text-rose-700' : 'bg-slate-50 text-slate-500'
+                <span className={`text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest ${
+                  kpi.trendType === 'up' ? 'bg-emerald-100 text-emerald-700' : 
+                  kpi.trendType === 'down' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {kpi.trend}
                 </span>
+              </div>
+
+              <div className="relative z-10 mt-auto flex items-end justify-between">
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">{kpi.label}</p>
+                <h3 className={`text-2xl font-black ${kpi.color} leading-none`}>
+                  {kpi.value}
+                </h3>
               </div>
             </div>
           ))}
@@ -284,86 +287,86 @@ const OrderReport: React.FC = () => {
           {/* Status Breakdown & Design Breakdown */}
           {/* Status Breakdown & Overdue List */}
           <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl shadow-sm p-8">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Order Status</h3>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Fulfillment Progress</p>
-                </div>
-                <PieChart size={18} className="text-[#107C41] opacity-20" />
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Order Status</h3>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Fulfillment Progress</p>
               </div>
-
-              <div className="space-y-6">
-                {reportData?.statusBreakdown.map((item, i) => {
-                  const colors = ["#107C41", "#2563EB", "#CA8A04", "#8B5CF6", "#DC2626"];
-                  return (
-                    <div key={i} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{item.statusName}</span>
-                        <div className="text-right">
-                           <span className="text-[10px] font-black text-slate-900 block leading-none">₹{(item.totalValue/1000).toFixed(1)}K</span>
-                           <span className="text-[9px] font-bold text-slate-400">{item.count} Orders • {item.percentage.toFixed(1)}%</span>
-                        </div>
-                      </div>
-                      <Progress 
-                        percent={item.percentage} 
-                        showInfo={false} 
-                        strokeColor={colors[i % colors.length]} 
-                        trailColor="#f1f5f9"
-                        strokeWidth={6}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+              <PieChart size={18} className="text-[#107C41] opacity-20" />
             </div>
-          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-sm p-8 flex flex-col items-center">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 w-full text-left">Overdue & Exception Watchlist</h4>
-               <div className="overflow-auto w-full">
-                  <table className="w-full text-left">
-                     <thead>
-                        <tr className="bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
-                           <th className="px-4 py-3">Order No</th>
-                           <th className="px-4 py-3">Client</th>
-                           <th className="px-4 py-3 text-right">Value</th>
-                           <th className="px-4 py-3 text-center">Expected At</th>
-                           <th className="px-4 py-3 text-center">Overdue</th>
-                        </tr>
-                     </thead>
-                     <tbody className="divide-y divide-slate-100">
-                        {reportData?.overdueList.map((order, idx) => (
-                           <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                              <td className="px-4 py-3">
-                                 <span className="text-[11px] font-black text-slate-700 uppercase mr-2">{order.orderNo}</span>
-                                 <Tag color="volcano" className="m-0 border-none font-black text-[9px] uppercase">{order.orderStatus}</Tag>
-                              </td>
-                              <td className="px-4 py-3">
-                                 <span className="text-[10px] font-bold text-slate-500 uppercase">{order.companyName}</span>
-                              </td>
-                              <td className="px-4 py-3 text-right">
-                                 <span className="text-[11px] font-black text-slate-900">₹{order.grandTotal.toLocaleString()}</span>
-                              </td>
-                              <td className="px-4 py-3 text-center">
-                                 <span className="text-[10px] font-bold text-slate-500">{format(new Date(order.expectedDeliveryDate), "dd MMM")}</span>
-                              </td>
-                              <td className="px-4 py-3 text-center">
-                                 <span className="text-[10px] font-black text-rose-600">{order.daysOverdue} Days</span>
-                              </td>
-                           </tr>
-                        ))}
-                        {(!reportData?.overdueList || reportData.overdueList.length === 0) && (
-                           <tr>
-                              <td colSpan={5} className="py-20 text-center">
-                                 <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none">All clear! No overdue orders</p>
-                              </td>
-                           </tr>
-                        )}
-                     </tbody>
-                  </table>
-               </div>
+
+            <div className="space-y-6">
+              {reportData?.statusBreakdown.map((item, i) => {
+                const colors = ["#107C41", "#2563EB", "#CA8A04", "#8B5CF6", "#DC2626"];
+                return (
+                  <div key={i} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{item.statusName}</span>
+                      <div className="text-right">
+                        <span className="text-[10px] font-black text-slate-900 block leading-none">₹{(item.totalValue / 1000).toFixed(1)}K</span>
+                        <span className="text-[9px] font-bold text-slate-400">{item.count} Orders • {item.percentage.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                    <Progress
+                      percent={item.percentage}
+                      showInfo={false}
+                      strokeColor={colors[i % colors.length]}
+                      trailColor="#f1f5f9"
+                      strokeWidth={6}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
+          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-sm p-8 flex flex-col items-center">
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 w-full text-left">Overdue & Exception Watchlist</h4>
+            <div className="overflow-auto w-full">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
+                    <th className="px-4 py-3">Order No</th>
+                    <th className="px-4 py-3">Client</th>
+                    <th className="px-4 py-3 text-right">Value</th>
+                    <th className="px-4 py-3 text-center">Expected At</th>
+                    <th className="px-4 py-3 text-center">Overdue</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {reportData?.overdueList.map((order, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <span className="text-[11px] font-black text-slate-700 uppercase mr-2">{order.orderNo}</span>
+                        <Tag color="volcano" className="m-0 border-none font-black text-[9px] uppercase">{order.orderStatus}</Tag>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">{order.companyName}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className="text-[11px] font-black text-slate-900">₹{order.grandTotal.toLocaleString()}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="text-[10px] font-bold text-slate-500">{format(new Date(order.expectedDeliveryDate), "dd MMM")}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="text-[10px] font-black text-rose-600">{order.daysOverdue} Days</span>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!reportData?.overdueList || reportData.overdueList.length === 0) && (
+                    <tr>
+                      <td colSpan={5} className="py-20 text-center">
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none">All clear! No overdue orders</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
-      
+
       <OrderLifecycleModal
         isOpen={isLifecycleModalOpen}
         onClose={() => setIsLifecycleModalOpen(false)}

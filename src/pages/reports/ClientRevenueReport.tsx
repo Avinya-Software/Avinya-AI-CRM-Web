@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { 
-  BarChart3, 
-  Target, 
-  Activity, 
-  Clock, 
-  ArrowDownToLine, 
-  RefreshCcw, 
-  Users, 
-  TrendingUp, 
-  IndianRupee, 
+import {
+  BarChart3,
+  Target,
+  Activity,
+  Clock,
+  ArrowDownToLine,
+  RefreshCcw,
+  Users,
+  TrendingUp,
+  IndianRupee,
   AlertCircle,
   ChevronRight,
   Globe,
@@ -17,14 +17,14 @@ import {
   Maximize2,
   X
 } from "lucide-react";
-import { 
-  format, 
-  startOfMonth, 
-  endOfMonth, 
-  subMonths, 
-  startOfYear, 
-  endOfYear, 
-  subYears 
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  startOfYear,
+  endOfYear,
+  subYears
 } from "date-fns";
 import { DatePicker, Modal, Spin, Table, Tag, Tabs, Select } from "antd";
 import dayjs from "dayjs";
@@ -37,6 +37,11 @@ import { useStates } from "../../hooks/state/useStates";
 import { useClientsDropdown } from "../../hooks/client/useClients";
 import { ClientReportFilter } from "../../interfaces/report.interface";
 import Client360Modal from "../../components/clients/Client360Modal";
+
+const CLIENT_TYPES = [
+  { value: 1, label: "Company" },
+  { value: 2, label: "Individual" },
+];
 
 const ClientRevenueReport: React.FC = () => {
   const [filters, setFilters] = useState<ClientReportFilter>({
@@ -130,7 +135,7 @@ const ClientRevenueReport: React.FC = () => {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(kpiData), "Summary");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(topClientsSheet), "Top Clients");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(agingSheet), "Aging List");
-    
+
     XLSX.writeFile(wb, `Client_Revenue_Report_${format(new Date(), "ddMMyyyy")}.xlsx`);
   };
 
@@ -207,7 +212,7 @@ const ClientRevenueReport: React.FC = () => {
                 Client Revenue Report
               </h1>
               <p className="text-[10px] text-[#107C41] font-black uppercase tracking-widest leading-none mt-1">
-                {activePreset === 'custom' 
+                {activePreset === 'custom'
                   ? `${format(new Date(filters.dateFrom!), "dd MMM")} - ${format(new Date(filters.dateTo!), "dd MMM yyyy")}`
                   : `Overview of ${activePreset.replace('_', ' ')}`
                 }
@@ -218,16 +223,16 @@ const ClientRevenueReport: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             {/* Date Preset */}
             <Select
-               value={activePreset}
-               className="min-w-[140px] h-10 shadow-sm"
-               onChange={(val) => handleDatePreset(val)}
-               style={{ height: '34px' }}
+              value={activePreset}
+              className="min-w-[140px] h-10 shadow-sm"
+              onChange={(val) => handleDatePreset(val)}
+              style={{ height: '34px' }}
             >
-               <Select.Option value="this_month">THIS MONTH</Select.Option>
-               <Select.Option value="last_month">LAST MONTH</Select.Option>
-               <Select.Option value="this_year">THIS YEAR</Select.Option>
-               <Select.Option value="last_year">LAST YEAR</Select.Option>
-               <Select.Option value="custom">CUSTOM RANGE</Select.Option>
+              <Select.Option value="this_month">THIS MONTH</Select.Option>
+              <Select.Option value="last_month">LAST MONTH</Select.Option>
+              <Select.Option value="this_year">THIS YEAR</Select.Option>
+              <Select.Option value="last_year">LAST YEAR</Select.Option>
+              <Select.Option value="custom">CUSTOM RANGE</Select.Option>
             </Select>
 
             {activePreset === "custom" && (
@@ -247,24 +252,38 @@ const ClientRevenueReport: React.FC = () => {
 
             {/* Client Filter */}
             <Select
-               showSearch
-               placeholder="ALL CLIENTS"
-               className="min-w-[200px] h-10 shadow-sm"
-               allowClear
-               optionFilterProp="children"
-               value={filters.clientId || undefined}
-               onChange={(val) => handleFilterChange("clientId", val)}
-               style={{ height: '34px' }}
-               filterOption={(input, option) =>
-                 (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
-               }
+              showSearch
+              placeholder="ALL CLIENTS"
+              className="min-w-[200px] h-10 shadow-sm"
+              allowClear
+              optionFilterProp="children"
+              value={filters.clientId || undefined}
+              onChange={(val) => handleFilterChange("clientId", val)}
+              style={{ height: '34px' }}
+              filterOption={(input, option) =>
+                (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+              }
             >
-                {clients?.map((c: any) => (
-                 <Select.Option key={c.clientID} value={c.clientID}>{c.companyName}</Select.Option>
-               ))}
+              {clients?.map((c: any) => (
+                <Select.Option key={c.clientID} value={c.clientID}>{c.companyName}</Select.Option>
+              ))}
             </Select>
 
-            <button 
+            {/* Client Type Filter */}
+            <Select
+              placeholder="ALL TYPES"
+              className="min-w-[140px] h-10 shadow-sm"
+              allowClear
+              value={filters.clientType || undefined}
+              onChange={(val) => handleFilterChange("clientType", val)}
+              style={{ height: '34px' }}
+            >
+              {CLIENT_TYPES.map((t) => (
+                <Select.Option key={t.value} value={t.value}>{t.label.toUpperCase()}</Select.Option>
+              ))}
+            </Select>
+
+            <button
               onClick={handleExport}
               className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all uppercase tracking-wider"
             >
@@ -297,17 +316,16 @@ const ClientRevenueReport: React.FC = () => {
                 <div className={`p-2 rounded-lg ${kpi.bgColor} ${kpi.iconColor}`}>
                   {kpi.icon}
                 </div>
-                <span className={`text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest ${
-                  kpi.trendType === 'up' ? 'bg-emerald-100 text-emerald-700' :
-                  kpi.trendType === 'down' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
-                }`}>
+                <span className={`text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest ${kpi.trendType === 'up' ? 'bg-emerald-100 text-emerald-700' :
+                    kpi.trendType === 'down' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
+                  }`}>
                   {kpi.trend}
                 </span>
               </div>
 
               <div className="relative z-10 mt-auto flex items-end justify-between">
                 <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">{kpi.label}</p>
-                <h3 className={`text-sm font-black ${kpi.color} leading-none`}>
+                <h3 className={`text-2xl font-black ${kpi.color} leading-none`}>
                   {kpi.value}
                 </h3>
               </div>
@@ -355,23 +373,23 @@ const ClientRevenueReport: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="mt-8 pt-6 border-t border-slate-100">
-               <div className="flex items-center justify-between">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">State Breakdown</h4>
-                  <ChevronRight size={14} className="text-slate-300" />
-               </div>
-               <div className="mt-4 space-y-3">
-                  {reportData?.stateBreakdown.slice(0, 3).map((state, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                       <div className="flex items-center gap-2">
-                          <Globe size={12} className="text-blue-400" />
-                          <span className="text-xs font-bold text-slate-600">{state.stateName}</span>
-                       </div>
-                       <span className="text-xs font-black text-slate-400">{state.percentage}%</span>
+              <div className="flex items-center justify-between">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">State Breakdown</h4>
+                <ChevronRight size={14} className="text-slate-300" />
+              </div>
+              <div className="mt-4 space-y-3">
+                {reportData?.stateBreakdown.slice(0, 3).map((state, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Globe size={12} className="text-blue-400" />
+                      <span className="text-xs font-bold text-slate-600">{state.stateName}</span>
                     </div>
-                  ))}
-               </div>
+                    <span className="text-xs font-black text-slate-400">{state.percentage}%</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -413,17 +431,16 @@ const ClientRevenueReport: React.FC = () => {
                         <span className="text-xs font-black text-slate-900 font-mono">₹{item.remainingPayment.toLocaleString()}</span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                         <div className="flex flex-col items-center">
-                            <span className="text-xs font-bold text-slate-600">{format(new Date(item.dueDate), "dd MMM")}</span>
-                            <span className="text-[10px] font-bold text-slate-300">{format(new Date(item.dueDate), "yyyy")}</span>
-                         </div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-xs font-bold text-slate-600">{format(new Date(item.dueDate), "dd MMM")}</span>
+                          <span className="text-[10px] font-bold text-slate-300">{format(new Date(item.dueDate), "yyyy")}</span>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${
-                          item.daysOverdue > 0 
-                            ? "bg-rose-50 text-rose-600 border-rose-100" 
+                        <span className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${item.daysOverdue > 0
+                            ? "bg-rose-50 text-rose-600 border-rose-100"
                             : "bg-amber-50 text-amber-600 border-amber-100"
-                        }`}>
+                          }`}>
                           {item.daysOverdue > 0 ? `${item.daysOverdue} Days Past` : item.invoiceStatus}
                         </span>
                       </td>
@@ -487,12 +504,12 @@ const ClientRevenueReport: React.FC = () => {
                 </div>
                 <div className="flex items-start gap-6">
                   <div className="text-right">
-                     <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Total Invoiced</p>
-                     <p className="text-2xl font-black text-[#107C41]">
-                       ₹{drillDownResponse.data.invoices?.reduce((acc: number, curr: any) => acc + curr.totalAmount, 0).toLocaleString()}
-                     </p>
+                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Total Invoiced</p>
+                    <p className="text-2xl font-black text-[#107C41]">
+                      ₹{drillDownResponse.data.invoices?.reduce((acc: number, curr: any) => acc + curr.totalAmount, 0).toLocaleString()}
+                    </p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setShowDrillDown(false)}
                     className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
                   >
@@ -528,19 +545,19 @@ const ClientRevenueReport: React.FC = () => {
                       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar-light">
                         {drillDownResponse.data.leads?.map((lead: any, i: number) => (
                           <div key={i} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:shadow-sm transition-all group">
-                             <div className="flex items-center gap-4">
-                                <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-blue-100 transition-colors">
-                                   <Target size={16} className="text-blue-500" />
-                                </div>
-                                <div>
-                                   <p className="text-xs font-black text-slate-800 uppercase">{lead.leadNo}</p>
-                                   <p className="text-[10px] text-slate-400 font-bold uppercase">{format(new Date(lead.date), "dd MMM yyyy, HH:mm")}</p>
-                                </div>
-                             </div>
-                             <div className="text-right">
-                                <Tag className="m-0 border-none font-black text-[9px] uppercase tracking-tighter bg-blue-100 text-blue-600">{lead.status}</Tag>
-                                <p className="text-[9px] text-slate-400 mt-1 font-bold">Assigned to: {lead.assignedTo}</p>
-                             </div>
+                            <div className="flex items-center gap-4">
+                              <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-blue-100 transition-colors">
+                                <Target size={16} className="text-blue-500" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-black text-slate-800 uppercase">{lead.leadNo}</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase">{format(new Date(lead.date), "dd MMM yyyy, HH:mm")}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <Tag className="m-0 border-none font-black text-[9px] uppercase tracking-tighter bg-blue-100 text-blue-600">{lead.status}</Tag>
+                              <p className="text-[9px] text-slate-400 mt-1 font-bold">Assigned to: {lead.assignedTo}</p>
+                            </div>
                           </div>
                         ))}
                         {(!drillDownResponse.data.leads || drillDownResponse.data.leads.length === 0) && (
@@ -556,29 +573,29 @@ const ClientRevenueReport: React.FC = () => {
                       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar-light">
                         {drillDownResponse.data.quotations?.map((quote: any, i: number) => (
                           <div key={i} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:shadow-sm transition-all group">
-                             <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-100/50">
-                                <div className="flex items-center gap-4">
-                                   <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-purple-100 transition-colors">
-                                      <Activity size={16} className="text-purple-500" />
-                                   </div>
-                                   <div>
-                                      <p className="text-xs font-black text-slate-800 uppercase">{quote.quotationNo}</p>
-                                      <p className="text-[10px] text-slate-400 font-bold uppercase">{format(new Date(quote.date), "dd MMM yyyy")}</p>
-                                   </div>
+                            <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-100/50">
+                              <div className="flex items-center gap-4">
+                                <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-purple-100 transition-colors">
+                                  <Activity size={16} className="text-purple-500" />
                                 </div>
-                                <div className="text-right">
-                                   <p className="text-xs font-black text-[#107C41]">₹{quote.totalAmount?.toLocaleString()}</p>
-                                   <Tag className="m-0 border-none font-black text-[9px] uppercase tracking-tighter bg-purple-100 text-purple-600 mt-1">{quote.status}</Tag>
+                                <div>
+                                  <p className="text-xs font-black text-slate-800 uppercase">{quote.quotationNo}</p>
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase">{format(new Date(quote.date), "dd MMM yyyy")}</p>
                                 </div>
-                             </div>
-                             <div className="grid grid-cols-1 gap-2">
-                                {quote.items?.map((item: any, idx: number) => (
-                                  <div key={idx} className="flex items-center justify-between text-[10px] font-bold px-3 py-1.5 bg-white rounded-lg border border-slate-50">
-                                     <span className="text-slate-600">{item.productName} × {item.quantity}</span>
-                                     <span className="text-slate-900">₹{item.total?.toLocaleString()}</span>
-                                  </div>
-                                ))}
-                             </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs font-black text-[#107C41]">₹{quote.totalAmount?.toLocaleString()}</p>
+                                <Tag className="m-0 border-none font-black text-[9px] uppercase tracking-tighter bg-purple-100 text-purple-600 mt-1">{quote.status}</Tag>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-2">
+                              {quote.items?.map((item: any, idx: number) => (
+                                <div key={idx} className="flex items-center justify-between text-[10px] font-bold px-3 py-1.5 bg-white rounded-lg border border-slate-50">
+                                  <span className="text-slate-600">{item.productName} × {item.quantity}</span>
+                                  <span className="text-slate-900">₹{item.total?.toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -591,29 +608,29 @@ const ClientRevenueReport: React.FC = () => {
                       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar-light">
                         {drillDownResponse.data.orders?.map((order: any, i: number) => (
                           <div key={i} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:shadow-sm transition-all group">
-                             <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-100/50">
-                                <div className="flex items-center gap-4">
-                                   <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-amber-100 transition-colors">
-                                      <Target size={16} className="text-amber-500" />
-                                   </div>
-                                   <div>
-                                      <p className="text-xs font-black text-slate-800 uppercase">{order.orderNo}</p>
-                                      <p className="text-[10px] text-slate-400 font-bold uppercase">{format(new Date(order.date), "dd MMM yyyy")}</p>
-                                   </div>
+                            <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-100/50">
+                              <div className="flex items-center gap-4">
+                                <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-amber-100 transition-colors">
+                                  <Target size={16} className="text-amber-500" />
                                 </div>
-                                <div className="text-right">
-                                   <p className="text-xs font-black text-slate-900">₹{order.totalAmount?.toLocaleString()}</p>
-                                   <Tag className="m-0 border-none font-black text-[9px] uppercase tracking-tighter bg-amber-100 text-amber-600 mt-1">{order.status || "CONFIRMED"}</Tag>
+                                <div>
+                                  <p className="text-xs font-black text-slate-800 uppercase">{order.orderNo}</p>
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase">{format(new Date(order.date), "dd MMM yyyy")}</p>
                                 </div>
-                             </div>
-                             <div className="grid grid-cols-1 gap-2">
-                                {order.items?.map((item: any, idx: number) => (
-                                  <div key={idx} className="flex items-center justify-between text-[10px] font-bold px-3 py-1.5 bg-white rounded-lg border border-slate-50">
-                                     <span className="text-slate-600">{item.productName} × {item.quantity}</span>
-                                     <span className="text-slate-900">₹{item.total?.toLocaleString()}</span>
-                                  </div>
-                                ))}
-                             </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs font-black text-slate-900">₹{order.totalAmount?.toLocaleString()}</p>
+                                <Tag className="m-0 border-none font-black text-[9px] uppercase tracking-tighter bg-amber-100 text-amber-600 mt-1">{order.status || "CONFIRMED"}</Tag>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-2">
+                              {order.items?.map((item: any, idx: number) => (
+                                <div key={idx} className="flex items-center justify-between text-[10px] font-bold px-3 py-1.5 bg-white rounded-lg border border-slate-50">
+                                  <span className="text-slate-600">{item.productName} × {item.quantity}</span>
+                                  <span className="text-slate-900">₹{item.total?.toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -626,50 +643,49 @@ const ClientRevenueReport: React.FC = () => {
                       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar-light">
                         {drillDownResponse.data.invoices?.map((invoice: any, i: number) => (
                           <div key={i} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:shadow-sm transition-all group">
-                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                   <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-emerald-100 transition-colors">
-                                      <Clock size={16} className="text-emerald-500" />
-                                   </div>
-                                   <div>
-                                      <p className="text-xs font-black text-slate-800 uppercase">{invoice.invoiceNo}</p>
-                                      <div className="flex items-center gap-2 mt-0.5">
-                                         <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Date: {format(new Date(invoice.date), "dd MMM yy")}</span>
-                                         <span className="text-[9px] text-rose-400 font-bold uppercase tracking-tight border-l border-slate-200 pl-2">Due: {format(new Date(invoice.dueDate), "dd MMM yy")}</span>
-                                      </div>
-                                   </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="p-2 bg-white rounded-lg border border-slate-100 group-hover:border-emerald-100 transition-colors">
+                                  <Clock size={16} className="text-emerald-500" />
                                 </div>
-                                <div className="grid grid-cols-3 gap-8">
-                                   <div className="text-right">
-                                      <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Invoiced</p>
-                                      <p className="text-xs font-black text-slate-900">₹{invoice.totalAmount?.toLocaleString()}</p>
-                                   </div>
-                                   <div className="text-right">
-                                      <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Paid</p>
-                                      <p className="text-xs font-black text-emerald-600">₹{invoice.paidAmount?.toLocaleString()}</p>
-                                   </div>
-                                   <div className="text-right">
-                                      <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Balance</p>
-                                      <p className={`text-xs font-black ${invoice.balanceAmount > 0 ? 'text-rose-600' : 'text-slate-300'}`}>₹{invoice.balanceAmount?.toLocaleString()}</p>
-                                   </div>
+                                <div>
+                                  <p className="text-xs font-black text-slate-800 uppercase">{invoice.invoiceNo}</p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Date: {format(new Date(invoice.date), "dd MMM yy")}</span>
+                                    <span className="text-[9px] text-rose-400 font-bold uppercase tracking-tight border-l border-slate-200 pl-2">Due: {format(new Date(invoice.dueDate), "dd MMM yy")}</span>
+                                  </div>
                                 </div>
-                             </div>
-                             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-                                <Tag className={`m-0 border-none font-black text-[9px] uppercase tracking-widest px-3 py-1 ${
-                                   invoice.status === 'Pending' ? 'bg-amber-100 text-amber-600' : 
-                                   invoice.status === 'Receive' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600'
+                              </div>
+                              <div className="grid grid-cols-3 gap-8">
+                                <div className="text-right">
+                                  <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Invoiced</p>
+                                  <p className="text-xs font-black text-slate-900">₹{invoice.totalAmount?.toLocaleString()}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Paid</p>
+                                  <p className="text-xs font-black text-emerald-600">₹{invoice.paidAmount?.toLocaleString()}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Balance</p>
+                                  <p className={`text-xs font-black ${invoice.balanceAmount > 0 ? 'text-rose-600' : 'text-slate-300'}`}>₹{invoice.balanceAmount?.toLocaleString()}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                              <Tag className={`m-0 border-none font-black text-[9px] uppercase tracking-widest px-3 py-1 ${invoice.status === 'Pending' ? 'bg-amber-100 text-amber-600' :
+                                  invoice.status === 'Receive' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600'
                                 }`}>
-                                   {invoice.status}
-                                </Tag>
-                                {invoice.balanceAmount > 0 && (
-                                   <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
-                                      <div 
-                                        className="h-full bg-emerald-500" 
-                                        style={{ width: `${(invoice.paidAmount / invoice.totalAmount) * 100}%` }}
-                                      ></div>
-                                   </div>
-                                )}
-                             </div>
+                                {invoice.status}
+                              </Tag>
+                              {invoice.balanceAmount > 0 && (
+                                <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-emerald-500"
+                                    style={{ width: `${(invoice.paidAmount / invoice.totalAmount) * 100}%` }}
+                                  ></div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -680,8 +696,8 @@ const ClientRevenueReport: React.FC = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-24 text-slate-300">
-               <AlertCircle size={48} className="opacity-20 mb-4" />
-               <p className="text-[10px] font-black uppercase tracking-widest">No data available for this client</p>
+              <AlertCircle size={48} className="opacity-20 mb-4" />
+              <p className="text-[10px] font-black uppercase tracking-widest">No data available for this client</p>
             </div>
           )}
         </div>
@@ -697,6 +713,7 @@ const ClientRevenueReport: React.FC = () => {
           setIsClient360Open(false);
           handleDrillDown(clientId);
         }}
+        states={states}
         totalRecords={reportData?.kpi.totalClients}
       />
     </div>

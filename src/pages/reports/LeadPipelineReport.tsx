@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {BarChart3,Layers,PieChart,Clock,ArrowDownToLine,Activity,Target,Flame,RefreshCcw,} from "lucide-react";
+import { BarChart3, Layers, PieChart, Clock, ArrowDownToLine, Activity, Target, Flame, RefreshCcw, } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears } from "date-fns";
 import { DatePicker, Select } from "antd";
 import * as XLSX from 'xlsx';
@@ -7,6 +7,7 @@ import * as XLSX from 'xlsx';
 const { RangePicker } = DatePicker;
 import { useLeadPipelineReport, useLeadLifecycleReport } from "../../hooks/reports/useLeadReport";
 import { useLeadSources } from "../../hooks/lead/useLeadSources";
+import { useLeadStatuses } from "../../hooks/lead/useLeadStatuses";
 import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { LeadPipelineFilter } from "../../interfaces/report.interface";
 import LeadLifecycleModal from "../../components/leads/LeadLifecycleModal";
@@ -18,26 +19,24 @@ const LeadPipelineReport: React.FC = () => {
   });
   const [activePreset, setActivePreset] = useState<string>("this_month");
 
-  const { data: reportResponse, mutate: fetchReport, isPending: isLoading } = useLeadPipelineReport();
+  const { data: reportResponse, isLoading } = useLeadPipelineReport(filters);
+  const { data: lifecycleResponse, isLoading: isLoadingLifecycle } = useLeadLifecycleReport(filters);
+
   const { data: sources, mutate: fetchSources } = useLeadSources();
+  const { data: statuses, mutate: fetchStatuses } = useLeadStatuses();
   const { data: users, mutate: fetchUsers } = useUsersDropdown();
 
-  const { data: lifecycleResponse, mutate: fetchLifecycle, isPending: isLoadingLifecycle } = useLeadLifecycleReport();
   const [isLifecycleModalOpen, setIsLifecycleModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchReport(filters);
     fetchSources();
+    fetchStatuses();
     fetchUsers();
   }, []);
 
   const handleFilterChange = (key: keyof LeadPipelineFilter, value: any) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    fetchReport(newFilters);
-    if (isLifecycleModalOpen) {
-      fetchLifecycle(newFilters);
-    }
   };
 
   const handleDatePreset = (preset: string) => {
@@ -62,8 +61,6 @@ const LeadPipelineReport: React.FC = () => {
     if (preset !== "custom") {
       const newFilters = { ...filters, dateFrom: from, dateTo: to };
       setFilters(newFilters);
-      fetchReport(newFilters);
-      if (isLifecycleModalOpen) fetchLifecycle(newFilters);
     }
   };
 
@@ -125,7 +122,6 @@ const LeadPipelineReport: React.FC = () => {
       iconColor: "text-emerald-700",
       icon: <Target className="w-5 h-5" />,
       onClick: () => {
-        fetchLifecycle({ ...filters, pageNumber: 1, pageSize: 10 });
         setIsLifecycleModalOpen(true);
       }
     },
@@ -186,16 +182,16 @@ const LeadPipelineReport: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             {/* Date Preset */}
             <Select
-               value={activePreset}
-               className="min-w-[140px] h-10 shadow-sm"
-               onChange={(val) => handleDatePreset(val)}
-               style={{ height: '34px' }}
+              value={activePreset}
+              className="min-w-[140px] h-10 shadow-sm"
+              onChange={(val) => handleDatePreset(val)}
+              style={{ height: '34px' }}
             >
-               <Select.Option value="this_month">THIS MONTH</Select.Option>
-               <Select.Option value="last_month">LAST MONTH</Select.Option>
-               <Select.Option value="this_year">THIS YEAR</Select.Option>
-               <Select.Option value="last_year">LAST YEAR</Select.Option>
-               <Select.Option value="custom">CUSTOM RANGE</Select.Option>
+              <Select.Option value="this_month">THIS MONTH</Select.Option>
+              <Select.Option value="last_month">LAST MONTH</Select.Option>
+              <Select.Option value="this_year">THIS YEAR</Select.Option>
+              <Select.Option value="last_year">LAST YEAR</Select.Option>
+              <Select.Option value="custom">CUSTOM RANGE</Select.Option>
             </Select>
 
             {activePreset === "custom" && (
@@ -206,8 +202,6 @@ const LeadPipelineReport: React.FC = () => {
                     if (dates) {
                       const newFilters = { ...filters, dateFrom: dateStrings[0], dateTo: dateStrings[1] };
                       setFilters(newFilters);
-                      fetchReport(newFilters);
-                      if (isLifecycleModalOpen) fetchLifecycle(newFilters);
                     }
                   }}
                 />
@@ -216,46 +210,62 @@ const LeadPipelineReport: React.FC = () => {
 
             {/* Source Filter */}
             <Select
-               showSearch
-               placeholder="ALL SOURCES"
-               className="min-w-[160px] h-10 shadow-sm"
-               allowClear
-               optionFilterProp="children"
-               value={filters.leadSourceId || undefined}
-               onChange={(val) => handleFilterChange("leadSourceId", val)}
-               style={{ height: '34px' }}
+              showSearch
+              placeholder="ALL SOURCES"
+              className="min-w-[160px] h-10 shadow-sm"
+              allowClear
+              optionFilterProp="children"
+              value={filters.leadSourceId || undefined}
+              onChange={(val) => handleFilterChange("leadSourceId", val)}
+              style={{ height: '34px' }}
             >
-               {sources?.map((s: any) => (
-                 <Select.Option key={s.id} value={s.id}>{s.name}</Select.Option>
-               ))}
+              {sources?.map((s: any) => (
+                <Select.Option key={s.id} value={s.id}>{s.name}</Select.Option>
+              ))}
+            </Select>
+
+            {/* Status Filter */}
+            <Select
+              showSearch
+              placeholder="ALL STATUS"
+              className="min-w-[160px] h-10 shadow-sm"
+              allowClear
+              optionFilterProp="children"
+              value={filters.leadStatusId || undefined}
+              onChange={(val) => handleFilterChange("leadStatusId", val)}
+              style={{ height: '34px' }}
+            >
+              {statuses?.map((s: any) => (
+                <Select.Option key={s.id} value={s.id}>{s.name}</Select.Option>
+              ))}
             </Select>
 
             {/* User Filter */}
             <Select
-               showSearch
-               placeholder="ALL USERS"
-               className="min-w-[160px] h-10 shadow-sm"
-               allowClear
-               optionFilterProp="children"
-               value={filters.assignedTo || undefined}
-               onChange={(val) => handleFilterChange("assignedTo", val)}
-               style={{ height: '34px' }}
+              showSearch
+              placeholder="ALL USERS"
+              className="min-w-[160px] h-10 shadow-sm"
+              allowClear
+              optionFilterProp="children"
+              value={filters.assignedTo || undefined}
+              onChange={(val) => handleFilterChange("assignedTo", val)}
+              style={{ height: '34px' }}
             >
-               {users?.map((u: any) => (
-                 <Select.Option key={u.id} value={u.fullName}>{u.fullName}</Select.Option>
-               ))}
+              {users?.map((u: any) => (
+                <Select.Option key={u.id} value={u.fullName}>{u.fullName}</Select.Option>
+              ))}
             </Select>
-              <button 
-                onClick={handleGlobalExport}
-                className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all uppercase tracking-wider"
-              >
-                <ArrowDownToLine size={14} className="text-[#107C41]" />
-                Export
-              </button>
-              <button
-                onClick={() => fetchReport(filters)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#107C41] text-white rounded-lg transition-all active:scale-95 shadow-lg shadow-emerald-100"
-              >
+            <button
+              onClick={handleGlobalExport}
+              className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all uppercase tracking-wider"
+            >
+              <ArrowDownToLine size={14} className="text-[#107C41]" />
+              Export
+            </button>
+            <button
+              onClick={() => {}} // useQuery will handle it, but I could add queryClient.invalidate if needed
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#107C41] text-white rounded-lg transition-all active:scale-95 shadow-lg shadow-emerald-100"
+            >
               <RefreshCcw className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -458,9 +468,10 @@ const LeadPipelineReport: React.FC = () => {
         data={(lifecycleResponse?.data as any)?.data || []}
         filters={filters}
         onFilterChange={handleFilterChange}
-        onRefresh={(page) => fetchLifecycle({ ...filters, pageNumber: page || 1, pageSize: 10 })}
+        onRefresh={() => {}} // Not strictly needed anymore as it's reactive
         isLoading={isLoadingLifecycle}
         sources={sources}
+        statuses={statuses}
         users={users}
         totalPages={(lifecycleResponse?.data as any)?.totalPages}
         totalRecords={(lifecycleResponse?.data as any)?.totalRecords}

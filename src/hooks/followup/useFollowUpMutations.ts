@@ -23,6 +23,7 @@ export const useCreateFollowUp = () => {
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["lead-detail"] });
       toast.success(response?.statusMessage || "Follow-up created successfully");
     },
     onError: (error: any) => {
@@ -46,6 +47,7 @@ export const useUpdateFollowUp = () => {
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["lead-detail"] });
       toast.success(response?.statusMessage || "Follow-up updated successfully");
     },
     onError: (error: any) => {
@@ -68,6 +70,8 @@ export const useUpdateFollowUpStatus = () => {
     }) => updateFollowUpStatus(followUpId, status),
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["lead-detail"] });
       toast.success(response?.statusMessage || "Status updated successfully");
     },
     onError: (error: any) => {
@@ -85,6 +89,7 @@ export const useDeleteFollowUp = () => {
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["lead-followups"] });
       queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["lead-detail"] });
       toast.success(response?.statusMessage || "Follow-up deleted successfully");
     },
     onError: (error: any) => {

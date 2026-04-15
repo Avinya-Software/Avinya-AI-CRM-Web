@@ -62,20 +62,20 @@ const InfoCard = ({ label, value }: { label: string; value?: string | null }) =>
 );
 
 const STATUS_OPTIONS = [
-    { leadFollowupStatusID: 1, statusName: "Pending" },
-    { leadFollowupStatusID: 2, statusName: "In Progress" },
-    { leadFollowupStatusID: 3, statusName: "Completed" },
-  ];
+  { leadFollowupStatusID: 1, statusName: "Pending" },
+  { leadFollowupStatusID: 2, statusName: "In Progress" },
+  { leadFollowupStatusID: 3, statusName: "Completed" },
+];
 
 // ── Add Follow-up Form ─────────────────────────────────────────────
 
 interface AddFollowUpFormProps {
-  leadId: string;
+  leadID: string;
   onSuccess: () => void;
   onCancel: () => void;
   editData?: any;
 }
-const AddFollowUpForm = ({ leadId, onSuccess, onCancel,  editData,}: AddFollowUpFormProps) => {
+const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUpFormProps) => {
   const queryClient = useQueryClient();
   const { mutate, isPending } = useCreateFollowUp();
   const { mutate: updateMutate, isPending: isUpdating } = useUpdateFollowUp();
@@ -95,6 +95,7 @@ const AddFollowUpForm = ({ leadId, onSuccess, onCancel,  editData,}: AddFollowUp
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.notes.trim()) e.notes = "Summary is required";
+    if (!form.nextFollowupDate.trim()) e.nextFollowupDate = "Next Follow-up Date is required";
     setErrors(e);
     return !Object.keys(e).length;
   };
@@ -119,14 +120,14 @@ const AddFollowUpForm = ({ leadId, onSuccess, onCancel,  editData,}: AddFollowUp
 
   const handleSave = () => {
     if (!validate()) return;
-  
+
     const payload = {
       notes: form.notes,
       status: form.status,
-      nextFollowUpDate: form.nextFollowupDate || null,
+      nextFollowupDate: form.nextFollowupDate || null,
       followUpBy: userId,
     };
-  
+
     if (editData) {
       updateMutate(
         {
@@ -135,16 +136,17 @@ const AddFollowUpForm = ({ leadId, onSuccess, onCancel,  editData,}: AddFollowUp
         },
         {
           onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["lead-detail", leadId] });
+            queryClient.invalidateQueries({ queryKey: ["lead-detail", leadID] });
+            queryClient.invalidateQueries({ queryKey: ["leads"] });
             onSuccess();
           },
         }
       );
-    } 
+    }
     else {
       mutate(
         {
-          leadId: leadId,
+          leadID: leadID,
           followUpDate: new Date().toISOString(),
           nextFollowupDate: form.nextFollowupDate || null,
           remark: form.notes,
@@ -155,7 +157,8 @@ const AddFollowUpForm = ({ leadId, onSuccess, onCancel,  editData,}: AddFollowUp
         {
           onSuccess: (res) => {
             toast.success(res?.statusMessage || "Follow-up added successfully");
-            queryClient.invalidateQueries({ queryKey: ["lead-detail", leadId] });
+            queryClient.invalidateQueries({ queryKey: ["lead-detail", leadID] });
+            queryClient.invalidateQueries({ queryKey: ["leads"] });
             onSuccess();
           },
         }
@@ -166,87 +169,93 @@ const AddFollowUpForm = ({ leadId, onSuccess, onCancel,  editData,}: AddFollowUp
   return (
     <div className="border border-slate-200 rounded-xl p-4 mb-4 bg-white shadow-sm">
 
-    {/* Summary */}
-    <div className="mb-3">
-      <label className="text-xs font-medium text-slate-500 block mb-1">
-        Summary <span className="text-red-400">*</span>
-      </label>
-      <textarea
-        className={`w-full text-sm border rounded-lg px-2.5 py-2 h-24 ${
-          errors.notes ? "border-red-400" : "border-slate-200"
-        }`}
-        value={form.notes}
-        onChange={(e) => setForm({ ...form, notes: e.target.value })}
-      />
-      {errors.notes && (
-        <p className="text-xs text-red-500 mt-0.5">{errors.notes}</p>
-      )}
-    </div>
+      {/* Summary */}
+      <div className="mb-3">
+        <label className="text-xs font-medium text-slate-500 block mb-1">
+          Summary <span className="text-red-400">*</span>
+        </label>
+        <textarea
+          className={`w-full text-sm border rounded-lg px-2.5 py-2 h-24 ${errors.notes ? "border-red-400" : "border-slate-200"
+            }`}
+          value={form.notes}
+          onChange={(e) => setForm({ ...form, notes: e.target.value })}
+        />
+        {errors.notes && (
+          <p className="text-xs text-red-500 mt-0.5">{errors.notes}</p>
+        )}
+      </div>
 
-    {/* Status */}
-    <div className="mb-3">
-      <label className="text-xs font-medium text-slate-500 block mb-1">
-        Status
-      </label>
-      <select
-        className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-2"
-        value={form.status}
-        onChange={(e) =>
-          setForm({ ...form, status: Number(e.target.value) })
-        }
-      >
-        {STATUS_OPTIONS.map((s) => (
-          <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
-            {s.statusName}
-          </option>
-        ))}
-      </select>
-    </div>
+      {/* Status */}
+      <div className="mb-3">
+        <label className="text-xs font-medium text-slate-500 block mb-1">
+          Status
+        </label>
+        <select
+          className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-2"
+          value={form.status}
+          onChange={(e) =>
+            setForm({ ...form, status: Number(e.target.value) })
+          }
+        >
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
+              {s.statusName}
+            </option>
+          ))}
+        </select>
+      </div>
 
-    <div className="mb-4 flex flex-col gap-1">
-      <label className="text-xs font-medium text-slate-500 block mb-1">
-        Next Follow-up Date & Time
-      </label>
-      <DatePicker
-        showTime
-        format="YYYY-MM-DD HH:mm"
-        placeholder="Select date & time"
-        className="w-full h-10 border-slate-200 rounded-lg"
-        value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
-        onChange={(date, dateString) =>
-          setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
-        }
-      />
-    </div>
+      <div className="mb-4 flex flex-col gap-1">
+         <label className="text-xs font-medium text-slate-500 block mb-1">
+         Next Follow-up Date & Time <span className="text-red-400">*</span>
+        </label>
+        <DatePicker
+          showTime
+          format="YYYY-MM-DD HH:mm"
+          placeholder="Select date & time"
+          value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
+          onChange={(date) =>
+            setForm({
+              ...form,
+              nextFollowupDate: date ? date.toISOString() : "",
+            })
+          }
+           className={`w-full text-sm border rounded-lg px-2.5 py-2  ${errors.notes ? "border-red-400" : "border-slate-200"
+            }`}
+        />
+        {errors.nextFollowupDate && (
+          <p className="text-xs text-red-500 mt-0.5">{errors.nextFollowupDate}</p>
+        )}
+      </div>
 
-    {/* Actions */}
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={onCancel}
-        disabled={isPending}
-        className="flex-1 border border-slate-200 rounded-lg py-2 text-sm"
-      >
-        Cancel
-      </button>
+      {/* Actions */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isPending}
+          className="flex-1 border border-slate-200 rounded-lg py-2 text-sm"
+        >
+          Cancel
+        </button>
 
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={isPending}
-        className="flex-1 btn-primary rounded-lg py-2 text-sm flex items-center justify-center gap-1.5 transition"
-      >
-        {isPending || isUpdating ? (
-    <>
-      <Loader2 size={14} className="animate-spin" />
-      {editData ? "Updating..." : "Saving..."}
-    </>
-  ) : (
-    editData ? "Update Follow-up" : "Save Follow-up"
-  )}
-      </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isPending}
+          className="flex-1 btn-primary rounded-lg py-2 text-sm flex items-center justify-center gap-1.5 transition"
+        >
+          {isPending || isUpdating ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              {editData ? "Updating..." : "Saving..."}
+            </>
+          ) : (
+            editData ? "Update Follow-up" : "Save Follow-up"
+          )}
+        </button>
+      </div>
     </div>
-  </div>
   );
 };
 
@@ -260,20 +269,14 @@ const LeadDetailSheet = ({
 }: LeadDetailSheetProps) => {
   const [activeTab, setActiveTab] = useState<Tab>("details");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingFollowUp, setEditingFollowUp] = useState<any | null>(null); 
+  const [editingFollowUp, setEditingFollowUp] = useState<any | null>(null);
   const { hasPermission } = usePermissions();
   const canEditLead = hasPermission("lead", "edit");
   const canAddFollowUp = hasPermission("lead", "view");
   const canAddQuotation = hasPermission("quotation", "add");
 
   const leadId = lead?.leadID ?? lead?.leadId ?? null;
-  const leadDetailsMutation = useLeadDetails();
-
-  useEffect(() => {
-    if (leadId) leadDetailsMutation.mutate(leadId);
-  }, [leadId]);
-
-  const { data, isPending: isLoading, isError } = leadDetailsMutation;
+  const { data, isLoading, isError } = useLeadDetails(leadId);
 
   // Reset when lead changes
   useEffect(() => {
@@ -301,296 +304,295 @@ const LeadDetailSheet = ({
   ];
 
   return (
-  <>
-    {/* Backdrop */}
-    <div
-      className="fixed inset-0 bg-black/30 z-40 transition-opacity"
-      onClick={onClose}
-    />
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/30 z-40 transition-opacity"
+        onClick={onClose}
+      />
 
-    {/* Side Sheet */}
-    <div className="fixed right-0 top-0 h-screen w-1/2 max-w-[800px] sm:w-full bg-white z-50 flex flex-col shadow-2xl border-l border-slate-100">
+      {/* Side Sheet */}
+      <div className="fixed right-0 top-0 h-screen w-1/2 max-w-[800px] sm:w-full bg-white z-50 flex flex-col shadow-2xl border-l border-slate-100">
 
-      {/* ── HEADER ── */}
-      <div className="px-6 pt-6 pb-5 border-b border-slate-100">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            {isLoading ? (
-              <div className="space-y-2">
-                <div className="h-6 w-44 bg-slate-100 rounded animate-pulse" />
-                <div className="h-4 w-36 bg-slate-100 rounded animate-pulse" />
-              </div>
-            ) : (
-              <>
-                <h2 className="text-xl font-semibold text-slate-900 leading-snug truncate">
-                  {data?.contactPerson ?? lead?.contactPerson}
-                </h2>
-                {(data?.companyName ?? lead?.companyName) && (
-                  <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5 truncate">
-                    <Building2 size={14} className="text-slate-400 shrink-0" />
-                    {data?.companyName ?? lead?.companyName}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
+        {/* ── HEADER ── */}
+        <div className="px-6 pt-6 pb-5 border-b border-slate-100">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              {isLoading ? (
+                <div className="space-y-2">
+                  <div className="h-6 w-44 bg-slate-100 rounded animate-pulse" />
+                  <div className="h-4 w-36 bg-slate-100 rounded animate-pulse" />
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-xl font-semibold text-slate-900 leading-snug truncate">
+                    {data?.contactPerson ?? lead?.contactPerson}
+                  </h2>
+                  {(data?.companyName ?? lead?.companyName) && (
+                    <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5 truncate">
+                      <Building2 size={14} className="text-slate-400 shrink-0" />
+                      {data?.companyName ?? lead?.companyName}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
 
-          <div className="flex items-center gap-2 ml-3 shrink-0">
-            {(data?.statusName ?? lead?.statusName) && (
-              <span
-                className={`text-xs font-medium px-2.5 py-1 rounded-full border ${statusClass}`}
+            <div className="flex items-center gap-2 ml-3 shrink-0">
+              {(data?.statusName ?? lead?.statusName) && (
+                <span
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full border ${statusClass}`}
+                >
+                  {data?.statusName ?? lead?.statusName}
+                </span>
+              )}
+              <button
+                onClick={onClose}
+                className="p-1.5 rounded-lg hover:bg-slate-100 transition text-slate-400 hover:text-slate-600"
               >
-                {data?.statusName ?? lead?.statusName}
-              </span>
-            )}
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-slate-100 transition text-slate-400 hover:text-slate-600"
-            >
-              <X size={18} />
-            </button>
+                <X size={18} />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ── TABS ── */}
-      <div className="flex border-b border-slate-100 px-6 bg-white">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`py-3 px-4 text-sm border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === tab.key
-                ? "border-blue-600 text-blue-700 font-semibold"
-                : "border-transparent text-slate-500 hover:text-slate-700 font-medium"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        {/* ── TABS ── */}
+        <div className="flex border-b border-slate-100 px-6 bg-white">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`py-3 px-4 text-sm border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.key
+                  ? "border-blue-600 text-blue-700 font-semibold"
+                  : "border-transparent text-slate-500 hover:text-slate-700 font-medium"
+                }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-      {/* ── BODY ── */}
-      <div className="flex-1 overflow-y-auto">
-        {isLoading && (
-          <div className="flex justify-center items-center py-24">
-            <Loader2 size={28} className="animate-spin text-blue-500" />
-          </div>
-        )}
+        {/* ── BODY ── */}
+        <div className="flex-1 overflow-y-auto">
+          {isLoading && (
+            <div className="flex justify-center items-center py-24">
+              <Loader2 size={28} className="animate-spin text-blue-500" />
+            </div>
+          )}
 
-        {isError && (
-          <div className="text-center py-24 text-red-500 text-sm px-6">
-            Failed to load lead details. Please try again.
-          </div>
-        )}
+          {isError && (
+            <div className="text-center py-24 text-red-500 text-sm px-6">
+              Failed to load lead details. Please try again.
+            </div>
+          )}
 
-        {!isLoading && !isError && data && (
-          <>
-            {/* ── DETAILS TAB ── */}
-            {activeTab === "details" && (
-              <div className="px-6 py-5 space-y-6">
+          {!isLoading && !isError && data && (
+            <>
+              {/* ── DETAILS TAB ── */}
+              {activeTab === "details" && (
+                <div className="px-6 py-5 space-y-6">
 
-                {/* Contact Info */}
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
-                    Contact
-                  </p>
-                  <div className="space-y-2">
-                    {data.mobile && (
-                      <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
-                        <Phone size={14} className="text-slate-400 shrink-0" />
-                        {data.mobile}
-                      </div>
-                    )}
-                    {data.email && (
-                      <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
-                        <Mail size={14} className="text-slate-400 shrink-0" />
-                        <span className="break-all">{data.email}</span>
-                      </div>
-                    )}
-                    {data.billingAddress && (
-                      <div className="flex items-start gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
-                        <MapPin size={14} className="text-slate-400 shrink-0 mt-0.5" />
-                        {data.billingAddress}
+                  {/* Contact Info */}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+                      Contact
+                    </p>
+                    <div className="space-y-2">
+                      {data.mobile && (
+                        <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
+                          <Phone size={14} className="text-slate-400 shrink-0" />
+                          {data.mobile}
+                        </div>
+                      )}
+                      {data.email && (
+                        <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
+                          <Mail size={14} className="text-slate-400 shrink-0" />
+                          <span className="break-all">{data.email}</span>
+                        </div>
+                      )}
+                      {data.billingAddress && (
+                        <div className="flex items-start gap-3 px-3 py-2.5 border border-slate-100 rounded-xl text-sm text-slate-700 bg-slate-50">
+                          <MapPin size={14} className="text-slate-400 shrink-0 mt-0.5" />
+                          {data.billingAddress}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Lead Info */}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+                      Lead Info
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <InfoCard label="Source" value={data.leadSourceName} />
+                      <InfoCard label="Assigned To" value={data.assignToName} />
+                      <InfoCard label="Created Date" value={fmt(data.createdDate)} />
+                      <InfoCard label="Next Follow-up" value={fmt(data.nextFollowupDate)} />
+                      {data.clientTypeName && (
+                        <InfoCard label="Customer Type" value={data.clientTypeName} />
+                      )}
+                      {data.gstNo && (
+                        <InfoCard label="GST No" value={data.gstNo} />
+                      )}
+                    </div>
+                    {data.createdbyName && (
+                      <div className="mt-2">
+                        <InfoCard label="Created By" value={data.createdbyName} />
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* Lead Info */}
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
-                    Lead Info
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <InfoCard label="Source" value={data.leadSourceName} />
-                    <InfoCard label="Assigned To" value={data.assignToName} />
-                    <InfoCard label="Created Date" value={fmt(data.createdDate)} />
-                    <InfoCard label="Next Follow-up" value={fmt(data.nextFollowupDate)} />
-                    {data.clientTypeName && (
-                      <InfoCard label="Customer Type" value={data.clientTypeName} />
-                    )}
-                    {data.gstNo && (
-                      <InfoCard label="GST No" value={data.gstNo} />
-                    )}
-                  </div>
-                  {data.createdbyName && (
-                    <div className="mt-2">
-                      <InfoCard label="Created By" value={data.createdbyName} />
+                  {/* Requirement */}
+                  {(data.requirementDetails || data.notes) && (
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+                        Requirement
+                      </p>
+                      {data.requirementDetails && (
+                        <div className="border border-slate-100 rounded-xl px-4 py-3 bg-slate-50 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                          {data.requirementDetails}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
+              )}
 
-                {/* Requirement */}
-                {(data.requirementDetails || data.notes) && (
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
-                      Requirement
-                    </p>
-                    {data.requirementDetails && (
-                      <div className="border border-slate-100 rounded-xl px-4 py-3 bg-slate-50 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-                        {data.requirementDetails}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+              {/* ── FOLLOW-UPS TAB ── */}
+              {activeTab === "followups" && (
+                <div className="px-6 py-5 space-y-4">
+                  {/* Add button */}
+                  {canAddFollowUp && !showAddForm && (
+                    <button
+                      onClick={() => setShowAddForm(true)}
+                      className="w-full flex items-center justify-center gap-2 border border-slate-200 text-slate-700 rounded-xl py-2.5 text-sm font-medium hover:bg-slate-50 transition"
+                    >
+                      <Plus size={15} />
+                      Add Follow-up
+                    </button>
+                  )}
 
-            {/* ── FOLLOW-UPS TAB ── */}
-            {activeTab === "followups" && (
-              <div className="px-6 py-5 space-y-4">
-                {/* Add button */}
-                {canAddFollowUp && !showAddForm && (
-                  <button
-                    onClick={() => setShowAddForm(true)}
-                    className="w-full flex items-center justify-center gap-2 border border-slate-200 text-slate-700 rounded-xl py-2.5 text-sm font-medium hover:bg-slate-50 transition"
-                  >
-                    <Plus size={15} />
-                    Add Follow-up
-                  </button>
-                )}
+                  {/* Inline Add Form */}
+                  {showAddForm && (
+                    <AddFollowUpForm
+                      leadID={data?.leadID ?? leadId}
+                      editData={editingFollowUp}
+                      onCancel={() => {
+                        setShowAddForm(false);
+                        setEditingFollowUp(null);
+                      }}
+                      onSuccess={() => {
+                        setShowAddForm(false);
+                        setEditingFollowUp(null);
+                      }}
+                    />
+                  )}
 
-                {/* Inline Add Form */}
-                {showAddForm && (
-                  <AddFollowUpForm
-                    leadId={data?.leadID ?? leadId}
-                    editData={editingFollowUp}
-                    onCancel={() => {
-                      setShowAddForm(false);
-                      setEditingFollowUp(null);
-                    }}
-                    onSuccess={() => {
-                      setShowAddForm(false);
-                      setEditingFollowUp(null);
-                    }}
-                  />
-                )}
+                  {/* Follow-up List */}
+                  {followups.length === 0 ? (
+                    <div className="text-center py-10 text-slate-400 text-sm">
+                      No follow-ups yet
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {followups.map((fu) => {
+                        const outcomeLower = (fu as any).outcome?.toLowerCase() ?? "neutral";
+                        const outcomeClass =
+                          OUTCOME_COLORS[outcomeLower] ?? OUTCOME_COLORS.neutral;
 
-                {/* Follow-up List */}
-                {followups.length === 0 ? (
-                  <div className="text-center py-10 text-slate-400 text-sm">
-                    No follow-ups yet
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {followups.map((fu) => {
-                      const outcomeLower = (fu as any).outcome?.toLowerCase() ?? "neutral";
-                      const outcomeClass =
-                        OUTCOME_COLORS[outcomeLower] ?? OUTCOME_COLORS.neutral;
-
-                      return (
-                        <div
-                          key={fu.followUpID}
-                          className="group border border-slate-200 rounded-xl px-4 py-3 bg-white shadow-sm hover:shadow-md transition-all"
-                        >
-                          {/* ── TOP ROW ── */}
-                          <div className="flex items-start justify-between mb-2 flex-wrap gap-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full border">
-                                {(fu as any).followUpType ?? (fu as any).type ?? "Follow-up"}
-                              </span>
-                              {(fu as any).outcome && (
-                                <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium ${outcomeClass}`}>
-                                  {outcomeLower}
+                        return (
+                          <div
+                            key={fu.followUpID}
+                            className="group border border-slate-200 rounded-xl px-4 py-3 bg-white shadow-sm hover:shadow-md transition-all"
+                          >
+                            {/* ── TOP ROW ── */}
+                            <div className="flex items-start justify-between mb-2 flex-wrap gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full border">
+                                  {(fu as any).followUpType ?? (fu as any).type ?? "Follow-up"}
                                 </span>
-                              )}
-                              {fu.statusName && !(fu as any).outcome && (
-                                <span className="text-[11px] px-2.5 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700">
-                                  {fu.statusName}
-                                </span>
+                                {(fu as any).outcome && (
+                                  <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium ${outcomeClass}`}>
+                                    {outcomeLower}
+                                  </span>
+                                )}
+                                {fu.statusName && !(fu as any).outcome && (
+                                  <span className="text-[11px] px-2.5 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700">
+                                    {fu.statusName}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Edit Icon */}
+                              {fu.statusName !== "Completed" && (
+                                <button
+                                  onClick={() => {
+                                    setEditingFollowUp(fu);
+                                    setShowAddForm(true);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 transition text-slate-400 hover:text-blue-600"
+                                  title="Edit"
+                                >
+                                  ✎
+                                </button>
                               )}
                             </div>
 
-                            {/* Edit Icon */}
-                            {fu.statusName !== "Completed" && (
-                              <button
-                                onClick={() => {
-                                  setEditingFollowUp(fu);
-                                  setShowAddForm(true);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 transition text-slate-400 hover:text-blue-600"
-                                title="Edit"
-                              >
-                                ✎
-                              </button>
-                            )}
-                          </div>
+                            {/* Notes */}
+                            <p className="text-sm text-slate-700 leading-relaxed mb-2">
+                              {fu.notes || "—"}
+                            </p>
 
-                          {/* Notes */}
-                          <p className="text-sm text-slate-700 leading-relaxed mb-2">
-                            {fu.notes || "—"}
-                          </p>
-
-                          {/* Dates */}
-                          <div className="flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
-                            <span className="flex items-center gap-1">
-                              <Calendar size={12} />
-                              {fmt((fu as any).followUpDate ?? fu.createdDate)}
-                            </span>
-
-                            {fu.nextFollowupDate && (
-                              <span className="flex items-center gap-1 text-blue-500 font-medium">
+                            {/* Dates */}
+                            <div className="flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
+                              <span className="flex items-center gap-1">
                                 <Calendar size={12} />
-                                Next: {fmt(fu.nextFollowupDate)}
+                                {fmt((fu as any).followUpDate ?? fu.createdDate)}
                               </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </div>
 
-      {/* ── FOOTER ── */}
-      {activeTab === "details" && (
-        <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white flex-wrap">
-          {canEditLead && (
-            <button
-              className="flex-1 border border-slate-200 rounded-xl py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition flex items-center justify-center gap-2"
-              onClick={() => { onClose(); onEditLead?.(data ?? lead); }}
-            >
-              ✎ Edit Lead
-            </button>
-          )}
-          {canAddQuotation && (
-            <button
-              className="flex-1 btn-primary rounded-xl py-2.5 text-sm font-semibold transition flex items-center justify-center gap-2"
-              onClick={() => { onClose(); onCreateQuotation?.(data ?? lead); }}
-            >
-              Create Quotation
-            </button>
+                              {fu.nextFollowupDate && (
+                                <span className="flex items-center gap-1 text-blue-500 font-medium">
+                                  <Calendar size={12} />
+                                  Next: {fmt(fu.nextFollowupDate)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
-      )}
-    </div>
-  </>
-);
+
+        {/* ── FOOTER ── */}
+        {activeTab === "details" && (
+          <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-white flex-wrap">
+            {canEditLead && (
+              <button
+                className="flex-1 border border-slate-200 rounded-xl py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition flex items-center justify-center gap-2"
+                onClick={() => { onClose(); onEditLead?.(data ?? lead); }}
+              >
+                ✎ Edit Lead
+              </button>
+            )}
+            {canAddQuotation && (
+              <button
+                className="flex-1 btn-primary rounded-xl py-2.5 text-sm font-semibold transition flex items-center justify-center gap-2"
+                onClick={() => { onClose(); onCreateQuotation?.(data ?? lead); }}
+              >
+                Create Quotation
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default LeadDetailSheet;

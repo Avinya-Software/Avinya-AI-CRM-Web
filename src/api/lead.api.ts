@@ -50,12 +50,12 @@ export const getLeadByIdApi = async (leadId: string): Promise<LeadDetail> => {
 /*   CREATE / UPDATE LEAD   */
 
 export const upsertLeadApi = async (data: any) => {
-  const res = await api.post("/Lead", data);
+  const res = await api.post("/Lead", { dto: data });
   return res.data;
 };
 
 export const updateLeadApi = async (id: string, payload: any) => {
-  const res = await api.put(`/Lead/${id}`, payload);
+  const res = await api.put(`/Lead/${id}`, { dto: payload });
   return res.data;
 };
 

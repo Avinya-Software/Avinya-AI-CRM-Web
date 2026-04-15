@@ -61,15 +61,9 @@ const Leads = () => {
 
   const { userId: advisorId } = useAuth();
 
-  const leadsMutation = useLeads();
-
   const debouncedSearchTerm = useDebounce(search, 500);
 
-  useEffect(() => {
-    leadsMutation.mutate(filters);
-  }, [filters]);
-
-  const { data, isPending: isLoading } = leadsMutation;
+  const { data, isLoading } = useLeads(filters);
 
   useEffect(() => {
     setFilters(prev => {

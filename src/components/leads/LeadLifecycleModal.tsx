@@ -30,6 +30,7 @@ interface LeadLifecycleModalProps {
   isLoading?: boolean;
   sources?: any[];
   users?: any[];
+  statuses?: any[];
   totalPages?: number;
   totalRecords?: number;
 }
@@ -44,6 +45,7 @@ const LeadLifecycleModal: React.FC<LeadLifecycleModalProps> = ({
   isLoading,
   sources,
   users,
+  statuses,
   totalPages,
   totalRecords
 }) => {
@@ -54,7 +56,7 @@ const LeadLifecycleModal: React.FC<LeadLifecycleModalProps> = ({
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters.dateFrom, filters.dateTo, filters.leadSourceId, filters.assignedTo]);
+  }, [filters.dateFrom, filters.dateTo, filters.leadSourceId, filters.assignedTo, filters.leadStatusId]);
 
   if (!isOpen) return null;
 
@@ -169,6 +171,16 @@ const LeadLifecycleModal: React.FC<LeadLifecycleModalProps> = ({
                   <option value="">All Users</option>
                   {users?.map((u) => (
                     <option key={u.id} value={u.fullName}>{u.fullName}</option>
+                  ))}
+                </select>
+                <select 
+                   className="bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold px-3 py-2 uppercase tracking-wide focus:outline-none cursor-pointer"
+                   value={filters.leadStatusId || ""}
+                   onChange={(e) => onFilterChange("leadStatusId", e.target.value)}
+                >
+                  <option value="">All Status</option>
+                  {statuses?.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
                 </select>
                 <button 

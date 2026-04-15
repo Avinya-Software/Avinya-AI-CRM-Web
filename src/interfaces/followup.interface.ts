@@ -5,7 +5,7 @@ export interface FollowUp {
   leadId: string;
   followUpDate: string;
   notes: string;
-  nextFollowUpDate?: string;
+  nextFollowupDate?: string;
   followUpBy: string;
   followUpByName?: string;
   status: "Pending" | "Completed" | "Cancelled";
@@ -18,14 +18,14 @@ export interface CreateFollowUpDto {
   leadId: string;
   followUpDate: string;
   notes: string;
-  nextFollowUpDate?: string;
+  nextFollowupDate?: string;
   followUpBy: string;
 }
 
 export interface UpdateFollowUpDto {
   followUpDate?: string;
   notes?: string;
-  nextFollowUpDate?: string;
+  nextFollowupDate?: string;
   followUpBy?: string;
   status?: number;
 }

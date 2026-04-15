@@ -22,6 +22,7 @@ interface Client360ModalProps {
   filters: ClientReportFilter;
   onFilterChange: (key: keyof ClientReportFilter, value: any) => void;
   onDrillDown: (clientId: string) => void;
+  states?: any[];
   totalRecords?: number;
 }
 
@@ -33,8 +34,15 @@ const Client360Modal: React.FC<Client360ModalProps> = ({
   filters, 
   onFilterChange,
   onDrillDown,
+  states,
   totalRecords
 }) => {
+  const [searchTerm, setSearchTerm] = React.useState("");
+  
+  const CLIENT_TYPES = [
+    { value: 1, label: "Company" },
+    { value: 2, label: "Individual" },
+  ];
   return (
     <Modal
       title={null}
@@ -67,6 +75,44 @@ const Client360Modal: React.FC<Client360ModalProps> = ({
           </button>
         </div>
 
+        {/* Filter Bar */}
+        <div className="px-8 py-3 bg-white border-b border-slate-100 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="relative flex-1 max-w-md">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text"
+                placeholder="Search by company or contact..."
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <select 
+                 className="bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold px-3 py-2 uppercase tracking-wide focus:outline-none cursor-pointer"
+                 value={filters.clientType || ""}
+                 onChange={(e) => onFilterChange("clientType", e.target.value ? Number(e.target.value) : undefined)}
+              >
+                <option value="">All Types</option>
+                {CLIENT_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+
+             
+
+              <button 
+                onClick={() => onFilterChange("pageNumber", 1)}
+                className="p-2 bg-slate-50 border border-slate-100 rounded-lg hover:bg-slate-100 transition-all"
+              >
+                <RefreshCcw size={14} className="text-slate-500" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Content Area */}
         <div className="flex-1 overflow-hidden flex flex-col">
           {/* Table Container */}
@@ -94,7 +140,10 @@ const Client360Modal: React.FC<Client360ModalProps> = ({
                       </div>
                     </td>
                   </tr>
-                ) : data && data.length > 0 ? data.map((client, idx) => (
+                ) : data && data.length > 0 ? data.filter(client => 
+                    client.companyName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    client.contactPerson.toLowerCase().includes(searchTerm.toLowerCase())
+                  ).map((client, idx) => (
                   <tr 
                     key={idx} 
                     className="hover:bg-slate-50/80 transition-colors group cursor-pointer"

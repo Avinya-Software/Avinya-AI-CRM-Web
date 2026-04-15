@@ -5,13 +5,11 @@ import { createFollowUpApi } from "../../api/leadFollowUp.api";
 import toast from "react-hot-toast";
 
 interface Props {
-  leadId: string;
+  leadID: string;
   onSuccess: () => void;
 }
 
-
-
-const FollowUpForm = ({ leadId, onSuccess }: Props) => {
+const FollowUpForm = ({ leadID, onSuccess }: Props) => {
   const [followUpDate, setFollowUpDate] = useState<string>(
     dayjs().format("YYYY-MM-DD HH:mm") // ✅ DEFAULT TODAY
   );
@@ -66,14 +64,16 @@ const FollowUpForm = ({ leadId, onSuccess }: Props) => {
   };
 
   /* 🚀 SUBMIT */
+
   const handleSubmit = async () => {
+     
     if (!validate()) return;
 
     try {
       setSaving(true);
 
       await createFollowUpApi({
-        leadId,
+        leadID,
         followUpDate,
         nextFollowupDate: nextFollowUpDate || null,
         remark,
