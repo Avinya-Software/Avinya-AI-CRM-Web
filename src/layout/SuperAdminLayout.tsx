@@ -1,22 +1,19 @@
-// src/layout/AppLayout.tsx
 import { Outlet, useLocation } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
 import SuperAdminSidebar from "../components/SuperAdminSidebar";
 import { ChatPanel } from "../components/common/ChatPanel";
 import { UserHeader } from "../components/common/UserHeader";
 import { ChatProvider } from "../context/ChatContext";
 import { cn } from "../lib/utils";
 
-const AppLayout = () => {
+const SuperAdminLayout = () => {
   const location = useLocation();
   const isAIPage = location.pathname === "/ai-assistant";
-  const isSuperAdmin = localStorage.getItem("isSuperAdmin") === "true";
 
   return (
     <ChatProvider>
       <div className="flex h-screen bg-slate-100 overflow-hidden">
-        {/* Sidebar */}
-        {isSuperAdmin ? <SuperAdminSidebar /> : <Sidebar />}
+        {/* SuperAdmin Sidebar */}
+        <SuperAdminSidebar />
 
         {/* Workspace Root */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -39,4 +36,4 @@ const AppLayout = () => {
   );
 };
 
-export default AppLayout;
+export default SuperAdminLayout;

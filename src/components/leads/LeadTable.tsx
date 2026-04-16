@@ -89,7 +89,7 @@ const LeadTable = ({
 
     const spaceAbove = rect.top;
     const spaceBelow = viewportHeight - rect.bottom;
-    
+
     // Determine direction
     const openUpwards = spaceBelow < 250 && spaceAbove > spaceBelow;
 
@@ -156,7 +156,7 @@ const LeadTable = ({
     }
     onViewFollowUps?.(lead);
   };
-  
+
 
   return (
     <div className="relative overflow-x-auto">

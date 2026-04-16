@@ -18,7 +18,7 @@ export const getLeadFollowUps = async (
 
 // ── POST: Create new follow-up ─────────────────────────────────────
 export const createFollowUp = async (data: CreateFollowUpDto) => {
-  const response = await api.post("/FollowUp/add", { dto: data });
+  const response = await api.post("/FollowUp/add", data );
   return response.data;
 };
 
@@ -27,7 +27,7 @@ export const updateFollowUp = async (
   followUpId: string,
   data: UpdateFollowUpDto
 ) => {
-  const response = await api.put(`/FollowUp/${followUpId}`, { dto: data });
+  const response = await api.put(`/FollowUp/${followUpId}`, data );
   return response.data;
 };
 

@@ -12,4 +12,4 @@ export const getSettings = async (search?: string): Promise<Settings[]> => {
 export const updateSetting = async (dto: Settings): Promise<ApiResponse<Settings>> => {
   const res = await api.put<ApiResponse<Settings>>("/Setting/update", dto);
   return res.data;
-};
+};

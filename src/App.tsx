@@ -41,6 +41,7 @@ import About from "./pages/Landing/About";
 import Loginai from "./pages/Landing/Login";
 import Signup from "./pages/Landing/Signup";
 import PublicLayout from "./pages/Publiclayouts/Publiclayout";
+import SuperAdminLogin from "./pages/SuperAdminLogin";
 
 
 function App() {
@@ -62,6 +63,7 @@ function App() {
 
 
           <Route path="/login/admin" element={<Admin />} />
+          <Route path="/login/superadmin" element={<SuperAdminLogin />} />
 
           <Route path="/unauthorized" element={<Unauthorized />} />
 

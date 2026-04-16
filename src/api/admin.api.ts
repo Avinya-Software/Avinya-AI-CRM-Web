@@ -20,6 +20,17 @@ export const loginAdminApi = async (
   return res.data;
 };
 
+// SuperAdmin Login
+export const loginSuperAdminApi = async (
+  data: AdminLoginRequest
+) => {
+  const res = await api.post<ApiWrapper<AdminLoginResponse>>(
+    "/auth/Adminlogin",
+    data
+  );
+  return res.data;
+};
+
 //   PENDING ADVISORS  
 export const getPendingAdvisorsApi = async () => {
   const res = await api.get<ApiWrapper<any[]>>(

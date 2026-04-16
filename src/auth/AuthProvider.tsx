@@ -28,6 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     storage.clearToken();
     storage.clearUserId();
     localStorage.removeItem("advisor");
+    localStorage.removeItem("isSuperAdmin");
     setToken(null);
     setUserId(null);
     window.location.href = "/login";

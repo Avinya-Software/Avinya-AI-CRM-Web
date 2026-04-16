@@ -106,6 +106,9 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     notes: "",
     cityId: "",
     clientType: 1,
+    companyName: "",
+    gstNo: "",
+    otherSources: "",
   };
 
   // Auto-select first status for new leads once statuses load
@@ -144,6 +147,9 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       notes: lead.notes ?? "",
       cityId: lead.cityID?.toString() ?? "",
       clientType: lead.clientType ?? 1,
+      companyName: lead.companyName ?? "",
+      gstNo: lead.gstNo ?? "",
+      otherSources: lead.otherSources ?? "",
     });
     setSelectedCustomerId(lead.clientID ?? "");
   }, [lead, open]);
@@ -249,11 +255,15 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       RequirementDetails: form.requirementDetails,
       Links: form.links,
       Notes: form.notes,
+      Date: isEdit ? (lead.date || new Date().toISOString()) : new Date().toISOString(),
       NextFollowupDate: form.nextFollowupDate ? new Date(form.nextFollowupDate) : null,
       LeadStatusID: form.leadStatusId,
       LeadSourceID: form.leadSourceId || "00000000-0000-0000-0000-000000000000",
+      OtherSources: form.otherSources || null,
       AssignedTo: form.assignedTo || advisorId,
       ClientType: form.clientType,
+      CompanyName: form.companyName,
+      GSTNo: form.gstNo,
     };
 
     mutate(payload, { onSuccess: onClose });
@@ -337,6 +347,24 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
                 ))}
               </select>
             </div>
+
+            {/* Company Name | GST No (only if type is Company) */}
+            {form.clientType === 1 && (
+              <>
+                <Input
+                  label="Company Name"
+                  value={form.companyName}
+                  onChange={(v: any) => setForm({ ...form, companyName: v })}
+                  disabled={isReadOnly}
+                />
+                <Input
+                  label="GST No"
+                  value={form.gstNo}
+                  onChange={(v: any) => setForm({ ...form, gstNo: v })}
+                  disabled={isReadOnly}
+                />
+              </>
+            )}
 
             {/* Mobile | Email */}
             <Input
