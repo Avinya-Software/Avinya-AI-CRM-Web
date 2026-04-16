@@ -285,7 +285,7 @@ const Sidebar = () => {
           <>
             {/* ALWAYS VISIBLE */}
             <NavItem
-              to="/"
+              to="/dashboard"
               icon={<LayoutDashboard size={18} />}
               label="Dashboard"
               isCollapsed={isCollapsed}

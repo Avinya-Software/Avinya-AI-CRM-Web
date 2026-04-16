@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Menu, X, Sparkles, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
  import { cn } from '../../lib/utils.ts';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -10,6 +10,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -22,7 +23,7 @@ export default function Navbar() {
       const element = document.getElementById('booking');
       element?.scrollIntoView({ behavior: 'smooth' });
     } else {
-      window.location.href = '/#booking';
+      navigate('/#booking');
     }
     setIsOpen(false);
   };
@@ -40,7 +41,7 @@ export default function Navbar() {
         <span className="text-xl font-bold font-display tracking-tight text-slate-900 dark:text-white">Avinya</span>
       </Link>
 
-      <div className="hidden md:flex items-center gap-8">
+      <div className="hidden md:flex items-center gap-6">
         {navLinks.map((link) => (
           <Link 
             key={link.name} 
@@ -49,27 +50,25 @@ export default function Navbar() {
               "text-sm font-semibold transition-colors",
               location.pathname === link.path 
                 ? "text-emerald-600 dark:text-emerald-400" 
-                : "text-slate-700 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
+                : "text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white"
             )}
           >
             {link.name}
           </Link>
         ))}
-      </div>
 
-      <div className="hidden md:flex items-center gap-4">
-        <button 
-          onClick={toggleTheme}
-          className="p-2 rounded-full glass hover:bg-black/5 dark:hover:bg-white/10 transition-all mr-2"
+        <button
+          onClick={scrollToBooking}
+          className="text-sm font-semibold text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
-          {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-slate-700" />}
+          Book Demo
         </button>
-        
+
         <Link 
           to="/login" 
-          className="text-sm font-semibold text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-colors px-4"
+          className="text-sm font-semibold text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
-          Log in
+          Login
         </Link>
         
         <Link 
@@ -79,13 +78,11 @@ export default function Navbar() {
           Sign up
         </Link>
 
-        <div className="w-px h-6 bg-black/10 dark:bg-white/10 mx-2" />
-
         <button 
-          onClick={scrollToBooking}
-          className="px-5 py-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-slate-800 dark:hover:bg-white/90 transition-all shadow-xl shadow-black/10 dark:shadow-white/10"
+          onClick={toggleTheme}
+          className="p-2 rounded-full glass hover:bg-black/5 dark:hover:bg-white/10 transition-all"
         >
-          Book Demo
+          {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-slate-700" />}
         </button>
       </div>
 

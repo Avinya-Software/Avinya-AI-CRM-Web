@@ -2,7 +2,10 @@
 import { motion , AnimatePresence  } from "framer-motion";
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Layout, Users, FileText, CheckSquare } from 'lucide-react';
-import myImage from "../../../public/Images/Dashboard1.png";
+import dashboard2 from "../../../public/Images/Dashboard2.png";
+import Lead2 from "../../../public/Images/Lead2.png";
+import aichatbot2 from "../../../public/Images/ai-chatbot2.png";
+import taskmanagement2 from "../../../public/Images/Taskmanagement2.png";
 
 
 const screens = [
@@ -10,25 +13,25 @@ const screens = [
     title: "Action Dashboard",
     description: "Your mission control. See hot leads, pending tasks, and revenue at a glance.",
     icon: Layout,
-    image: myImage
+    image: dashboard2
   },
   {
     title: "Lead Management",
     description: "Track every interaction. Our AI scores leads based on engagement and intent.",
     icon: Users,
-    image: "https://picsum.photos/seed/crm-leads/1200/800"
+    image: Lead2
   },
   {
-    title: "Ai Chaatbot",
+    title: "Ai Chatbot",
     description: "Handle customer queries in seconds. AI provides smart responses based on conversation history.",
     icon: FileText,
-    image: "https://picsum.photos/seed/crm-quotes/1200/800"
+    image: aichatbot2
   },
   {
     title: "Task Board",
     description: "Stay organized with Kanban-style task management and automated scheduling.",
     icon: CheckSquare,
-    image: "https://picsum.photos/seed/crm-tasks/1200/800"
+    image: taskmanagement2
   }
 ];
 
@@ -120,10 +123,9 @@ export default function Showcase() {
                   <img 
                     src={screens[active].image} 
                     alt={screens[active].title}
-                    className="w-full h-full object-cover opacity-80 dark:opacity-60"
+                    className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent dark:from-black/60" />
                 </motion.div>
               </AnimatePresence>
             </div>

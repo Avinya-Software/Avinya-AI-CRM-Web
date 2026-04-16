@@ -1,6 +1,7 @@
 // import { motion } from 'motion/react';
 import { motion } from "framer-motion";
 import { Users, Target, Rocket, Heart } from 'lucide-react';
+import aboutusimage from "../../../public/Images/About.png";
 
 const values = [
   {
@@ -58,7 +59,7 @@ export default function About() {
           >
             <h2 className="text-4xl font-bold text-slate-900 dark:text-white">Our Story</h2>
             <p className="text-slate-700 dark:text-white/60 text-lg font-light leading-relaxed">
-              In 2022, we realized that while sales teams were moving faster than ever, 
+              In 2026, we realized that while sales teams were moving faster than ever, 
               their tools were stuck in the past. We saw sales reps spending 60% of 
               their time on data entry instead of talking to customers.
             </p>
@@ -75,9 +76,9 @@ export default function About() {
             className="relative aspect-square rounded-[3rem] overflow-hidden glass dark:bg-white/5 border-black/5 dark:border-white/10"
           >
             <img 
-              src="https://picsum.photos/seed/team-office/800/800" 
+              src={aboutusimage}
               alt="Our Team"
-              className="w-full h-full object-cover opacity-80 dark:opacity-60"
+              className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
           </motion.div>

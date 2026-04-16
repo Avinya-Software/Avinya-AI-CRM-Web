@@ -68,7 +68,7 @@ const Login = () => {
 
   useEffect(() => {
     if (loginDone && isReady) {
-      navigate("/redirect");
+      navigate("/dashboard");
     }
   }, [loginDone, isReady, navigate]);
 
@@ -194,7 +194,7 @@ const Login = () => {
 
           <div className={`mt-8 text-center text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
             Don't have an account?{" "}
-            <Link to="/register" className={`font-bold hover:underline ${isDark ? "text-emerald-400" : "text-emerald-500"}`}>
+            <Link to="/signup" className={`font-bold hover:underline ${isDark ? "text-emerald-400" : "text-emerald-500"}`}>
               Create one for free
             </Link>
           </div>
