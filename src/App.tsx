@@ -35,6 +35,13 @@ import QuickBookCustomers from "./pages/QuickBookCustomers";
 import QuickBookInvoices from "./pages/QuickBookInvoices";
 import Invoices from "./pages/Invoices";
 import ReportsOverview from "./pages/ReportsOverview";
+import Home from "./pages/Landing/Home";
+import About from "./pages/Landing/About";
+// import Pricing from "./pages/Landing/Pricing";
+import Loginai from "./pages/Landing/Login";
+import Signup from "./pages/Landing/Signup";
+import PublicLayout from "./pages/Publiclayouts/Publiclayout";
+
 
 function App() {
   return (
@@ -43,10 +50,21 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* ================= PUBLIC ================= */}
-          <Route path="/login" element={<Login />} />
+
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            {/* <Route path="/pricing" element={<Pricing />} /> */}
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Loginai />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
+
+
           <Route path="/login/admin" element={<Admin />} />
-          <Route path="/register" element={<Register />} />
+
           <Route path="/unauthorized" element={<Unauthorized />} />
+
 
           {/* ================= PROTECTED + LAYOUT ================= */}
           <Route
@@ -60,7 +78,7 @@ function App() {
             <Route path="/redirect" element={<SmartRedirect />} />
             {/* dashboard:view */}
             <Route
-              path="/"
+              path="/dashboard"
               element={
                 <Dashboard />
               }
@@ -107,7 +125,7 @@ function App() {
               }
             />
 
-           
+
 
             {/* followup:view (mapped to Customers) */}
             <Route
