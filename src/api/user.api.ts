@@ -18,8 +18,8 @@ export const getUsersApi = async (filters: UserFilters) => {
 /*   GET USER ROLES   */
 
 export const getUserRolesApi = async () => {
-  const res = await api.get<{ id: string; name: string }[]>("/User/roles");
-  return res.data;
+  const res = await api.get<{ data: { id: string; name: string }[] }>("/users/roles");
+  return res.data.data;
 };
 
 /*   GET TENANTS   */

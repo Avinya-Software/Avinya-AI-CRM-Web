@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { updateUserApi, upsertUserApi } from "../../api/user.api";
 import type { User, UserUpsertRequest } from "../../interfaces/user.interface";
-import { useCompanies } from "../../hooks/users/Useusers";
+import { useCompanies, useRoles } from "../../hooks/users/Useusers";
 import { usePermissions as useUserPermissions } from "../../hooks/users/usePermissions";
 import { usePermissions } from "../../context/PermissionContext";
 import { useAuth } from "../../auth/useAuth";
@@ -30,7 +30,8 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
 
     const { token } = useAuth();
     const currentUser = decodeUserToken(token);
-    const isSuperAdmin = currentUser?.role === "SuperAdmin";
+    const isSuperAdmin = currentUser?.role === "ROLE_SUPERADMIN" || currentUser?.role === "SuperAdmin";
+    const isAdmin = currentUser?.role === "ROLE_ADMIN" || currentUser?.role === "Admin";
 
     const permissionModulesMutation = useUserPermissions();
     const permissionModules = permissionModulesMutation.data ?? [];
@@ -50,10 +51,22 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
     const companiesMutation = useCompanies();
     const companies = companiesMutation.data ?? [];
 
+    const rolesMutation = useRoles();
+    const allRoles = rolesMutation.data ?? [];
+
+    // Filter roles: Admins cannot add SuperAdmins
+    const availableRoles = allRoles.filter(role => {
+        if (isAdmin && !isSuperAdmin) {
+            return role.id !== "ROLE_SUPERADMIN" && role.name !== "SuperAdmin";
+        }
+        return true;
+    });
+
     useEffect(() => {
         if (open) {
             permissionModulesMutation.mutate();
             companiesMutation.mutate();
+            rolesMutation.mutate();
         }
     }, [open]);
 
@@ -237,10 +250,12 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
                                         disabled={isReadOnly}
                                         className="w-full px-3 py-2 border rounded text-sm disabled:bg-slate-50 disabled:text-slate-500"
                                     >
-                                        <option value="User">User</option>
-                                        <option value="Manager">Manager</option>
-                                        <option value="Admin">Admin</option>
-                                        {isSuperAdmin && <option value="SuperAdmin">SuperAdmin</option>}
+                                        <option value="">Select Role</option>
+                                        {availableRoles.map((role) => (
+                                            <option key={role.id} value={role.name}>
+                                                {role.name}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
                             </>

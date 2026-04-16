@@ -1,6 +1,6 @@
 // src/hooks/user/useUsers.ts
 import { useMutation } from "@tanstack/react-query";
-import { getCompaniesApi, getUsersApi, getUsersDropdownApi } from "../../api/user.api";
+import { getCompaniesApi, getUserRolesApi, getUsersApi, getUsersDropdownApi } from "../../api/user.api";
 import type { CompanyDropdownOption, UserDropdownOption, UserFilters, UserListData } from "../../interfaces/user.interface";
 
 export const useUsers = () => {
@@ -25,6 +25,15 @@ export const useUsersDropdown = () => {
   return useMutation<UserDropdownOption[], Error, void>({
     mutationFn: async () => {
       const response = await getUsersDropdownApi();
+      return response;
+    },
+  });
+};
+
+export const useRoles = () => {
+  return useMutation<{ id: string; name: string }[], Error, void>({
+    mutationFn: async () => {
+      const response = await getUserRolesApi();
       return response;
     },
   });
