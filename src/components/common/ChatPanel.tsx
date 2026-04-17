@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Bot, Send, ExternalLink, X, TrendingUp, ChevronDown, ChevronUp, BarChart2, Clock, Hash } from "lucide-react";
+import { Bot, Send, ExternalLink, X, TrendingUp, ChevronDown, ChevronUp, BarChart2, Clock, Hash, Coins, Zap } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useNavigate, useLocation } from "react-router-dom";
@@ -281,7 +281,7 @@ const ReportBreakdown = ({ breakdown }: { breakdown: Record<string, Record<strin
 // ─── Main ChatPanel ───────────────────────────────────────────────────────────
 
 export const ChatPanel = () => {
-  const { messages, input, setInput, isPending, sendMessage, isOpen, setIsOpen } = useChat();
+  const { messages, input, setInput, isPending, sendMessage, isOpen, setIsOpen, remainingCredits } = useChat();
   const navigate = useNavigate();
   const location = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -408,10 +408,19 @@ export const ChatPanel = () => {
                   </div>
                 )}
 
-              {/* Timestamp */}
-              <span className="text-[10px] text-slate-400 mt-1 px-1 font-medium opacity-70">
-                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
+              <div className="flex items-center justify-between w-full mt-1 px-1">
+                <span className="text-[10px] text-slate-400 font-medium opacity-70">
+                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                {msg.role === "ai" && msg.totalTokens !== undefined && (
+                  <div className="flex items-center gap-1.5 bg-slate-100/50 px-2 py-0.5 rounded-full border border-slate-100">
+                    <Zap className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
+                    <span className="text-[10px] font-bold text-slate-500">
+                      {msg.totalTokens.toLocaleString()} tokens
+                    </span>
+                  </div>
+                )}
+              </div>
 
               {/* Suggestions */}
               {msg.role === "ai" && msg.suggestions && msg.suggestions.length > 0 && (
@@ -429,6 +438,22 @@ export const ChatPanel = () => {
             </div>
           )}
         </div>
+
+        {/* Remaining Credits */}
+        {remainingCredits !== null && (
+          <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              <Coins className="h-3.5 w-3.5 text-amber-500" />
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Credits Balance</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded-lg border border-slate-200 shadow-sm">
+              <span className="text-xs font-black text-slate-800 tracking-tight">
+                {remainingCredits.toLocaleString()}
+              </span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase">Tokens</span>
+            </div>
+          </div>
+        )}
 
         {/* Input */}
         <div className="p-4 border-t bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.03)] flex gap-2 shrink-0">

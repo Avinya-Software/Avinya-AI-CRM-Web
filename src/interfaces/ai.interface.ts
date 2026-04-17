@@ -14,6 +14,10 @@ export interface AIResponse {
   Breakdown?: Record<string, Record<string, any>>;
   Insights?: string;
   suggestions?: string[];
+
+  // Token Credit System
+  totalTokens?: number;
+  remainingCredits?: number;
 }
 
 // ─── Dashboard / Module-card types ────────────────────────────────────────────
@@ -48,5 +52,6 @@ export interface ChatMessage {
   suggestions?: string[];
   /** Populated when the backend returns a multi-module dashboard payload */
   dashboardData?: DashboardPayload;
+  totalTokens?: number; // How many tokens THIS message used
   timestamp: Date;
 }

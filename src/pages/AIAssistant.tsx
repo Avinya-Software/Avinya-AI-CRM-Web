@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Bot, Send, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash } from "lucide-react";
+import { Bot, Send, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash, Coins, Zap } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useChat } from "../context/ChatContext";
@@ -275,7 +275,7 @@ const SuggestionChips = ({ suggestions, onSelect }: { suggestions: string[]; onS
 // ─── Main AIAssistant ─────────────────────────────────────────────────────────
 
 const AIAssistant = () => {
-  const { messages, input, setInput, isPending, sendMessage } = useChat();
+  const { messages, input, setInput, isPending, sendMessage, remainingCredits } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -376,9 +376,20 @@ const AIAssistant = () => {
                   </div>
                 )}
 
-              <span className="text-[10px] text-slate-400 mt-1 px-1">
-                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
+              <div className="flex items-center justify-between w-full mt-1.5 px-1">
+                <span className="text-[10px] text-slate-400 font-medium opacity-80 flex items-center gap-1.5">
+                  <div className="h-1 w-1 rounded-full bg-slate-300" />
+                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                {msg.role === "ai" && msg.totalTokens !== undefined && (
+                  <div className="flex items-center gap-1.5 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
+                    <Zap className="h-3 w-3 text-amber-500 fill-amber-500" />
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                      {msg.totalTokens.toLocaleString()} tokens used
+                    </span>
+                  </div>
+                )}
+              </div>
 
               {/* SUGGESTIONS */}
               {msg.role === "ai" && msg.suggestions && msg.suggestions.length > 0 && (
@@ -419,6 +430,23 @@ const AIAssistant = () => {
             <Send className="h-5 w-5" />
           </Button>
         </div>
+        
+        {/* Remaining Credits Info */}
+        {remainingCredits !== null && (
+          <div className="max-w-5xl mx-auto mt-4 px-1 flex items-center gap-4">
+            <div className="flex items-center gap-2 text-slate-400">
+              <Coins className="h-4 w-4 text-amber-500" />
+              <span className="text-xs font-bold uppercase tracking-widest">Available Credit</span>
+            </div>
+            <div className="h-px flex-1 bg-slate-100" />
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl shadow-sm">
+              <span className="text-sm font-black text-slate-800 tracking-tight">
+                {remainingCredits.toLocaleString()}
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remaining Tokens</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

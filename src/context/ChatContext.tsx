@@ -11,6 +11,7 @@ interface ChatContextType {
   sendMessage: (content: string) => void;
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  remainingCredits: number | null;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -73,6 +74,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   ]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const { mutate: mutateChat, isPending } = useAIChat();
 
   const sendMessage = (content: string) => {
@@ -116,8 +118,12 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
             insights: data.Insights,
             suggestions: data.suggestions,
             dashboardData,
+            totalTokens: data.totalTokens,
             timestamp: new Date(),
           };
+          if (data.remainingCredits !== undefined) {
+            setRemainingCredits(data.remainingCredits);
+          }
           setMessages((prev) => [...prev, aiMessage]);
         },
         onError: (error: any) => {
@@ -134,7 +140,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ChatContext.Provider value={{ messages, setMessages, input, setInput, isPending, sendMessage, isOpen, setIsOpen }}>
+    <ChatContext.Provider value={{ messages, setMessages, input, setInput, isPending, sendMessage, isOpen, setIsOpen, remainingCredits }}>
       {children}
     </ChatContext.Provider>
   );
