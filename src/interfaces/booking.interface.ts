@@ -1,4 +1,4 @@
-import { ApiWrapper } from "./advisor.interface";
+export { ApiWrapper } from "./advisor.interface";
 
 export interface BookingDemoRequest {
   fullName: string;
