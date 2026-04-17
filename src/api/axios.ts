@@ -8,9 +8,11 @@ const api = axios.create({
 // ── Request interceptor: attach Bearer token ─────────────────────────────────
 api.interceptors.request.use((config) => {
   const token = storage.getToken();
-  // Do not attach token for auth-related requests (login, registration, etc.)
-  // This prevents issues where a stale/expired token causes login requests to fail.
-  if (token && !config.url?.toLowerCase().includes("/auth/")) {
+  // Do not attach token for auth-related requests or public booking requests
+  const isAuthRequest = config.url?.toLowerCase().includes("/auth/");
+  const isPublicBooking = config.url?.toLowerCase().includes("/bookingdemo/create-demobooking");
+
+  if (token && !isAuthRequest && !isPublicBooking) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
