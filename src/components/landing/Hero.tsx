@@ -1,6 +1,7 @@
-// import { motion } from 'motion/react';
-import { motion } from "framer-motion";
-import { ArrowRight, Play, Bot, Mic, Layout, Users } from 'lucide-react';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Play, Bot, Mic, Layout, Users, X } from 'lucide-react';
+import * as Dialog from "@radix-ui/react-dialog";
 
 export default function Hero() {
   return (
@@ -48,14 +49,42 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center gap-4 pt-4"
           >
-            <button className="group px-8 py-4 rounded-full bg-emerald-500 text-black font-bold text-lg hover:bg-emerald-400 transition-all flex items-center gap-2 shadow-2xl shadow-emerald-500/20">
-              Get Started Free
+            <button 
+              onClick={() => {
+                document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="group px-8 py-4 rounded-full bg-emerald-500 text-black font-bold text-lg hover:bg-emerald-400 transition-all flex items-center gap-2 shadow-2xl shadow-emerald-500/20"
+            >
+              Get Started
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
-            <button className="px-8 py-4 rounded-full glass dark:bg-white/5 text-slate-900 dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all flex items-center gap-2 font-semibold">
-              <Play className="w-5 h-5 fill-slate-900 dark:fill-white" />
-              Watch Demo
-            </button>
+            <Dialog.Root>
+              <Dialog.Trigger asChild>
+                <button className="px-8 py-4 rounded-full glass dark:bg-white/5 text-slate-900 dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all flex items-center gap-2 font-semibold">
+                  <Play className="w-5 h-5 fill-slate-900 dark:fill-white" />
+                  Watch Demo
+                </button>
+              </Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] animate-in fade-in duration-300" />
+                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden z-[101] shadow-2xl animate-in zoom-in-95 fade-in duration-300">
+                  <Dialog.Title className="sr-only">Product Demo Video</Dialog.Title>
+                  <button className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors z-10">
+                    <Dialog.Close asChild>
+                      <X className="w-6 h-6" />
+                    </Dialog.Close>
+                  </button>
+                  <video
+                    className="w-full h-full object-contain"
+                    controls
+                    autoPlay
+                    src="/ss4-recording-ai-crm.mp4"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
           </motion.div>
         </div>
 

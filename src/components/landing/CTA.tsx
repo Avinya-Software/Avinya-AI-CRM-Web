@@ -31,8 +31,13 @@ export default function CTA() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-            <button className="px-10 py-5 rounded-full bg-emerald-500 text-black font-bold text-xl hover:bg-emerald-400 transition-all flex items-center gap-2 shadow-2xl shadow-emerald-500/20">
-              Get Started Now
+            <button 
+              onClick={() => {
+                document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-10 py-5 rounded-full bg-emerald-500 text-black font-bold text-xl hover:bg-emerald-400 transition-all flex items-center gap-2 shadow-2xl shadow-emerald-500/20"
+            >
+              Get Started
               <ArrowRight className="w-6 h-6" />
             </button>
             <button className="px-10 py-5 rounded-full glass dark:bg-white/5 text-slate-900 dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all font-semibold text-lg">

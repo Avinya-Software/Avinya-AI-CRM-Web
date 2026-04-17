@@ -1,0 +1,12 @@
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+
+# Exclude sensitive routes if any
+Disallow: /admin/
+Disallow: /login/admin
+Disallow: /login/superadmin
+
+# Sitemap link (Uncomment and update when you have a sitemap)
+# Sitemap: https://aicrm.avinyasoftware.com/sitemap.xml

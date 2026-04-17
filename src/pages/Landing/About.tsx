@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { Users, Target, Rocket, Heart } from 'lucide-react';
 import aboutusimage from "../../../public/Images/About.png";
+import SEO from '../../components/common/SEO.tsx';
 
 const values = [
   {
@@ -24,6 +25,11 @@ const values = [
 export default function About() {
   return (
     <div className="pt-32 pb-24 px-6 relative overflow-hidden min-h-screen">
+      <SEO 
+        title="Our Story & Mission - The Team Behind the Innovation"
+        description="Learn about Avinya AI CRM's mission to humanize CRM technology. Our team is dedicated to building the future of intelligent sales automation."
+        keywords="About Avinya AI, AI CRM Mission, Future of Sales, CRM Innovation Team"
+      />
       <div className="bg-mesh absolute inset-0 opacity-50 dark:opacity-100" />
       
       <div className="container mx-auto max-w-7xl relative z-10">

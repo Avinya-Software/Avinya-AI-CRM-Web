@@ -8,9 +8,10 @@ import {
   Loader2,
   ShieldCheck
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useLoginSuperAdmin } from "../hooks/admin/useLoginAdmin";
 import { useAuth } from "../auth/useAuth";
+import { storage } from "../utils/storage";
 
 type LoginErrors = {
   email?: string;
@@ -56,6 +57,12 @@ const SuperAdminLogin = () => {
   /*   SUPER ADMIN LOGIN   */
   const handleLogin = () => {
     if (!validate()) return;
+
+    // Clear existing storage to ensure no stale data interferes with the login
+    storage.clearToken();
+    storage.clearUserId();
+    localStorage.removeItem("advisor");
+    localStorage.removeItem("isSuperAdmin");
 
     loginSuperAdmin(
       { email, password },

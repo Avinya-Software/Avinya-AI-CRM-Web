@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, Mail, Lock, User, Building } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
+import SEO from "../../components/common/SEO.tsx";
 
 export default function Signup() {
   const { theme } = useTheme();
@@ -12,6 +13,11 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen pt-32 pb-20 px-6 relative overflow-hidden flex items-center justify-center">
+      <SEO 
+        title="Get Started - Join 5,000+ Teams Scaling with AI"
+        description="Sign up for Avinya AI CRM and start automating your sales workflows today. Free 14-day trial included."
+        keywords="Sign up AI CRM, Avinya AI Registration, CRM Free Trial"
+      />
       <div className="bg-mesh absolute inset-0 opacity-50 dark:opacity-100" />
 
       <div className="container max-w-md relative z-10">

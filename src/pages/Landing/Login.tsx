@@ -8,7 +8,8 @@ import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../auth/useAuth";
 import { toast } from "react-hot-toast";
 // import { motion, AnimatePresence } from "motion/react";
-import { motion  , AnimatePresence} from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import SEO from '../../components/common/SEO.tsx';
 
 type LoginErrors = { email?: string; password?: string };
 
@@ -76,10 +77,15 @@ const Login = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-6 py-12">
+      <SEO
+        title="Login - Secure Access to Your Intelligent CRM"
+        description="Log in to Avinya AI CRM to manage your leads, automate your tasks, and view your sales performance analytics."
+        keywords="CRM Login, Avinya AI Login, Secure Sales Portal"
+      />
       {/* Mesh Background Effect */}
       <div className="mesh-bg absolute inset-0 z-0" />
       <div className="mesh-pattern absolute inset-0 z-0 opacity-10" />
-      
+
       <div className="w-full max-w-[440px] relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -88,7 +94,7 @@ const Login = () => {
           className={`glass-card p-12 rounded-[40px] relative ${theme === "dark" ? "bg-slate-950/95 border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.35)]" : "bg-white/95 border border-slate-200/70 shadow-2xl backdrop-blur-xl"}`}
         >
           <div className="text-center mb-10 relative">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
@@ -101,7 +107,7 @@ const Login = () => {
           </div>
 
           <form onSubmit={(e) => { e.preventDefault(); handleAdvisorLogin(); }} className="space-y-6 relative">
-            
+
             <div className="space-y-2">
               <label className={`text-sm font-semibold flex items-center gap-2 ml-1 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
                 <Mail className="w-4 h-4" /> Email Address
@@ -117,7 +123,7 @@ const Login = () => {
               </div>
               <AnimatePresence>
                 {errors.email && (
-                  <motion.p 
+                  <motion.p
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
@@ -144,9 +150,9 @@ const Login = () => {
                   onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, password: undefined })); }}
                   className={`${inputClassName} pr-12 text-[15px] ${errors.password ? "border-red-500/50 focus:ring-4 focus:ring-red-500/10" : "focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"}`}
                 />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)} 
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40 hover:text-slate-700 dark:hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -154,7 +160,7 @@ const Login = () => {
               </div>
               <AnimatePresence>
                 {errors.password && (
-                  <motion.p 
+                  <motion.p
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
@@ -167,7 +173,7 @@ const Login = () => {
             </div>
 
             {adminError && (
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="text-sm text-red-400 text-center bg-red-500/10 py-2 rounded-lg border border-red-500/20"
@@ -176,8 +182,8 @@ const Login = () => {
               </motion.p>
             )}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={adminLoading}
               className="w-full py-[18px] bg-emerald-500 text-black font-bold rounded-2xl hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed group text-base mt-8"
             >

@@ -29,6 +29,7 @@ const SuperAdminSidebar = () => {
 
   const menuItems = [
     { to: "/users", icon: <Users size={18} />, label: "Users" },
+    { to: "/booking-demo", icon: <FileText size={18} />, label: "Demo Bookings" },
   ];
 
   return (

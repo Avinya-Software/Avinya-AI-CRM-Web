@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Unauthorized from "./pages/Unauthorized";
 import Users from "./pages/Users";
 import AIAssistant from "./pages/AIAssistant";
+import BookingDemoList from "./pages/BookingDemoList";
 
 /* -------- RBAC -------- */
 import { ProtectedRoute as RBACProtectedRoute } from "./components/ProtectedRoute";
@@ -243,6 +244,7 @@ function App() {
             {/* -------- ADMIN ROUTES -------- */}
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/history" element={<AdminAdvisorsByStatusPage />} />
+            <Route path="/booking-demo" element={<BookingDemoList />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -3,17 +3,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 // import { motion } from 'motion/react';
 import { motion } from "framer-motion";
-import { Calendar, Clock, User, Mail, Building, Send } from 'lucide-react';
+import { User, Mail, Building, Send, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from "../../context/ThemeContext";
+import { useCreateBooking } from "../../hooks/booking/useCreateBooking";
 
 
 const schema = z.object({
-  name: z.string().min(2, "Name is required"),
+  fullName: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email address"),
   company: z.string().min(2, "Company name is required"),
-  date: z.string().min(1, "Date is required"),
-  time: z.string().min(1, "Time is required"),
+  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
   message: z.string().optional(),
 });
 
@@ -25,15 +25,20 @@ export default function BookingForm() {
   const inputClassName = `w-full rounded-xl px-4 py-3 outline-none transition-colors ${isDark ? "bg-slate-100 border border-black/10 text-slate-900 placeholder:text-slate-400 focus:bg-white" : "bg-white border border-black/10 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"}`;
   const textareaClassName = `w-full rounded-xl px-4 py-3 outline-none transition-colors resize-none ${isDark ? "bg-slate-100 border border-black/10 text-slate-900 placeholder:text-slate-400 focus:bg-white" : "bg-white border border-black/10 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"}`;
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { mutate: createBooking, isPending } = useCreateBooking();
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: FormData) => {
-    console.log('Booking data:', data);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitted(true);
+  const onSubmit = (data: FormData) => {
+    createBooking({
+      ...data,
+      message: data.message || ""
+    }, {
+      onSuccess: () => {
+        setIsSubmitted(true);
+      }
+    });
   };
 
   if (isSubmitted) {
@@ -87,11 +92,11 @@ export default function BookingForm() {
                 <User className="w-4 h-4" /> Full Name
               </label>
               <input 
-                {...register('name')}
+                {...register('fullName')}
                 className={inputClassName}
                 placeholder="John Doe"
               />
-              {errors.name && <p className="text-red-500 text-xs">{errors.name.message}</p>}
+              {errors.fullName && <p className="text-red-500 text-xs">{errors.fullName.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -118,29 +123,16 @@ export default function BookingForm() {
               {errors.company && <p className="text-red-500 text-xs">{errors.company.message}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className={`text-sm font-bold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-900"}`}>
-                  <Calendar className="w-4 h-4" /> Date
-                </label>
-                <input 
-                  type="date"
-                  {...register('date')}
-                  className={inputClassName}
-                />
-                {errors.date && <p className="text-red-500 text-xs">{errors.date.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <label className={`text-sm font-bold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-900"}`}>
-                  <Clock className="w-4 h-4" /> Time
-                </label>
-                <input 
-                  type="time"
-                  {...register('time')}
-                  className={inputClassName}
-                />
-                {errors.time && <p className="text-red-500 text-xs">{errors.time.message}</p>}
-              </div>
+            <div className="space-y-2">
+              <label className={`text-sm font-bold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-900"}`}>
+                <Phone className="w-4 h-4" /> Phone Number
+              </label>
+              <input 
+                {...register('phoneNumber')}
+                className={inputClassName}
+                placeholder="Enter phone number"
+              />
+              {errors.phoneNumber && <p className="text-red-500 text-xs">{errors.phoneNumber.message}</p>}
             </div>
           </div>
 
@@ -156,10 +148,10 @@ export default function BookingForm() {
 
           <button 
             type="submit"
-            disabled={isSubmitting}
+            disabled={isPending}
             className="w-full py-5 bg-emerald-500 text-black font-bold rounded-2xl hover:bg-emerald-400 transition-all shadow-2xl shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            {isSubmitting ? "Processing..." : "Confirm Booking"}
+            {isPending ? "Processing..." : "Confirm Booking"}
             <Send className="w-5 h-5" />
           </button>
         </motion.form>

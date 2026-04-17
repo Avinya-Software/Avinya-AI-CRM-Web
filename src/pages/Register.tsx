@@ -12,6 +12,7 @@ import {
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { useRegisterAdvisor } from "../hooks/advisor/useRegisterAdvisor";
+import SEO from "../components/common/SEO";
 
 type RegisterErrors = {
   fullName?: string;
@@ -119,6 +120,11 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8">
+      <SEO
+        title="Register - Create Your Advisor Account"
+        description="Join Avinya AI CRM and start managing your clients with intelligent automation. Sign up to get started."
+        keywords="CRM Registration, Join Avinya AI, Advisor Account Signup"
+      />
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">

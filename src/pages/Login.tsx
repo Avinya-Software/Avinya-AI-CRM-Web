@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { usePermissions } from "../context/PermissionContext";
 import { useAuth } from "../auth/useAuth";
 import { toast } from "react-hot-toast";
+import { storage } from "../utils/storage";
 
 type LoginErrors = { email?: string; password?: string };
 
@@ -34,6 +35,12 @@ const Login = () => {
 
   const handleAdvisorLogin = () => {
     if (!validate() || adminLoading) return;
+
+    // Clear existing storage to ensure no stale data interferes with the login
+    storage.clearToken();
+    storage.clearUserId();
+    localStorage.removeItem("advisor");
+    localStorage.removeItem("isSuperAdmin");
 
     loginAdmin(
       { email, password },
