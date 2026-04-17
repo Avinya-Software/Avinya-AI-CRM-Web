@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Bot, Send, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash, Coins, Zap } from "lucide-react";
+import { Bot, Send, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash, Coins, Zap, Wallet, Briefcase, Users, LayoutDashboard, Calendar, ClipboardList } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useChat } from "../context/ChatContext";
@@ -143,6 +143,104 @@ const ModuleCard = ({ module }: { module: DashboardModuleData }) => {
           })}
         </div>
       )}
+    </div>
+  );
+};
+
+// ─── Business Summary Report (High Density) ───────────────────────────────────
+
+const BusinessSummaryReport = ({ data }: { data: any }) => {
+  const [activeTab, setActiveTab] = useState<string | null>(null);
+
+  const kpis = [
+    { label: "Clients", value: data.ClientsCount, icon: <Users className="h-4 w-4" />, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Leads", value: data.LeadsCount, icon: <TrendingUp className="h-4 w-4" />, color: "text-violet-600", bg: "bg-violet-50" },
+    { label: "Orders", value: data.OrdersCount, icon: <Briefcase className="h-4 w-4" />, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Projects", value: data.ProjectsCount, icon: <LayoutDashboard className="h-4 w-4" />, color: "text-indigo-600", bg: "bg-indigo-50" },
+  ];
+
+  const sections = [
+    { id: "leads", label: "Recent Leads", data: data.RecentLeads, icon: "🎯" },
+    { id: "orders", label: "Recent Orders", data: data.RecentOrders, icon: "🛒" },
+    { id: "projects", label: "Recent Projects", data: data.RecentProjects, icon: "🏗️" },
+    { id: "tasks", label: "Recent Tasks", data: data.RecentTasks, icon: "✅" },
+  ].filter(s => s.data && s.data.length > 0);
+
+  return (
+    <div className="w-full mt-6 bg-slate-50/50 border border-slate-200 rounded-3xl p-6 shadow-xl animate-scaleIn">
+      {/* Header Stat Row */}
+      <div className="flex flex-col md:flex-row gap-6 mb-8">
+        <div className="flex-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md group">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition-transform">
+              <Wallet className="h-5 w-5" />
+            </div>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Revenue</span>
+          </div>
+          <div className="text-3xl font-black text-slate-900 tracking-tight">{data.TotalRevenue ?? "₹ 0.00"}</div>
+        </div>
+        <div className="flex-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md group">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-xl bg-rose-50 text-rose-600 group-hover:scale-110 transition-transform">
+              <TrendingUp className="h-5 w-5 rotate-180" />
+            </div>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Expenses</span>
+          </div>
+          <div className="text-3xl font-black text-rose-600 tracking-tight">{data.TotalExpenses ?? "₹ 0.00"}</div>
+        </div>
+      </div>
+
+      {/* KPI Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {kpis.map((kpi, idx) => (
+          <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-4 transition-all hover:border-slate-300">
+            <div className={cn("p-3 rounded-xl shrink-0", kpi.bg, kpi.color)}>
+              {kpi.icon}
+            </div>
+            <div className="min-w-0">
+              <div className="text-2xl font-black text-slate-900 leading-none">{kpi.value ?? 0}</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-wider">{kpi.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Activity Sections */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <Calendar className="h-4 w-4" /> Recent Activity
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3">
+          {sections.map(section => (
+            <div key={section.id} className="bg-white rounded-2xl border border-slate-100 overflow-hidden transition-all">
+              <button
+                onClick={() => setActiveTab(activeTab === section.id ? null : section.id)}
+                className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">{section.icon}</span>
+                  <span className="font-bold text-sm text-slate-700">{section.label}</span>
+                  <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+                    {section.data.length}
+                  </span>
+                </div>
+                {activeTab === section.id ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+              </button>
+
+              {activeTab === section.id && (
+                <div className="border-t border-slate-50 pb-2">
+                  <div className="max-h-64 overflow-y-auto">
+                    <DataTable data={section.data} />
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
@@ -363,13 +461,18 @@ const AIAssistant = () => {
                 )}
               </div>
 
+              {/* Universal High-Density Business Summary */}
+              {msg.universalDashboard && (
+                <BusinessSummaryReport data={msg.universalDashboard} />
+              )}
+
               {/* Dashboard Cards (multi-module summary) */}
-              {msg.dashboardData && (
+              {!msg.universalDashboard && msg.dashboardData && (
                 <DashboardCards dashboard={msg.dashboardData} />
               )}
 
               {/* Standard Data Table */}
-              {!msg.dashboardData && msg.data && msg.data.length > 0 &&
+              {!msg.universalDashboard && !msg.dashboardData && msg.data && msg.data.length > 0 &&
                 (msg.data.length > 1 || Object.keys(msg.data[0]).length > 1) && (
                   <div className="mt-4 w-full overflow-hidden border border-slate-200 rounded-xl bg-white shadow-lg">
                     <DataTable data={msg.data} />

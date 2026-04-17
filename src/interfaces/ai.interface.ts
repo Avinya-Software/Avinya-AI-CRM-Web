@@ -52,6 +52,8 @@ export interface ChatMessage {
   suggestions?: string[];
   /** Populated when the backend returns a multi-module dashboard payload */
   dashboardData?: DashboardPayload;
+  /** Populated when the backend returns a single-string universal summary */
+  universalDashboard?: any;
   totalTokens?: number; // How many tokens THIS message used
   timestamp: Date;
 }
