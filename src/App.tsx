@@ -43,6 +43,8 @@ import Loginai from "./pages/Landing/Login";
 import Signup from "./pages/Landing/Signup";
 import PublicLayout from "./pages/Publiclayouts/Publiclayout";
 import SuperAdminLogin from "./pages/SuperAdminLogin";
+import UserCredits from "./pages/UserCredits";
+import CreditTransactions from "./pages/CreditTransactions";
 
 
 function App() {
@@ -245,6 +247,8 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/history" element={<AdminAdvisorsByStatusPage />} />
             <Route path="/booking-demo" element={<BookingDemoList />} />
+            <Route path="/admin/credits" element={<UserCredits />} />
+            <Route path="/admin/credits/:userId" element={<CreditTransactions />} />
           </Route>
         </Routes>
       </BrowserRouter>

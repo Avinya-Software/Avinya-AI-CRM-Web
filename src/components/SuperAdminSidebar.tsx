@@ -10,6 +10,7 @@ import {
   Briefcase,
   CheckSquare,
   DollarSign,
+  CreditCard,
   Settings as SettingsIcon,
 } from "lucide-react";
 
@@ -30,6 +31,7 @@ const SuperAdminSidebar = () => {
   const menuItems = [
     { to: "/users", icon: <Users size={18} />, label: "Users" },
     { to: "/booking-demo", icon: <FileText size={18} />, label: "Demo Bookings" },
+    { to: "/admin/credits", icon: <CreditCard size={18} />, label: "User Credits" },
   ];
 
   return (
