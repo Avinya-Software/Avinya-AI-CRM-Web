@@ -1,23 +1,45 @@
+export interface AIChatHistoryDto {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface AIRequest {
   message: string;
+  history?: AIChatHistoryDto[];
 }
 
 export interface AIResponse {
+  success?: boolean;
+  action?: string;
+  intent?: string;
   query?: string;
+  sql?: string; // Added to match backend Sql field
   data?: any[];
   count?: number;
   message?: string;
   errorMessage?: string;
-
-  // Alternative Structure (Summary Report)
-  Summary?: string;
-  Breakdown?: Record<string, Record<string, any>>;
-  Insights?: string;
+  successMessage?: string;
+  
+  // Optional Fields for enhanced UI
+  summary?: string;
+  insights?: string;
   suggestions?: string[];
-
+  
   // Token Credit System
   totalTokens?: number;
   remainingCredits?: number;
+
+  // Clarification logic
+  isClarificationRequired?: boolean;
+  clarificationMessage?: string;
+  suggestedClients?: any[];
+}
+
+export interface AIFeedback {
+  originalMessage: string;
+  generatedSql: string;
+  isGood: boolean;
+  userCorrection?: string;
 }
 
 // ─── Dashboard / Module-card types ────────────────────────────────────────────
@@ -56,4 +78,11 @@ export interface ChatMessage {
   universalDashboard?: any;
   totalTokens?: number; // How many tokens THIS message used
   timestamp: Date;
+  
+  // Feedback related fields
+  query?: string; // The SQL query that was executed
+  originalMessage?: string; // The user message that triggered this AI response
+  feedbackGiven?: "good" | "bad" | null;
+  isCorrection?: boolean;
 }
+

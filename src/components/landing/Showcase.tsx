@@ -2,10 +2,10 @@
 import { motion , AnimatePresence  } from "framer-motion";
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Layout, Users, FileText, CheckSquare } from 'lucide-react';
-import dashboard2 from "../../../public/Images/Dashboard2.png";
-import Lead2 from "../../../public/Images/Lead2.png";
-import aichatbot2 from "../../../public/Images/ai-chatbot2.png";
-import taskmanagement2 from "../../../public/Images/Taskmanagement2.png";
+const dashboard2 = "/Images/Dashboard2.png";
+const Lead2 = "/Images/Lead2.png";
+const aichatbot2 = "/Images/ai-chatbot2.png";
+const taskmanagement2 = "/Images/Taskmanagement2.png";
 
 
 const screens = [

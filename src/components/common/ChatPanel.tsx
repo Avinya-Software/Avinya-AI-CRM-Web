@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Bot, Send, ExternalLink, X, TrendingUp, ChevronDown, ChevronUp, BarChart2, Clock, Hash, Coins, Zap } from "lucide-react";
+import { Bot, Send, ExternalLink, X, TrendingUp, ChevronDown, ChevronUp, BarChart2, Clock, Hash, Coins, Zap, ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Mic, MicOff, Users, Mail, Phone, Activity } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useNavigate, useLocation } from "react-router-dom";
@@ -281,11 +281,45 @@ const ReportBreakdown = ({ breakdown }: { breakdown: Record<string, Record<strin
 // ─── Main ChatPanel ───────────────────────────────────────────────────────────
 
 export const ChatPanel = () => {
-  const { messages, input, setInput, isPending, sendMessage, isOpen, setIsOpen, remainingCredits } = useChat();
+  const { messages, input, setInput, isPending, sendMessage, sendFeedback, isOpen, setIsOpen, remainingCredits } = useChat();
   const navigate = useNavigate();
   const location = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAIPage = location.pathname === "/ai-assistant";
+  const [correctionMode, setCorrectionMode] = useState<string | null>(null);
+  const [correctionText, setCorrectionText] = useState("");
+  const [isListening, setIsListening] = useState(false);
+
+  // Speech Recognition setup
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if ('WebkitSpeechRecognition' in window || 'speechRecognition' in window) {
+      const SpeechRecognition = (window as any).WebkitSpeechRecognition || (window as any).speechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-IN';
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = () => setIsListening(false);
+      recognitionRef.current.onend = () => setIsListening(false);
+    }
+  }, [setInput]);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -296,6 +330,20 @@ export const ChatPanel = () => {
   const handleSend = () => {
     if (!input.trim()) return;
     sendMessage(input);
+  };
+
+  const handleFeedback = (msgId: string, isGood: boolean) => {
+    if (isGood) {
+      sendFeedback(msgId, true);
+    } else {
+      setCorrectionMode(msgId);
+      setCorrectionText("");
+    }
+  };
+
+  const submitCorrection = (msgId: string) => {
+    sendFeedback(msgId, false, correctionText);
+    setCorrectionMode(null);
   };
 
   const handleExpand = () => {
@@ -408,10 +456,76 @@ export const ChatPanel = () => {
                   </div>
                 )}
 
+              {/* CLARIFICATION / SUGGESTED CLIENTS */}
+              {msg.role === "ai" && msg.id === messages[messages.length - 1].id && (
+                <div className="w-full space-y-3 mt-2">
+                  {messages.find(m => m.id === msg.id)?.data?.some(d => d.ClientID) && (
+                    <div className="grid grid-cols-1 gap-2 animate-slideUp">
+                      {messages.find(m => m.id === msg.id)?.data?.filter(d => d.ClientID).map((client, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => sendMessage(`Use client: ${client.CompanyName}`)}
+                          className="p-3 bg-white border border-slate-200 rounded-xl hover:border-emerald-500 hover:shadow-md transition-all text-left group"
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="p-1.5 rounded-lg bg-slate-50 text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
+                              <Users className="h-3.5 w-3.5" />
+                            </div>
+                            <span className="font-bold text-xs text-slate-700 group-hover:text-emerald-700">{client.CompanyName}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1">
+                            {client.Email && (
+                              <div className="flex items-center gap-1.5 text-[9px] text-slate-400">
+                                <Mail className="h-2.5 w-2.5" />
+                                <span>{client.Email}</span>
+                              </div>
+                            )}
+                            {client.Mobile && (
+                              <div className="flex items-center gap-1.5 text-[9px] text-slate-400">
+                                <Phone className="h-2.5 w-2.5" />
+                                <span>{client.Mobile}</span>
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex items-center justify-between w-full mt-1 px-1">
-                <span className="text-[10px] text-slate-400 font-medium opacity-70">
-                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-400 font-medium opacity-70">
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  
+                  {msg.role === "ai" && msg.query && (
+                    <div className="flex items-center gap-1">
+                      {msg.feedbackGiven === "good" ? (
+                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                      ) : msg.feedbackGiven === "bad" ? (
+                        <XCircle className="h-3 w-3 text-rose-500" />
+                      ) : (
+                        <>
+                          <button 
+                            onClick={() => handleFeedback(msg.id, true)}
+                            className="p-0.5 hover:bg-slate-200 rounded text-slate-400 hover:text-emerald-600 transition-colors"
+                          >
+                            <ThumbsUp className="h-2.5 w-2.5" />
+                          </button>
+                          <button 
+                            onClick={() => handleFeedback(msg.id, false)}
+                            className="p-0.5 hover:bg-slate-200 rounded text-slate-400 hover:text-rose-600 transition-colors"
+                          >
+                            <ThumbsDown className="h-2.5 w-2.5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {msg.role === "ai" && msg.totalTokens !== undefined && (
                   <div className="flex items-center gap-1.5 bg-slate-100/50 px-2 py-0.5 rounded-full border border-slate-100">
                     <Zap className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
@@ -421,6 +535,38 @@ export const ChatPanel = () => {
                   </div>
                 )}
               </div>
+
+              {/* CORRECTION INPUT */}
+              {correctionMode === msg.id && (
+                <div className="mt-2 w-full animate-scaleIn">
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 shadow-sm">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">What was wrong?</p>
+                    <div className="flex gap-1.5">
+                      <Input 
+                        value={correctionText}
+                        onChange={(e) => setCorrectionText(e.target.value)}
+                        placeholder="Explain or fix..."
+                        maxLength={800}
+                        className="h-8 text-xs bg-white border-slate-200 focus-visible:ring-emerald-500"
+                        onKeyDown={(e) => e.key === "Enter" && submitCorrection(msg.id)}
+                      />
+                      <Button 
+                        onClick={() => submitCorrection(msg.id)}
+                        className="h-8 px-2.5 bg-slate-800 hover:bg-slate-700 text-white text-[10px]"
+                      >
+                        Send
+                      </Button>
+                      <Button 
+                        onClick={() => setCorrectionMode(null)}
+                        variant="outline"
+                        className="h-8 px-2 text-[10px]"
+                      >
+                        X
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Suggestions */}
               {msg.role === "ai" && msg.suggestions && msg.suggestions.length > 0 && (
@@ -457,12 +603,23 @@ export const ChatPanel = () => {
 
         {/* Input */}
         <div className="p-4 border-t bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.03)] flex gap-2 shrink-0">
+          <Button
+            onClick={toggleListening}
+            variant="outline"
+            className={cn(
+              "h-11 w-11 rounded-xl flex items-center justify-center transition-all",
+              isListening ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse" : "bg-slate-50 border-slate-200 text-slate-400 hover:text-emerald-600"
+            )}
+          >
+            {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </Button>
           <Input
-            placeholder="Ask me anything..."
+            placeholder={isListening ? "Listening..." : "Ask me anything..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             disabled={isPending}
+            maxLength={800}
             className="flex-1 border-slate-200 focus-visible:ring-emerald-500 rounded-xl bg-slate-50/50 h-11"
           />
           <Button

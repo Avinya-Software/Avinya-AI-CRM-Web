@@ -1,7 +1,7 @@
 // import { motion } from 'motion/react';
 import { motion } from "framer-motion";
 import { Users, Target, Rocket, Heart } from 'lucide-react';
-import aboutusimage from "../../../public/Images/About.png";
+const aboutusimage = "/Images/About.png";
 import SEO from '../../components/common/SEO.tsx';
 
 const values = [

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Bot, Send, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash, Coins, Zap, Wallet, Briefcase, Users, LayoutDashboard, Calendar, ClipboardList } from "lucide-react";
+import { Bot, Send, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash, Coins, Zap, Wallet, Briefcase, Users, LayoutDashboard, Calendar, ClipboardList, MapPin, Phone, Mail, FileText, IndianRupee, Activity, ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Mic, MicOff } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useChat } from "../context/ChatContext";
@@ -51,19 +51,28 @@ const formatLabel = (label: string) =>
 
 const formatValue = (key: string, value: any): string => {
   if (value === null || value === undefined) return "-";
+  
+  let stringValue = String(value).trim();
   const lowerKey = key.toLowerCase();
 
-  if (
-    typeof value === "number" ||
-    (!isNaN(Number(value)) && typeof value === "string" && value.length > 0 && !lowerKey.includes("id") && !lowerKey.includes("no"))
-  ) {
-    const num = Number(value);
-    if (lowerKey.includes("revenue") || lowerKey.includes("amount") || lowerKey.includes("price") || lowerKey.includes("total") || lowerKey.includes("charge")) {
-      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
-    }
-    return num.toLocaleString();
+  // Try to clean currency symbols from the start if it looks like a currency string
+  if (stringValue.startsWith("?") || stringValue.startsWith("₹")) {
+    stringValue = stringValue.substring(1).trim().replace(/,/g, '');
   }
 
+  const num = Number(stringValue);
+  if (!isNaN(num) && stringValue !== "" && !lowerKey.includes("id") && !lowerKey.includes("no")) {
+    if (lowerKey.includes("revenue") || lowerKey.includes("amount") || lowerKey.includes("price") || lowerKey.includes("total") || lowerKey.includes("charge") || lowerKey.includes("outstanding") || lowerKey.includes("grandtotal")) {
+      return new Intl.NumberFormat('en-IN', { 
+        style: 'currency', 
+        currency: 'INR', 
+        maximumFractionDigits: 2 
+      }).format(num);
+    }
+    return num.toLocaleString('en-IN');
+  }
+
+  // Handle Dates
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
     try {
       const date = new Date(value);
@@ -72,7 +81,7 @@ const formatValue = (key: string, value: any): string => {
     } catch { }
   }
 
-  return String(value);
+  return String(value).replace(/^\?/, "₹");
 };
 
 // ─── Module Card (Full Page View) ──────────────────────────────────────────────
@@ -152,6 +161,12 @@ const ModuleCard = ({ module }: { module: DashboardModuleData }) => {
 const BusinessSummaryReport = ({ data }: { data: any }) => {
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
+  const isClient360 = !!data.CompanyName;
+
+  if (isClient360) {
+    return <Client360Report data={data} />;
+  }
+
   const kpis = [
     { label: "Clients", value: data.ClientsCount, icon: <Users className="h-4 w-4" />, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "Leads", value: data.LeadsCount, icon: <TrendingUp className="h-4 w-4" />, color: "text-violet-600", bg: "bg-violet-50" },
@@ -177,7 +192,7 @@ const BusinessSummaryReport = ({ data }: { data: any }) => {
             </div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Revenue</span>
           </div>
-          <div className="text-3xl font-black text-slate-900 tracking-tight">{data.TotalRevenue ?? "₹ 0.00"}</div>
+          <div className="text-3xl font-black text-slate-900 tracking-tight">{formatValue("TotalRevenue", data.TotalRevenue)}</div>
         </div>
         <div className="flex-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md group">
           <div className="flex items-center gap-3 mb-2">
@@ -186,7 +201,7 @@ const BusinessSummaryReport = ({ data }: { data: any }) => {
             </div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Expenses</span>
           </div>
-          <div className="text-3xl font-black text-rose-600 tracking-tight">{data.TotalExpenses ?? "₹ 0.00"}</div>
+          <div className="text-3xl font-black text-rose-600 tracking-tight">{formatValue("TotalExpenses", data.TotalExpenses)}</div>
         </div>
       </div>
 
@@ -245,6 +260,125 @@ const BusinessSummaryReport = ({ data }: { data: any }) => {
   );
 };
 
+// ─── Client 360° Report (Premium View) ────────────────────────────────────────
+
+const Client360Report = ({ data }: { data: any }) => {
+  const [activeTab, setActiveTab] = useState<string>("activity");
+
+  const sections = [
+    { id: "leads", label: "Leads", data: data.RecentLeads, icon: "🎯" },
+    { id: "orders", label: "Orders", data: data.RecentOrders, icon: "🛒" },
+    { id: "invoices", label: "Invoices", data: data.RecentInvoices, icon: "🧾" },
+    { id: "activity", label: "Activity", data: data.RecentActivity, icon: "📝" },
+  ];
+
+  const contactItems = [
+    { label: "Phone", value: data.Mobile, icon: <Phone className="h-3.5 w-3.5" /> },
+    { label: "Email", value: data.Email, icon: <Mail className="h-3.5 w-3.5" /> },
+    { label: "GST No", value: data.GSTNo, icon: <FileText className="h-3.5 w-3.5" /> },
+  ].filter(i => i.value);
+
+  return (
+    <div className="w-full mt-6 bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl animate-scaleIn">
+      {/* Premium Header */}
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full -mr-32 -mt-32" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-emerald-500/20 p-2 rounded-xl backdrop-blur-md">
+              <Users className="h-6 w-6 text-emerald-400" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/80">Client 360° Analysis</span>
+          </div>
+          <h2 className="text-4xl font-serif font-bold tracking-tight mb-6">{data.CompanyName}</h2>
+          
+          <div className="flex flex-wrap gap-8">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Revenue</span>
+              <div className="text-2xl font-black text-emerald-400 tracking-tight">{formatValue("TotalRevenue", data.TotalRevenue)}</div>
+            </div>
+            <div className="w-px h-12 bg-white/10 hidden sm:block" />
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Outstanding</span>
+              <div className="text-2xl font-black text-rose-400 tracking-tight">{formatValue("TotalOutstanding", data.TotalOutstanding)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Info Bar */}
+      <div className="px-8 py-4 bg-slate-50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-6">
+        <div className="flex flex-wrap gap-6">
+          {contactItems.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <div className="text-slate-400">{item.icon}</div>
+              <span className="text-xs font-bold text-slate-600">{item.value}</span>
+            </div>
+          ))}
+          {data.ContactPerson && (
+             <div className="flex items-center gap-2">
+                <Users className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-bold text-slate-600">{data.ContactPerson}</span>
+             </div>
+          )}
+        </div>
+        {data.BillingAddress && (
+          <div className="flex items-center gap-2 text-slate-400 max-w-sm">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <span className="text-[10px] font-medium truncate">{data.BillingAddress}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="p-8">
+        <div className="flex items-center gap-2 mb-6 bg-slate-100 p-1.5 rounded-2xl w-fit">
+          {sections.map(s => (
+            <button
+              key={s.id}
+              onClick={() => setActiveTab(s.id)}
+              className={cn(
+                "px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2",
+                activeTab === s.id 
+                  ? "bg-white text-slate-900 shadow-md scale-105" 
+                  : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+              )}
+            >
+              <span>{s.icon}</span>
+              {s.label}
+              {s.data && s.data.length > 0 && (
+                <span className={cn(
+                  "ml-1 text-[9px] px-1.5 py-0.5 rounded-full font-black",
+                  activeTab === s.id ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-500"
+                )}>
+                  {s.data.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden min-h-[300px]">
+           {sections.find(s => s.id === activeTab)?.data?.length ? (
+             <DataTable data={sections.find(s => s.id === activeTab)?.data} />
+           ) : (
+             <div className="flex flex-col items-center justify-center p-20 text-center space-y-4">
+                <div className="p-4 rounded-full bg-white border border-slate-100 shadow-sm">
+                   <Activity className="h-8 w-8 text-slate-200" />
+                </div>
+                <div>
+                   <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No Records Found</p>
+                   <p className="text-xs text-slate-400 mt-1">There are no {activeTab} records for this client.</p>
+                </div>
+             </div>
+           )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Dashboard Cards Grid ─────────────────────────────────────────────────────
 
 const DashboardCards = ({ dashboard }: { dashboard: DashboardPayload }) => {
@@ -272,7 +406,16 @@ const DataTable = ({ data }: { data: any[] }) => {
   if (!data || data.length === 0) return null;
 
   const isSingleRow = data.length === 1;
-  const columns = Object.keys(data[0]);
+  const allColumns = Object.keys(data[0]);
+  // Filter out GUIDs and redundant IDs if we have many columns
+  const columns = allColumns.filter(col => {
+    const lower = col.toLowerCase();
+    if (allColumns.length <= 4) return true;
+    if (lower.endsWith("id") && lower !== "id" && !lower.includes("status")) return false;
+    if (["tenantid", "isdeleted", "createdby", "updatedby"].includes(lower)) return false;
+    return true;
+  });
+
   const hasManyColumns = columns.length > 3;
 
   if (isSingleRow && hasManyColumns) {
@@ -315,11 +458,17 @@ const DataTable = ({ data }: { data: any[] }) => {
         <TableBody>
           {data.map((row, i) => (
              <TableRow key={i} className="hover:bg-slate-50/50 transition-colors">
-               {columns.map(col => (
-                 <TableCell key={col} className="text-sm py-3 px-4 whitespace-nowrap border-r last:border-r-0 border-slate-100">
-                   {formatValue(col, row[col])}
-                 </TableCell>
-               ))}
+              {columns.map(col => {
+                const isLongText = col.toLowerCase().includes("details") || col.toLowerCase().includes("notes") || col.toLowerCase().includes("requirement") || col.toLowerCase().includes("links");
+                return (
+                  <TableCell key={col} className={cn(
+                    "text-sm py-3 px-4 border-r last:border-r-0 border-slate-100",
+                    isLongText ? "min-w-[200px] whitespace-normal" : "whitespace-nowrap"
+                  )}>
+                    {formatValue(col, row[col])}
+                  </TableCell>
+                );
+              })}
              </TableRow>
           ))}
         </TableBody>
@@ -373,8 +522,47 @@ const SuggestionChips = ({ suggestions, onSelect }: { suggestions: string[]; onS
 // ─── Main AIAssistant ─────────────────────────────────────────────────────────
 
 const AIAssistant = () => {
-  const { messages, input, setInput, isPending, sendMessage, remainingCredits } = useChat();
+  const { messages, input, setInput, isPending, sendMessage, sendFeedback, remainingCredits } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [correctionMode, setCorrectionMode] = useState<string | null>(null);
+  const [correctionText, setCorrectionText] = useState("");
+  const [isListening, setIsListening] = useState(false);
+
+  // Speech Recognition setup
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if ('WebkitSpeechRecognition' in window || 'speechRecognition' in window) {
+      const SpeechRecognition = (window as any).WebkitSpeechRecognition || (window as any).speechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-IN'; // Support Indian English context
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, [setInput]);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -385,6 +573,20 @@ const AIAssistant = () => {
   const handleSend = () => {
     if (!input.trim()) return;
     sendMessage(input);
+  };
+
+  const handleFeedback = (msgId: string, isGood: boolean) => {
+    if (isGood) {
+      sendFeedback(msgId, true);
+    } else {
+      setCorrectionMode(msgId);
+      setCorrectionText("");
+    }
+  };
+
+  const submitCorrection = (msgId: string) => {
+    sendFeedback(msgId, false, correctionText);
+    setCorrectionMode(null);
   };
 
   return (
@@ -480,10 +682,40 @@ const AIAssistant = () => {
                 )}
 
               <div className="flex items-center justify-between w-full mt-1.5 px-1">
-                <span className="text-[10px] text-slate-400 font-medium opacity-80 flex items-center gap-1.5">
-                  <div className="h-1 w-1 rounded-full bg-slate-300" />
-                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-slate-400 font-medium opacity-80 flex items-center gap-1.5">
+                    <div className="h-1 w-1 rounded-full bg-slate-300" />
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  
+                  {msg.role === "ai" && msg.query && (
+                    <div className="flex items-center gap-1">
+                      {msg.feedbackGiven === "good" ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                      ) : msg.feedbackGiven === "bad" ? (
+                        <XCircle className="h-3.5 w-3.5 text-rose-500" />
+                      ) : (
+                        <>
+                          <button 
+                            onClick={() => handleFeedback(msg.id, true)}
+                            className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-emerald-600 transition-colors"
+                            title="Helpful"
+                          >
+                            <ThumbsUp className="h-3 w-3" />
+                          </button>
+                          <button 
+                            onClick={() => handleFeedback(msg.id, false)}
+                            className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-rose-600 transition-colors"
+                            title="Not helpful"
+                          >
+                            <ThumbsDown className="h-3 w-3" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {msg.role === "ai" && msg.totalTokens !== undefined && (
                   <div className="flex items-center gap-1.5 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
                     <Zap className="h-3 w-3 text-amber-500 fill-amber-500" />
@@ -493,6 +725,77 @@ const AIAssistant = () => {
                   </div>
                 )}
               </div>
+
+              {/* CORRECTION INPUT */}
+              {correctionMode === msg.id && (
+                <div className="mt-3 w-full max-w-md animate-scaleIn">
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">What went wrong?</p>
+                    <div className="flex gap-2">
+                      <Input 
+                        value={correctionText}
+                        onChange={(e) => setCorrectionText(e.target.value)}
+                        placeholder="Explain what was wrong or how to fix it..."
+                        maxLength={800}
+                        className="h-9 text-xs bg-white border-slate-200 focus-visible:ring-emerald-500"
+                        onKeyDown={(e) => e.key === "Enter" && submitCorrection(msg.id)}
+                      />
+                      <Button 
+                        onClick={() => submitCorrection(msg.id)}
+                        className="h-9 px-3 bg-slate-800 hover:bg-slate-700 text-white text-xs"
+                      >
+                        Submit
+                      </Button>
+                      <Button 
+                        onClick={() => setCorrectionMode(null)}
+                        variant="outline"
+                        className="h-9 px-3 text-xs"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* CLARIFICATION / SUGGESTED CLIENTS */}
+              {msg.role === "ai" && msg.id === messages[messages.length - 1].id && (
+                <div className="w-full space-y-4">
+                  {/* Handle explicit suggested clients list */}
+                  {messages.find(m => m.id === msg.id)?.data?.some(d => d.ClientID) && (
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-slideUp">
+                      {messages.find(m => m.id === msg.id)?.data?.filter(d => d.ClientID).map((client, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => sendMessage(`Use client: ${client.CompanyName} (${client.Email || client.Mobile || 'No contact info'})`)}
+                          className="p-4 bg-white border border-slate-200 rounded-2xl hover:border-emerald-500 hover:shadow-md transition-all text-left group"
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 rounded-xl bg-slate-50 text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
+                              <Users className="h-4 w-4" />
+                            </div>
+                            <span className="font-bold text-sm text-slate-700 group-hover:text-emerald-700">{client.CompanyName}</span>
+                          </div>
+                          <div className="space-y-1">
+                            {client.Email && (
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                                <Mail className="h-3 w-3" />
+                                <span>{client.Email}</span>
+                              </div>
+                            )}
+                            {client.Mobile && (
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                                <Phone className="h-3 w-3" />
+                                <span>{client.Mobile}</span>
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* SUGGESTIONS */}
               {msg.role === "ai" && msg.suggestions && msg.suggestions.length > 0 && (
@@ -517,12 +820,24 @@ const AIAssistant = () => {
       {/* INPUT AREA */}
       <div className="pb-8 px-6 bg-white shrink-0 border-t border-slate-100 pt-6">
         <div className="max-w-5xl mx-auto flex gap-3">
+          <Button
+            onClick={toggleListening}
+            variant="outline"
+            className={cn(
+              "h-12 w-12 rounded-2xl flex items-center justify-center transition-all",
+              isListening ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse" : "bg-slate-50 border-slate-200 text-slate-400 hover:text-emerald-600"
+            )}
+            title={isListening ? "Stop listening" : "Start voice input"}
+          >
+            {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+          </Button>
           <Input
-            placeholder="Type your message here..."
+            placeholder={isListening ? "Listening..." : "Type your message here..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             disabled={isPending}
+            maxLength={800}
             className="flex-1 h-12 bg-slate-50 border-slate-200 focus-visible:ring-emerald-500 shadow-sm text-base px-5 rounded-2xl"
           />
           <Button

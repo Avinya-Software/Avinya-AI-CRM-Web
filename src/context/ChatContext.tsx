@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import { ChatMessage, AIRequest, AIResponse, DashboardPayload, DashboardModuleData, DashboardStatusItem } from "../interfaces/ai.interface";
-import { useAIChat } from "../hooks/ai/useAIChat";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { ChatMessage, AIRequest, AIResponse, DashboardPayload, AIFeedback } from "../interfaces/ai.interface";
+import { useAIChat, useAIFeedback } from "../hooks/ai/useAIChat";
+import { robustParseJson, parseDashboardPayload, generateMarkdownReport } from "../lib/chat-utils";
 
 interface ChatContextType {
   messages: ChatMessage[];
@@ -9,150 +10,13 @@ interface ChatContextType {
   setInput: React.Dispatch<React.SetStateAction<string>>;
   isPending: boolean;
   sendMessage: (content: string) => void;
+  sendFeedback: (messageId: string, isGood: boolean, correction?: string) => Promise<void>;
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   remainingCredits: number | null;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
-
-// ─── Dashboard Payload Parser ─────────────────────────────────────────────────
-// The backend returns a single flat row with keys like:
-//   LeadsCount, LeadsData (JSON string), LeadsStatusBreakdown (JSON string)
-//   QuotationsCount, QuotationsData, QuotationsStatusBreakdown, ...
-// We detect this pattern and convert it into a structured DashboardPayload.
-
-const KNOWN_MODULES = [
-  "Leads", "Clients", "Quotations", "Orders",
-  "Expenses", "Invoices", "Payments", "Projects",
-  "TaskOccurrences", "TaskSeries", "Products",
-];
-
-function tryParseJson(value: any): any[] {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  if (typeof value === "string") {
-    try { return JSON.parse(value); } catch { return []; }
-  }
-  return [];
-}
-
-function parseDashboardPayload(row: Record<string, any>): DashboardPayload | null {
-  // Scenario A: JsonResult string (Universal Dashboard)
-  if (row.JsonResult && typeof row.JsonResult === "string") {
-    try {
-      const data = JSON.parse(row.JsonResult);
-      return parseUniversalJsonPayload(data);
-    } catch { return null; }
-  }
-
-  // Scenario B: Flat row with ModuleCount/ModuleData keys
-  const detected: DashboardPayload = {};
-  for (const module of KNOWN_MODULES) {
-    const countKey = `${module}Count`;
-    if (!(countKey in row)) continue;
-
-    const count = Number(row[countKey] ?? 0);
-    const recentRecords: any[] = tryParseJson(row[`${module}Data`]);
-    const statusBreakdown: DashboardStatusItem[] = tryParseJson(row[`${module}StatusBreakdown`]);
-
-    detected[module] = { name: module, count, recentRecords, statusBreakdown };
-  }
-
-  return Object.keys(detected).length > 0 ? detected : null;
-}
-
-function parseUniversalJsonPayload(data: Record<string, any>): DashboardPayload | null {
-  const detected: DashboardPayload = {};
-
-  // Map known modules from Universal structure (RecentModule -> recentRecords, ModuleCount -> count)
-  const mapping = [
-    { key: "Leads", count: "LeadsCount", data: "RecentLeads" },
-    { key: "Clients", count: "ClientsCount", data: "RecentClients" },
-    { key: "Orders", count: "OrdersCount", data: "RecentOrders" },
-    { key: "Projects", count: "ProjectsCount", data: "RecentProjects" },
-    { key: "Tasks", count: "TasksCount", data: "RecentTasks" },
-    { key: "Invoices", count: "InvoicesCount", data: "RecentInvoices" },
-    { key: "Expenses", count: "ExpensesCount", data: "RecentExpenses" },
-  ];
-
-  for (const item of mapping) {
-    if (item.count in data || item.data in data) {
-      detected[item.key] = {
-        name: item.key,
-        count: Number(data[item.count] ?? 0),
-        recentRecords: Array.isArray(data[item.data]) ? data[item.data] : [],
-        statusBreakdown: [] // Universal query doesn't usually provide this
-      };
-    }
-  }
-
-  // Handle Special Financial Cards (mapped as modules with 0 count but specific name)
-  if (data.TotalRevenue) {
-    detected["Revenue"] = {
-      name: "Revenue",
-      count: 0,
-      recentRecords: [{ "Total Revenue": data.TotalRevenue }],
-      statusBreakdown: []
-    };
-  }
-  if (data.TotalExpenses) {
-    detected["ExpensesTotal"] = {
-      name: "Expenses",
-      count: 0,
-      recentRecords: [{ "Total Expenses": data.TotalExpenses }],
-      statusBreakdown: []
-    };
-  }
-
-  return Object.keys(detected).length > 0 ? detected : null;
-}
-
-function cleanCurrency(value: any): string {
-  if (typeof value !== "string") return String(value ?? "");
-  // Replace '?' or other corrupted chars at the start of currency strings with '₹'
-  return value.replace(/^\?/, "₹").trim();
-}
-
-function generateMarkdownReport(data: any): string {
-  let markdown = `### 📊 Business Summary Report\n\n`;
-
-  // Financials
-  markdown += `| Financial Metric | Amount |\n| :--- | :--- |\n`;
-  markdown += `| **Total Revenue** | ${cleanCurrency(data.TotalRevenue)} |\n`;
-  markdown += `| **Total Expenses** | ${cleanCurrency(data.TotalExpenses)} |\n\n`;
-
-  // KPI Grid as a table
-  markdown += `#### 📈 Key Performance Indicators\n`;
-  markdown += `| Clients | Leads | Orders | Projects |\n`;
-  markdown += `| :--- | :--- | :--- | :--- |\n`;
-  markdown += `| ${data.ClientsCount ?? 0} | ${data.LeadsCount ?? 0} | ${data.OrdersCount ?? 0} | ${data.ProjectsCount ?? 0} |\n\n`;
-
-  // Activity Sections as Tables
-  const sections = [
-    { label: "🎯 Recent Leads", data: data.RecentLeads },
-    { label: "🛒 Recent Orders", data: data.RecentOrders },
-    { label: "🏗️ Recent Projects", data: data.RecentProjects },
-    { label: "✅ Recent Tasks", data: data.RecentTasks }
-  ];
-
-  sections.forEach(sec => {
-    if (sec.data && sec.data.length > 0) {
-      markdown += `#### ${sec.label}\n`;
-      const cols = Object.keys(sec.data[0]);
-      markdown += `| ${cols.join(" | ")} |\n`;
-      markdown += `| ${cols.map(() => "---").join(" | ")} |\n`;
-      sec.data.slice(0, 5).forEach((row: any) => {
-        markdown += `| ${cols.map(c => cleanCurrency(row[c])).join(" | ")} |\n`;
-      });
-      markdown += `\n`;
-    }
-  });
-
-  return markdown;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -174,6 +38,98 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const { mutate: mutateChat, isPending } = useAIChat();
+  const { mutateAsync: mutateFeedback } = useAIFeedback();
+
+  const parseAIResponse = (data: AIResponse, originalContent: string): ChatMessage => {
+    // Attempt to detect a multi-module dashboard response
+    let dashboardData: DashboardPayload | undefined = undefined;
+    let universalDashboard: any = undefined;
+    let generatedContent: string | undefined = undefined;
+
+    const dataArray = Array.isArray(data.data) ? data.data : [];
+
+    if (dataArray.length === 1) {
+      const row = dataArray[0];
+      if (row.JsonResult && typeof row.JsonResult === "string") {
+        const parsed = robustParseJson(row.JsonResult);
+        if (parsed) {
+          if (Array.isArray(parsed)) {
+            data.data = parsed;
+          } else {
+            universalDashboard = parsed;
+            generatedContent = generateMarkdownReport(universalDashboard);
+          }
+        }
+      } else {
+        const parsed = parseDashboardPayload(row);
+        if (parsed) dashboardData = parsed;
+      }
+    }
+
+    return {
+      id: (Date.now() + 1).toString(),
+      role: "ai",
+      content: generatedContent 
+        || data.clarificationMessage
+        || data.summary
+        || data.message
+        || (dashboardData
+          ? `Here's your CRM overview across ${Object.keys(dashboardData).length} modules:`
+          : data.count !== undefined && data.count > 0
+            ? `I found ${data.count} results:`
+            : "No records found."),
+      data: (dashboardData || universalDashboard) 
+        ? undefined 
+        : (data.suggestedClients && data.suggestedClients.length > 0) 
+          ? data.suggestedClients 
+          : data.data,
+      summary: data.summary,
+      insights: data.insights,
+      suggestions: data.suggestions,
+      dashboardData,
+      universalDashboard,
+      totalTokens: data.totalTokens,
+      timestamp: new Date(),
+      query: data.query || data.sql,
+      originalMessage: originalContent,
+    };
+  };
+
+  const sendFeedback = async (messageId: string, isGood: boolean, correction?: string) => {
+    const msg = messages.find(m => m.id === messageId);
+    if (!msg || !msg.query || !msg.originalMessage) return;
+
+    try {
+      const feedback: AIFeedback = {
+        originalMessage: msg.originalMessage,
+        generatedSql: msg.query,
+        isGood,
+        userCorrection: correction
+      };
+
+      const result = await mutateFeedback(feedback);
+
+      setMessages(prev => prev.map(m => 
+        m.id === messageId 
+          ? { ...m, feedbackGiven: isGood ? "good" : "bad" } 
+          : m
+      ));
+
+      if (!isGood && result.success && result.sql && result.data) {
+        const correctedMessage = parseAIResponse(result as AIResponse, msg.originalMessage);
+        correctedMessage.isCorrection = true;
+        correctedMessage.content = `[Correction] ${correctedMessage.content}`;
+        
+        if (result.remainingCredits !== undefined) {
+          setRemainingCredits(result.remainingCredits);
+        }
+        
+        setMessages(prev => [...prev, correctedMessage]);
+      }
+    } catch (err) {
+      console.error("Failed to send feedback", err);
+    }
+  };
 
   const sendMessage = (content: string) => {
     if (!content.trim()) return;
@@ -188,50 +144,16 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
 
+    const history = messages.slice(-5).map(m => ({
+      role: m.role === "ai" ? "assistant" as const : "user" as const,
+      content: m.content
+    }));
+
     mutateChat(
-      { message: content },
+      { message: content, history },
       {
         onSuccess: (data: AIResponse) => {
-          // Attempt to detect a multi-module dashboard response
-          let dashboardData: DashboardPayload | undefined = undefined;
-          let universalDashboard: any = undefined;
-          let generatedContent: string | undefined = undefined;
-
-          if (data.data && data.data.length === 1) {
-            const row = data.data[0];
-            if (row.JsonResult && typeof row.JsonResult === "string") {
-              try {
-                universalDashboard = JSON.parse(row.JsonResult);
-                generatedContent = generateMarkdownReport(universalDashboard);
-              } catch { }
-            } else {
-              const parsed = parseDashboardPayload(row);
-              if (parsed) dashboardData = parsed;
-            }
-          }
-
-          const aiMessage: ChatMessage = {
-            id: (Date.now() + 1).toString(),
-            role: "ai",
-            content: generatedContent 
-              || data.Summary
-              || data.message
-              || (dashboardData
-                ? `Here's your CRM overview across ${Object.keys(dashboardData).length} modules:`
-                : data.count !== undefined && data.count > 0
-                  ? `I found ${data.count} results:`
-                  : "No records found."),
-            // Only pass raw data when it's NOT a dashboard
-            data: (dashboardData || universalDashboard) ? undefined : data.data,
-            summary: data.Summary,
-            breakdown: data.Breakdown,
-            insights: data.Insights,
-            suggestions: data.suggestions,
-            dashboardData,
-            universalDashboard,
-            totalTokens: data.totalTokens,
-            timestamp: new Date(),
-          };
+          const aiMessage = parseAIResponse(data, content);
           if (data.remainingCredits !== undefined) {
             setRemainingCredits(data.remainingCredits);
           }
@@ -251,7 +173,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ChatContext.Provider value={{ messages, setMessages, input, setInput, isPending, sendMessage, isOpen, setIsOpen, remainingCredits }}>
+    <ChatContext.Provider value={{ messages, setMessages, input, setInput, isPending, sendMessage, sendFeedback, isOpen, setIsOpen, remainingCredits }}>
       {children}
     </ChatContext.Provider>
   );
