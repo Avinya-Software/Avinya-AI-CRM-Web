@@ -27,7 +27,7 @@ export default function AIHighlight() {
               className="text-4xl md:text-6xl font-display font-bold leading-tight text-slate-900 dark:text-white"
             >
               Your CRM, <br />
-              <span className="text-gradient">Now with a Voice.</span>
+              <span className="text-gradient">Now with a AI Assistant.</span>
             </motion.h2>
             
             <motion.p 
