@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { DatePicker } from "antd";
+import { DatePicker } from "antd"
+import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import { X, Phone, Mail, MapPin, Building2, Plus, Loader2, Save, Calendar } from "lucide-react";
 import { useLeadDetails } from "../../hooks/lead/useLeadDetails"; // adjust path
@@ -52,6 +53,8 @@ const fmt = (dateStr?: string | null) => {
   });
 };
 
+
+
 // ── InfoCard ───────────────────────────────────────────────────────
 
 const InfoCard = ({ label, value }: { label: string; value?: string | null }) => (
@@ -101,6 +104,8 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
   };
 
   const { userId } = useAuth();
+
+  dayjs.extend(utc);
 
   useEffect(() => {
     if (editData) {
@@ -206,21 +211,25 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
       </div>
 
       <div className="mb-4 flex flex-col gap-1">
-         <label className="text-xs font-medium text-slate-500 block mb-1">
-         Next Follow-up Date & Time <span className="text-red-400">*</span>
+        <label className="text-xs font-medium text-slate-500 block mb-1">
+          Next Follow-up Date & Time <span className="text-red-400">*</span>
         </label>
         <DatePicker
           showTime
           format="YYYY-MM-DD HH:mm"
           placeholder="Select date & time"
-          value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
+          value={
+            form.nextFollowupDate
+              ? dayjs.utc(form.nextFollowupDate).local()
+              : null
+          }
           onChange={(date) =>
             setForm({
               ...form,
               nextFollowupDate: date ? date.toISOString() : "",
             })
           }
-           className={`w-full text-sm border rounded-lg px-2.5 py-2  ${errors.notes ? "border-red-400" : "border-slate-200"
+          className={`w-full text-sm border rounded-lg px-2.5 py-2  ${errors.notes ? "border-red-400" : "border-slate-200"
             }`}
         />
         {errors.nextFollowupDate && (
@@ -363,8 +372,8 @@ const LeadDetailSheet = ({
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`py-3 px-4 text-sm border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.key
-                  ? "border-blue-600 text-blue-700 font-semibold"
-                  : "border-transparent text-slate-500 hover:text-slate-700 font-medium"
+                ? "border-blue-600 text-blue-700 font-semibold"
+                : "border-transparent text-slate-500 hover:text-slate-700 font-medium"
                 }`}
             >
               {tab.label}

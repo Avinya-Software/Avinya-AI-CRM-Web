@@ -19,6 +19,7 @@ export interface AIResponse {
   message?: string;
   errorMessage?: string;
   successMessage?: string;
+  parameters?: Record<string, any>;
   
   // Optional Fields for enhanced UI
   summary?: string;
@@ -78,6 +79,8 @@ export interface ChatMessage {
   universalDashboard?: any;
   totalTokens?: number; // How many tokens THIS message used
   timestamp: Date;
+  action?: string;
+  parameters?: Record<string, any>;
   
   // Feedback related fields
   query?: string; // The SQL query that was executed

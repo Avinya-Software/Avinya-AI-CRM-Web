@@ -433,44 +433,42 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
           </Section>
 
           {/* ── SECTION: Follow-up & Notes (new leads only) — above Location ── */}
-          {!isEdit && (
-            <Section icon={<Calendar className="w-3.5 h-3.5" />} title="Follow-up & Notes">
-              {/* Links | Next Follow-up Date */}
-              <Input
-                label="Links"
-                value={form.links}
-                onChange={(v: any) => setForm({ ...form, links: v })}
+          <Section icon={<Calendar className="w-3.5 h-3.5" />} title="Follow-up & Notes">
+            {/* Links | Next Follow-up Date */}
+            <Input
+              label="Links"
+              value={form.links}
+              onChange={(v: any) => setForm({ ...form, links: v })}
+              disabled={isReadOnly}
+            />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-600 mb-1">
+                Next Follow-up Date {!isEdit && <span className="text-red-500">*</span>}
+              </label>
+              <DatePicker
+                showTime
+                format="YYYY-MM-DD HH:mm"
+                className={`w-full h-10 rounded-lg border-slate-200 ${errors.nextFollowupDate ? "border-red-400" : ""}`}
+                placeholder="Select date & time"
+                value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
+                onChange={(date, dateString) =>
+                  setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                }
                 disabled={isReadOnly}
               />
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-slate-600 mb-1">
-                  Next Follow-up Date {!isEdit && <span className="text-red-500">*</span>}
-                </label>
-                <DatePicker
-                  showTime
-                  format="YYYY-MM-DD HH:mm"
-                  className={`w-full h-10 rounded-lg border-slate-200 ${errors.nextFollowupDate ? "border-red-400" : ""}`}
-                  placeholder="Select date & time"
-                  value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
-                  onChange={(date, dateString) =>
-                    setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
-                  }
-                  disabled={isReadOnly}
-                />
-                {errors.nextFollowupDate && <p className="text-xs text-red-500 mt-0.5">{errors.nextFollowupDate}</p>}
-              </div>
+              {errors.nextFollowupDate && <p className="text-xs text-red-500 mt-0.5">{errors.nextFollowupDate}</p>}
+            </div>
+            {/* Notes — full width */}
+            <div className="col-span-2">
+              <Textarea
+                label="Notes"
+                value={form.notes}
+                onChange={(v: any) => setForm({ ...form, notes: v })}
+                disabled={isReadOnly}
+              />
+            </div>
+          </Section>
 
-              {/* Notes — full width */}
-              <div className="col-span-2">
-                <Textarea
-                  label="Notes"
-                  value={form.notes}
-                  onChange={(v: any) => setForm({ ...form, notes: v })}
-                  disabled={isReadOnly}
-                />
-              </div>
-            </Section>
-          )}
 
           {/* ── SECTION: Location ── */}
           <Section icon={<MapPin className="w-3.5 h-3.5" />} title="Location">

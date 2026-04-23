@@ -502,6 +502,88 @@ const ReportBreakdown = ({ breakdown }: { breakdown: Record<string, Record<strin
   </div>
 );
 
+// ─── Action Confirmation Card (Leads/Tasks) ────────────────────────────────────
+const ActionConfirmationCard = ({ action, parameters }: { action: string; parameters: Record<string, any> }) => {
+  if (!parameters || Object.keys(parameters).length === 0) return null;
+
+  const isLead = action === "create_lead";
+  const isTask = action === "create_task";
+
+  return (
+    <div className="mt-4 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-md animate-scaleIn w-full max-w-md">
+      <div className={cn(
+        "px-4 py-2 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2",
+        isLead ? "bg-emerald-600" : "bg-violet-600"
+      )}>
+        {isLead ? <Bot className="h-3 w-3" /> : <ClipboardList className="h-3 w-3" />}
+        {isLead ? "Lead Details" : "Task Details"}
+      </div>
+      <div className="p-4 space-y-3">
+        {isLead && (
+          <>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Company</span>
+              <span className="text-sm font-black text-slate-900">{parameters.CompanyName}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Requirement</span>
+              <span className="text-xs text-slate-600">{parameters.RequirementDetails}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 pt-1">
+              {parameters.CityID && (
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Location</span>
+                  <span className="text-xs font-bold text-slate-700">{parameters.CityID}</span>
+                </div>
+              )}
+              {parameters.Mobile && (
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Contact</span>
+                  <span className="text-xs font-bold text-slate-700">{parameters.Mobile}</span>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+        {isTask && (
+          <>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Task</span>
+              <span className="text-sm font-black text-slate-900">{parameters.Title}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 pt-1">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Due Date</span>
+                <span className="text-xs font-bold text-slate-700">{formatValue("DueDateTime", parameters.DueDateTime)}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Scope</span>
+                <span className="text-xs font-bold text-slate-700 capitalize">{parameters.TaskType}</span>
+              </div>
+            </div>
+            {(parameters.TeamName || parameters.ProjectName) && (
+              <div className="grid grid-cols-2 gap-4 pt-1">
+                {parameters.TeamName && (
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Team</span>
+                    <span className="text-xs font-bold text-slate-700">{parameters.TeamName}</span>
+                  </div>
+                )}
+                {parameters.ProjectName && (
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Project</span>
+                    <span className="text-xs font-bold text-slate-700">{parameters.ProjectName}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ─── Suggestion Chips ─────────────────────────────────────────────────────────
 
 const SuggestionChips = ({ suggestions, onSelect }: { suggestions: string[]; onSelect: (s: string) => void }) => (
@@ -641,6 +723,11 @@ const AIAssistant = () => {
                     {msg.content}
                   </ReactMarkdown>
                 </div>
+                
+                {/* ACTION PARAMETERS (Leads/Tasks) */}
+                {msg.action && msg.parameters && (
+                  <ActionConfirmationCard action={msg.action} parameters={msg.parameters} />
+                )}
 
                 {/* BREAKDOWN */}
                 {msg.breakdown && (

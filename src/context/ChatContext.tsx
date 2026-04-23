@@ -92,6 +92,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       timestamp: new Date(),
       query: data.query || data.sql,
       originalMessage: originalContent,
+      action: data.action,
+      parameters: data.parameters,
     };
   };
 
