@@ -7,6 +7,7 @@ import { usePermissions } from "../context/PermissionContext";
 import { useAuth } from "../auth/useAuth";
 import { toast } from "react-hot-toast";
 import { storage } from "../utils/storage";
+import SEO from "../components/common/SEO";
 
 type LoginErrors = { email?: string; password?: string };
 
@@ -77,6 +78,10 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8">
+      <SEO 
+        title="Login - Avinya AI CRM" 
+        description="Sign in to your Avinya AI CRM dashboard to manage leads, tasks, and track your sales performance." 
+      />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-2xl mb-4 shadow-lg">

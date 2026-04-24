@@ -27,6 +27,7 @@ const SEO = ({
   const fullTitle = `${title} | ${siteTitle}`;
   const defaultDescription = 'Avinya AI CRM - The most intelligent customer management system powered by AI. Automate your leads, tasks, and sales with ease.';
   const defaultKeywords = 'AI CRM, customer management, sales automation, AI sales assistant, CRM evolution, Avinya AI';
+  const defaultImage = 'https://aicrm.avinyasoftware.com/Images/og-image.png'; // Fallback to CRM OG image
 
   return (
     <Helmet>
@@ -40,13 +41,13 @@ const SEO = ({
       <meta property="og:type" content={ogType} />
       <meta property="og:title" content={ogTitle || fullTitle} />
       <meta property="og:description" content={ogDescription || description || defaultDescription} />
-      {ogImage && <meta property="og:image" content={ogImage} />}
+      <meta property="og:image" content={ogImage || defaultImage} />
 
       {/* Twitter */}
       <meta name="twitter:card" content={twitterCard} />
       <meta name="twitter:title" content={ogTitle || fullTitle} />
       <meta name="twitter:description" content={ogDescription || description || defaultDescription} />
-      {ogImage && <meta name="twitter:image" content={ogImage} />}
+      <meta name="twitter:image" content={ogImage || defaultImage} />
     </Helmet>
   );
 };

@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useLoginSuperAdmin } from "../hooks/admin/useLoginAdmin";
 import { useAuth } from "../auth/useAuth";
 import { storage } from "../utils/storage";
+import SEO from "../components/common/SEO";
 
 type LoginErrors = {
   email?: string;
@@ -83,6 +84,10 @@ const SuperAdminLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4 py-8">
+      <SEO 
+        title="Super Admin Login - Avinya AI CRM" 
+        description="Secure access for Super Administrators of Avinya AI CRM." 
+      />
       <div className="w-full max-w-lg">
         {/* Login Card */}
         <div className="bg-white rounded-[4vh] shadow-[0_2vh_5vh_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden p-[5vh]">
