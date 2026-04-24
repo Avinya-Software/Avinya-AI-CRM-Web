@@ -14,7 +14,7 @@ export interface AIResponse {
   intent?: string;
   query?: string;
   sql?: string; // Added to match backend Sql field
-  data?: any[];
+  data?: any;
   count?: number;
   message?: string;
   errorMessage?: string;
@@ -68,7 +68,7 @@ export interface ChatMessage {
   id: string;
   role: "user" | "ai";
   content: string;
-  data?: any[];
+  data?: any;
   summary?: string;
   breakdown?: Record<string, Record<string, any>>;
   insights?: string;

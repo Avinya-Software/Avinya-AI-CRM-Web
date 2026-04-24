@@ -22,6 +22,7 @@ import {
 } from "../ui/table";
 import { useChat } from "../../context/ChatContext";
 import { cn } from "../../lib/utils";
+import { ChatDataRenderer } from "./ChatDataRenderer";
 import type { DashboardPayload, DashboardModuleData, DashboardStatusItem } from "../../interfaces/ai.interface";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -448,13 +449,12 @@ export const ChatPanel = () => {
                 </div>
               )}
 
-              {/* Standard Data Table (regular list results) */}
-              {!msg.dashboardData && msg.data && msg.data.length > 0 &&
-                (msg.data.length > 1 || Object.keys(msg.data[0]).length > 1) && (
-                  <div className="mt-2 w-full overflow-hidden border border-slate-200 rounded-xl bg-white shadow-lg">
-                    <DataTable data={msg.data} />
-                  </div>
-                )}
+              {/* Structured query results */}
+              {!msg.dashboardData && !msg.universalDashboard && msg.data !== undefined && (
+                <div className="mt-2 w-full">
+                  <ChatDataRenderer data={msg.data} compact />
+                </div>
+              )}
 
               {/* CLARIFICATION / SUGGESTED CLIENTS */}
               {msg.role === "ai" && msg.id === messages[messages.length - 1].id && (

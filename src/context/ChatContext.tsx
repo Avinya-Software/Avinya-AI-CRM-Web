@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { ChatMessage, AIRequest, AIResponse, DashboardPayload, AIFeedback } from "../interfaces/ai.interface";
 import { useAIChat, useAIFeedback } from "../hooks/ai/useAIChat";
-import { robustParseJson, parseDashboardPayload, generateMarkdownReport } from "../lib/chat-utils";
+import { robustParseJson, parseDashboardPayload, generateMarkdownReport, normalizeChatData } from "../lib/chat-utils";
 
 interface ChatContextType {
   messages: ChatMessage[];
@@ -23,7 +23,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     {
       id: "1",
       role: "ai",
-      content: "Hello! I'm your Avinya AI CRM assistant. I can provide you with information and insights across all your data, though currently I can only create Leads and Tasks. How can I help you today?",
+      content: "Hello! I'm your Avinya AI CRM assistant. I can provide you with information and insights across all your data. You get 15,000 tokens as free daily, for more please purchase. How can I help you today?",
       suggestions: [
         "Show my leads",
         "How is my business doing?",
@@ -66,6 +66,14 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
+    const normalizedPayload = (dashboardData || universalDashboard)
+      ? undefined
+      : normalizeChatData(
+          (data.suggestedClients && data.suggestedClients.length > 0)
+            ? data.suggestedClients
+            : data.data
+        );
+
     return {
       id: (Date.now() + 1).toString(),
       role: "ai",
@@ -78,11 +86,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           : data.count !== undefined && data.count > 0
             ? `I found ${data.count} results:`
             : "No records found."),
-      data: (dashboardData || universalDashboard) 
-        ? undefined 
-        : (data.suggestedClients && data.suggestedClients.length > 0) 
-          ? data.suggestedClients 
-          : data.data,
+      data: normalizedPayload,
       summary: data.summary,
       insights: data.insights,
       suggestions: data.suggestions,

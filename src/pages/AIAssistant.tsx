@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useChat } from "../context/ChatContext";
 import { cn } from "../lib/utils";
+import { ChatDataRenderer } from "../components/common/ChatDataRenderer";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import {
@@ -584,6 +585,67 @@ const ActionConfirmationCard = ({ action, parameters }: { action: string; parame
   );
 };
 
+// ─── Single Metric Card (Premium Stat) ────────────────────────────────────────
+const SingleMetricCard = ({ data }: { data: any }) => {
+  if (data === null || data === undefined) return null;
+
+  // If it's a primitive value, wrap it in a generic object
+  const normalizedData = (typeof data === "object" && !Array.isArray(data)) 
+    ? data 
+    : { "Value": data };
+
+  const keys = Object.keys(normalizedData);
+  if (keys.length === 0) return null;
+
+  return (
+    <div className="mt-4 flex flex-wrap gap-4 w-full">
+      {keys.map((key) => {
+        const val = normalizedData[key];
+        const label = formatLabel(key);
+        const lowerKey = key.toLowerCase();
+        
+        let Icon = Hash;
+        let colorClass = "bg-blue-50 text-blue-600";
+
+        if (lowerKey.includes("revenue") || lowerKey.includes("amount") || lowerKey.includes("outstanding") || lowerKey.includes("total") || lowerKey.includes("paisa") || lowerKey.includes("price")) {
+          Icon = IndianRupee;
+          colorClass = "bg-emerald-50 text-emerald-600";
+        } else if (lowerKey.includes("count") || lowerKey.includes("leads") || lowerKey.includes("clients") || lowerKey.includes("results")) {
+          Icon = TrendingUp;
+          colorClass = "bg-violet-50 text-violet-600";
+        }
+
+        return (
+          <div key={key} className="flex-1 min-w-[200px] bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all group animate-scaleIn relative overflow-hidden">
+            <div className="flex items-center gap-4 relative z-10">
+              <div className={cn("p-3 rounded-xl transition-transform group-hover:scale-110", colorClass)}>
+                <Icon className="h-6 w-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-1 truncate">
+                  {label}
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                    {formatValue(key, val)}
+                  </h3>
+                  {lowerKey.includes("outstanding") && (
+                    <span className="text-[8px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded uppercase shrink-0">Action Required</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* Subtle background decoration */}
+            <div className="absolute -bottom-4 -right-4 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform">
+               <Icon className="h-24 w-24" />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // ─── Suggestion Chips ─────────────────────────────────────────────────────────
 
 const SuggestionChips = ({ suggestions, onSelect }: { suggestions: string[]; onSelect: (s: string) => void }) => (
@@ -748,6 +810,17 @@ const AIAssistant = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Data Rendering: Single Metric vs List/Table (Inside Bubble for visibility) */}
+                {!msg.universalDashboard && !msg.dashboardData && msg.data !== undefined && (
+                  <div className="mt-6 w-full border-t border-slate-100 pt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                       <BarChart2 className="h-3.5 w-3.5 text-emerald-500" />
+                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Query Results</span>
+                    </div>
+                    <ChatDataRenderer data={msg.data} />
+                  </div>
+                )}
               </div>
 
               {/* Universal High-Density Business Summary */}
@@ -760,13 +833,6 @@ const AIAssistant = () => {
                 <DashboardCards dashboard={msg.dashboardData} />
               )}
 
-              {/* Standard Data Table */}
-              {!msg.universalDashboard && !msg.dashboardData && msg.data && msg.data.length > 0 &&
-                (msg.data.length > 1 || Object.keys(msg.data[0]).length > 1) && (
-                  <div className="mt-4 w-full overflow-hidden border border-slate-200 rounded-xl bg-white shadow-lg">
-                    <DataTable data={msg.data} />
-                  </div>
-                )}
 
               <div className="flex items-center justify-between w-full mt-1.5 px-1">
                 <div className="flex items-center gap-3">
@@ -948,10 +1014,13 @@ const AIAssistant = () => {
               <span className="text-sm font-black text-slate-800 tracking-tight">
                 {remainingCredits.toLocaleString()}
               </span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remaining Tokens</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tokens</span>
             </div>
           </div>
         )}
+        <p className="max-w-5xl mx-auto mt-2 text-[10px] text-slate-400 italic px-1">
+          * You get 15,000 free tokens daily. For more, please purchase.
+        </p>
       </div>
     </div>
   );
