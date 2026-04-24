@@ -26,6 +26,37 @@ export function tryParseJson(value: any): any[] {
   return Array.isArray(parsed) ? parsed : parsed ? [parsed] : [];
 }
 
+export function normalizeChatData(value: any): any {
+  if (value === null || value === undefined) return undefined;
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return trimmed;
+
+    if (
+      (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+      (trimmed.startsWith("[") && trimmed.endsWith("]"))
+    ) {
+      const parsed = robustParseJson(trimmed);
+      return parsed ?? value;
+    }
+
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(normalizeChatData);
+  }
+
+  if (typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [key, normalizeChatData(nestedValue)])
+    );
+  }
+
+  return value;
+}
+
 export function parseDashboardPayload(row: Record<string, any>): DashboardPayload | null {
   if (row.JsonResult && typeof row.JsonResult === "string") {
     const data = robustParseJson(row.JsonResult);
