@@ -37,3 +37,13 @@ export const addProjectTaskApi = async (payload: Partial<ProjectTask>) => {
   const res = await api.post("/Project/task", payload);
   return res.data;
 };
+
+export const getProjectStatusDropdownApi = async (): Promise<any[]> => {
+  const res = await api.get("/Project/status-dropdown");
+  return res.data?.data ?? res.data ?? [];
+};
+
+export const getProjectPriorityDropdownApi = async (): Promise<any[]> => {
+  const res = await api.get("/Project/priority-dropdown");
+  return res.data?.data ?? res.data ?? [];
+};

@@ -23,8 +23,12 @@ const isPlainObject = (value: any): value is Record<string, any> =>
 const isPrimitive = (value: any) =>
   value === null || value === undefined || ["string", "number", "boolean"].includes(typeof value);
 
+const isCountKey = (key: string) =>
+  /count|orders?|clients?|leads?|tasks?|projects?|results?|records?|qty|quantity|units?|items?/i.test(key);
+
 const isCurrencyKey = (key: string) =>
-  /revenue|amount|price|total|charge|outstanding|grandtotal|balance|cost/i.test(key);
+  !isCountKey(key) &&
+  /revenue|amount|price|charge|outstanding|grandtotal|balance|cost|subtotal|payment|invoice|expense|sales|profit|income|value/i.test(key);
 
 const isDateLike = (value: string) => /^\d{4}-\d{2}-\d{2}/.test(value);
 
@@ -72,7 +76,7 @@ const getMetricStyle = (key: string) => {
     return { Icon: IndianRupee, colorClass: "bg-emerald-50 text-emerald-600" };
   }
 
-  if (/count|leads|clients|results|orders|tasks|projects/i.test(lowerKey)) {
+  if (isCountKey(lowerKey)) {
     return { Icon: TrendingUp, colorClass: "bg-violet-50 text-violet-600" };
   }
 

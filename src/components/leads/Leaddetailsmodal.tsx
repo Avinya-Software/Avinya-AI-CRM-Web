@@ -10,6 +10,7 @@ import { usePermissions } from "../../context/PermissionContext";
 import { useAuth } from "../../auth/useAuth";
 import toast from "react-hot-toast";
 import { useUpdateFollowUp } from "../../hooks/followup/useFollowUpMutations";
+import { useLeadFollowupStatuses } from "../../hooks/followup/useLeadFollowupStatuses";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -64,11 +65,7 @@ const InfoCard = ({ label, value }: { label: string; value?: string | null }) =>
   </div>
 );
 
-const STATUS_OPTIONS = [
-  { leadFollowupStatusID: 1, statusName: "Pending" },
-  { leadFollowupStatusID: 2, statusName: "In Progress" },
-  { leadFollowupStatusID: 3, statusName: "Completed" },
-];
+// STATUS_OPTIONS are now fetched from the API via useLeadFollowupStatuses hook
 
 // ── Add Follow-up Form ─────────────────────────────────────────────
 
@@ -82,6 +79,7 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
   const queryClient = useQueryClient();
   const { mutate, isPending } = useCreateFollowUp();
   const { mutate: updateMutate, isPending: isUpdating } = useUpdateFollowUp();
+  const { data: statusOptions = [], isLoading: statusesLoading } = useLeadFollowupStatuses();
 
   const [form, setForm] = useState({
     followUpType: "Phone Call",
@@ -196,17 +194,22 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
           Status
         </label>
         <select
-          className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-2"
+          className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-2 disabled:opacity-60"
           value={form.status}
+          disabled={statusesLoading}
           onChange={(e) =>
             setForm({ ...form, status: Number(e.target.value) })
           }
         >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
-              {s.statusName}
-            </option>
-          ))}
+          {statusesLoading ? (
+            <option>Loading...</option>
+          ) : (
+            statusOptions.map((s) => (
+              <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
+                {s.statusName}
+              </option>
+            ))
+          )}
         </select>
       </div>
 

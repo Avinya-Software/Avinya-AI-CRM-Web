@@ -1,44 +1,27 @@
-// src/pages/Projects.tsx
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { LayoutGrid, List } from "lucide-react";
-
 import { useProjects } from "../hooks/project/useProjects";
+import {
+  useProjectPriorityDropdown,
+  useProjectStatusDropdown,
+} from "../hooks/project/useProjectDropdowns";
 import Pagination from "../components/leads/Pagination";
 import { Project } from "../interfaces/project.interface";
 import ProjectTable from "../components/project/ProjectTable";
 import ProjectUpsertSheet from "../components/project/ProjectUpsertSheet";
 import ProjectViewSheet from "../components/project/ProjectViewSheet";
-import { usePermissions } from "../context/PermissionContext"; //  ADDED
+import { usePermissions } from "../context/PermissionContext";
 import { useDebounce } from "../components/common/CommonHelper";
-
-const STATUS_LABEL: Record<number, string> = {
-  0: "Planning",
-  1: "Active",
-  2: "Completed",
-  3: "On Hold",
-};
-
-const STATUS_STYLE: Record<number, string> = {
-  0: "bg-slate-100 text-slate-600",
-  1: "bg-blue-100 text-blue-700",
-  2: "bg-green-100 text-green-700",
-  3: "bg-orange-100 text-orange-700",
-};
-
-const PRIORITY_LABEL: Record<number, string> = {
-  0: "Low",
-  1: "Medium",
-  2: "High",
-  3: "Critical",
-};
-
-const PRIORITY_STYLE: Record<number, string> = {
-  0: "bg-slate-100 text-slate-500",
-  1: "bg-amber-100 text-amber-700",
-  2: "bg-orange-100 text-orange-700",
-  3: "bg-red-100 text-red-700",
-};
+import {
+  getProjectPriorityLabel,
+  getProjectPriorityStyle,
+  getProjectStatusLabel,
+  getProjectStatusStyle,
+  normalizeProjectPriorityOptions,
+  normalizeProjectStatusOptions,
+  type ProjectDropdownOption,
+} from "../lib/project-display";
 
 const AVATAR_COLORS = [
   "bg-violet-500",
@@ -49,40 +32,40 @@ const AVATAR_COLORS = [
   "bg-pink-500",
 ];
 
-/* ─────────────────────────────────────────────
-   PROJECT CARD (Grid View)
-───────────────────────────────────────────── */
 const ProjectCard = ({
   project,
   onClick,
+  statusOptions,
+  priorityOptions,
 }: {
   project: Project;
   onClick: () => void;
+  statusOptions: ProjectDropdownOption[];
+  priorityOptions: ProjectDropdownOption[];
 }) => {
   const progress = project.progressPercent ?? 0;
   const members = project.teamMembers ?? [];
+  const statusLabel = getProjectStatusLabel(project, statusOptions);
+  const priorityLabel = getProjectPriorityLabel(project, priorityOptions);
 
   return (
     <div
       onClick={onClick}
-      className="bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+      className="group cursor-pointer rounded-xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:border-slate-300 hover:shadow-md"
     >
-      <h3 className="font-semibold text-slate-800 text-base leading-snug group-hover:text-blue-900 transition-colors mb-1 line-clamp-2">
+      <h3 className="mb-1 line-clamp-2 text-base font-semibold leading-snug text-slate-800 transition-colors group-hover:text-blue-900">
         {project.projectName}
       </h3>
 
-      <p className="text-sm text-slate-500 mb-4">
-        {project.clientName || "—"}
-      </p>
+      <p className="mb-4 text-sm text-slate-500">{project.clientName || "-"}</p>
 
-      {/* Progress */}
       <div className="mb-4">
-        <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+        <div className="mb-1.5 flex justify-between text-xs text-slate-500">
           <span>Progress</span>
           <span className="font-medium">{progress}%</span>
         </div>
 
-        <div className="w-full bg-slate-100 rounded-full h-1.5">
+        <div className="h-1.5 w-full rounded-full bg-slate-100">
           <div
             className="h-1.5 rounded-full bg-blue-700 transition-all duration-500"
             style={{ width: `${progress}%` }}
@@ -90,41 +73,38 @@ const ProjectCard = ({
         </div>
       </div>
 
-      {/* Badges */}
-      <div className="flex gap-2 flex-wrap mb-4">
+      <div className="mb-4 flex flex-wrap gap-2">
         <span
-          className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[project.status ?? 0]
-            }`}
+          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${getProjectStatusStyle(statusLabel)}`}
         >
-          {STATUS_LABEL[project.status ?? 0]}
+          {statusLabel}
         </span>
 
         <span
-          className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${PRIORITY_STYLE[project.priority ?? 1]
-            }`}
+          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${getProjectPriorityStyle(priorityLabel)}`}
         >
-          {PRIORITY_LABEL[project.priority ?? 1]}
+          {priorityLabel}
         </span>
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+      <div className="flex items-center justify-between border-t border-slate-100 pt-3">
         <div className="flex items-center gap-2">
           <div className="flex -space-x-2">
-            {members.slice(0, 3).map((m, i) => {
+            {members.slice(0, 3).map((member, index) => {
               const initials =
-                m.userName
+                member.userName
                   ?.split(" ")
-                  .map((n) => n[0])
+                  .map((name) => name[0])
                   .join("")
                   .slice(0, 2)
                   .toUpperCase() || "?";
 
               return (
                 <div
-                  key={m.userId}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold border-2 border-white ${AVATAR_COLORS[i % AVATAR_COLORS.length]
-                    }`}
+                  key={member.userId}
+                  className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-xs font-semibold text-white ${
+                    AVATAR_COLORS[index % AVATAR_COLORS.length]
+                  }`}
                 >
                   {initials}
                 </div>
@@ -154,9 +134,6 @@ const ProjectCard = ({
   );
 };
 
-/* ─────────────────────────────────────────────
-   MAIN PAGE
-───────────────────────────────────────────── */
 const Projects = () => {
   const { hasPermission } = usePermissions();
 
@@ -167,16 +144,11 @@ const Projects = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize] = useState(10);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<number | undefined>(
-    undefined
-  );
+  const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-
   const [openSheet, setOpenSheet] = useState(false);
-  const [selectedProject, setSelectedProject] =
-    useState<Project | null>(null);
-  const [viewProjectId, setViewProjectId] =
-    useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [viewProjectId, setViewProjectId] = useState<string | null>(null);
   const [viewProjectData, setViewProjectData] = useState<Project | null>(null);
 
   useEffect(() => {
@@ -185,23 +157,38 @@ const Projects = () => {
       setViewProjectId(null);
     }
   }, [canView]);
-  const debouncedSearchTerm = useDebounce(search, 500);
 
+  const debouncedSearchTerm = useDebounce(search, 500);
   const projectsMutation = useProjects();
+  const { data: projectStatusData = [] } = useProjectStatusDropdown();
+  const { data: projectPriorityData = [] } = useProjectPriorityDropdown();
 
   useEffect(() => {
-    projectsMutation.mutate({ pageNumber, pageSize, search: debouncedSearchTerm, statusFilter });
+    projectsMutation.mutate({
+      pageNumber,
+      pageSize,
+      search: debouncedSearchTerm,
+      statusFilter,
+    });
   }, [pageNumber, pageSize, debouncedSearchTerm, statusFilter]);
 
   const { data, isPending: isLoading } = projectsMutation;
 
+  const statusOptions = normalizeProjectStatusOptions(projectStatusData);
+  const priorityOptions = normalizeProjectPriorityOptions(projectPriorityData);
   const projects: Project[] = data?.data?.data ?? data?.data ?? [];
   const totalRecords: number = data?.data?.totalRecords ?? 0;
   const totalPages: number = data?.data?.totalPages ?? 1;
 
-  const planning = projects.filter((p) => p.status === 0).length;
-  const active = projects.filter((p) => p.status === 1).length;
-  const completed = projects.filter((p) => p.status === 2).length;
+  const statusCounts = statusOptions.map((option) => ({
+    ...option,
+    count: projects.filter((project) => project.status === option.value).length,
+  }));
+  const planning = statusCounts.find((option) => option.label.toLowerCase().includes("plan"))?.count ?? 0;
+  const active = statusCounts.find((option) => option.label.toLowerCase().includes("active"))?.count ?? 0;
+  const completed = statusCounts.find((option) =>
+    option.label.toLowerCase().includes("complete")
+  )?.count ?? 0;
 
   const handleAdd = () => {
     if (!canCreate) return;
@@ -223,7 +210,12 @@ const Projects = () => {
   };
 
   const handleSuccess = () => {
-    projectsMutation.mutate({ pageNumber, pageSize, search: debouncedSearchTerm, statusFilter });
+    projectsMutation.mutate({
+      pageNumber,
+      pageSize,
+      search: debouncedSearchTerm,
+      statusFilter,
+    });
     setOpenSheet(false);
     setSelectedProject(null);
   };
@@ -232,23 +224,21 @@ const Projects = () => {
 
   const filterTabs = [
     { label: `All (${totalRecords})`, value: undefined },
-    { label: `Planning (${planning})`, value: 0 },
-    { label: `Active (${active})`, value: 1 },
-    { label: `Done (${completed})`, value: 2 },
+    ...statusCounts.map((option) => ({
+      label: `${option.label} (${option.count})`,
+      value: option.value,
+    })),
   ];
 
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
 
-      <div className="bg-white rounded-lg border">
-        {/* HEADER */}
-        <div className="px-4 py-5 border-b bg-gray-100">
-          <div className="grid grid-cols-2 gap-y-4 items-start">
+      <div className="rounded-lg border bg-white">
+        <div className="border-b bg-gray-100 px-4 py-5">
+          <div className="grid grid-cols-2 items-start gap-y-4">
             <div>
-              <h1 className="text-4xl font-serif font-semibold">
-                Projects
-              </h1>
+              <h1 className="text-4xl font-serif font-semibold">Projects</h1>
               <p className="mt-1 text-sm text-slate-600">
                 Manage and track your projects
               </p>
@@ -257,7 +247,7 @@ const Projects = () => {
             <div className="text-right">
               {canCreate && (
                 <button
-                  className="inline-flex items-center gap-2 btn-primary px-4 py-2 rounded text-sm font-medium transition"
+                  className="btn-primary inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-medium transition"
                   onClick={handleAdd}
                 >
                   + New Project
@@ -265,26 +255,20 @@ const Projects = () => {
               )}
             </div>
 
-            {/* STATS */}
             <div className="col-span-2 grid grid-cols-4 gap-3">
               {[
                 { label: "Planning", value: planning },
                 { label: "Active", value: active },
                 { label: "Completed", value: completed },
                 { label: "Total", value: totalRecords },
-              ].map((s) => (
-                <div key={s.label} className="bg-white rounded-lg border p-4">
-                  <p className="text-2xl font-bold text-slate-800">
-                    {s.value}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {s.label}
-                  </p>
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-lg border bg-white p-4">
+                  <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+                  <p className="mt-0.5 text-xs text-slate-400">{stat.label}</p>
                 </div>
               ))}
             </div>
 
-            {/* SEARCH + FILTER + VIEW TOGGLE */}
             <div className="col-span-2 flex flex-wrap items-center gap-3">
               <div className="relative w-[280px]">
                 <input
@@ -295,14 +279,14 @@ const Projects = () => {
                     setSearch(e.target.value);
                     setPageNumber(1);
                   }}
-                  className="w-full h-10 pl-10 pr-3 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="h-10 w-full rounded border pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                   🔍
                 </span>
               </div>
 
-              <div className="flex items-center gap-1 border rounded-lg p-1 bg-white">
+              <div className="flex items-center gap-1 rounded-lg border bg-white p-1">
                 {filterTabs.map((tab) => (
                   <button
                     key={String(tab.value)}
@@ -310,32 +294,35 @@ const Projects = () => {
                       setStatusFilter(tab.value);
                       setPageNumber(1);
                     }}
-                    className={`px-3 py-1 rounded text-xs font-medium transition ${statusFilter === tab.value
-                      ? "btn-primary"
-                      : "text-slate-500 hover:bg-slate-100"
-                      }`}
+                    className={`rounded px-3 py-1 text-xs font-medium transition ${
+                      statusFilter === tab.value
+                        ? "btn-primary"
+                        : "text-slate-500 hover:bg-slate-100"
+                    }`}
                   >
                     {tab.label}
                   </button>
                 ))}
               </div>
 
-              <div className="flex gap-1 border rounded-lg p-1 bg-white ml-auto">
+              <div className="ml-auto flex gap-1 rounded-lg border bg-white p-1">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-1.5 rounded transition ${viewMode === "grid"
-                    ? "btn-primary"
-                    : "text-slate-400 hover:text-slate-600"
-                    }`}
+                  className={`rounded p-1.5 transition ${
+                    viewMode === "grid"
+                      ? "btn-primary"
+                      : "text-slate-400 hover:text-slate-600"
+                  }`}
                 >
                   <LayoutGrid size={15} />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-1.5 rounded transition ${viewMode === "list"
-                    ? "btn-primary"
-                    : "text-slate-400 hover:text-slate-600"
-                    }`}
+                  className={`rounded p-1.5 transition ${
+                    viewMode === "list"
+                      ? "btn-primary"
+                      : "text-slate-400 hover:text-slate-600"
+                  }`}
                 >
                   <List size={15} />
                 </button>
@@ -344,34 +331,35 @@ const Projects = () => {
           </div>
         </div>
 
-        {/* CONTENT */}
         {viewMode === "grid" ? (
-          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
             {isLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
+              Array.from({ length: 6 }).map((_, index) => (
                 <div
-                  key={i}
-                  className="bg-slate-50 border border-slate-200 rounded-xl p-5 animate-pulse h-52"
+                  key={index}
+                  className="h-52 animate-pulse rounded-xl border border-slate-200 bg-slate-50 p-5"
                 />
               ))
             ) : projects.length === 0 ? (
-              <div className="col-span-3 text-center py-16 text-slate-400">
+              <div className="col-span-3 py-16 text-center text-slate-400">
                 <p className="text-sm">No projects found</p>
                 {canCreate && (
                   <button
                     onClick={handleAdd}
-                    className="mt-2 text-sm text-blue-900 font-medium hover:underline"
+                    className="mt-2 text-sm font-medium text-blue-900 hover:underline"
                   >
                     + Add your first project
                   </button>
                 )}
               </div>
             ) : (
-              projects.map((p) => (
+              projects.map((project) => (
                 <ProjectCard
-                  key={p.projectID}
-                  project={p}
-                  onClick={() => handleView(p)}
+                  key={project.projectID}
+                  project={project}
+                  onClick={() => handleView(project)}
+                  statusOptions={statusOptions}
+                  priorityOptions={priorityOptions}
                 />
               ))
             )}
@@ -380,8 +368,10 @@ const Projects = () => {
           <ProjectTable
             data={projects}
             loading={isLoading}
-            onEdit={canUpdate ? handleEdit : () => { }}
+            onEdit={canUpdate ? handleEdit : () => {}}
             onView={handleView}
+            statusOptions={statusOptions}
+            priorityOptions={priorityOptions}
           />
         )}
 
@@ -414,10 +404,10 @@ const Projects = () => {
             setViewProjectId(null);
             setViewProjectData(null);
           }}
-          onEdit={(p) => {
+          onEdit={(project) => {
             setViewProjectId(null);
             setViewProjectData(null);
-            handleEdit(p);
+            handleEdit(project);
           }}
           onSuccess={handleSuccess}
         />

@@ -1,48 +1,28 @@
-// src/components/project/ProjectTable.tsx
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { MoreVertical, X } from "lucide-react";
 import type { Project } from "../../interfaces/project.interface";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import TableSkeleton from "../common/TableSkeleton";
 import { useDeleteProject } from "../../hooks/project/useDeleteProject";
-import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
+import { usePermissions } from "../../context/PermissionContext";
+import type { ProjectDropdownOption } from "../../lib/project-display";
+import {
+  getProjectPriorityLabel,
+  getProjectPriorityStyle,
+  getProjectStatusLabel,
+  getProjectStatusStyle,
+} from "../../lib/project-display";
 
 const DROPDOWN_HEIGHT = 100;
 const DROPDOWN_WIDTH = 180;
-
-const STATUS_LABEL: Record<number, string> = {
-  0: "Planning",
-  1: "Active",
-  2: "Completed",
-  3: "On Hold",
-};
-
-const STATUS_STYLE: Record<number, string> = {
-  0: "bg-slate-100 text-slate-600",
-  1: "bg-blue-100 text-blue-700",
-  2: "bg-green-100 text-green-700",
-  3: "bg-orange-100 text-orange-700",
-};
-
-const PRIORITY_LABEL: Record<number, string> = {
-  0: "Low",
-  1: "Medium",
-  2: "High",
-  3: "Critical",
-};
-
-const PRIORITY_STYLE: Record<number, string> = {
-  0: "bg-slate-100 text-slate-500",
-  1: "bg-amber-100 text-amber-700",
-  2: "bg-orange-100 text-orange-700",
-  3: "bg-red-100 text-red-700",
-};
 
 interface ProjectTableProps {
   data: Project[];
   loading?: boolean;
   onEdit: (project: Project) => void;
   onView: (project: Project) => void;
+  statusOptions: ProjectDropdownOption[];
+  priorityOptions: ProjectDropdownOption[];
 }
 
 const ProjectTable = ({
@@ -50,8 +30,9 @@ const ProjectTable = ({
   loading = false,
   onEdit,
   onView,
+  statusOptions,
+  priorityOptions,
 }: ProjectTableProps) => {
-  // 🔐 Permissions
   const { hasPermission } = usePermissions();
   const canView = hasPermission("project", "view");
   const canUpdate = hasPermission("project", "edit");
@@ -72,7 +53,6 @@ const ProjectTable = ({
   ) => {
     e.stopPropagation();
 
-    // 🔐 If no permissions, don't open menu
     if (!canView && !canUpdate && !canDelete) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
@@ -80,9 +60,7 @@ const ProjectTable = ({
     const openUpwards = spaceBelow < DROPDOWN_HEIGHT;
 
     setStyle({
-      top: openUpwards
-        ? rect.top - DROPDOWN_HEIGHT - 6
-        : rect.bottom + 6,
+      top: openUpwards ? rect.top - DROPDOWN_HEIGHT - 6 : rect.bottom + 6,
       left: rect.right - DROPDOWN_WIDTH,
     });
 
@@ -91,16 +69,16 @@ const ProjectTable = ({
 
   const handleEdit = () => {
     if (!openProject || !canUpdate) return;
-    const p = openProject;
+    const project = openProject;
     setOpenProject(null);
-    setTimeout(() => onEdit(p), 0);
+    setTimeout(() => onEdit(project), 0);
   };
 
   const handleView = () => {
     if (!openProject || !canView) return;
-    const p = openProject;
+    const project = openProject;
     setOpenProject(null);
-    setTimeout(() => onView(p), 0);
+    setTimeout(() => onView(project), 0);
   };
 
   const handleDelete = () => {
@@ -117,7 +95,7 @@ const ProjectTable = ({
   return (
     <div className="relative overflow-x-auto">
       <table className="w-full text-sm border-collapse">
-        <thead className="bg-slate-100 sticky top-0 z-10">
+        <thead className="sticky top-0 z-10 bg-slate-100">
           <tr>
             <Th>Project Name</Th>
             <Th>Customer</Th>
@@ -135,105 +113,99 @@ const ProjectTable = ({
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-slate-500">
+                <td colSpan={7} className="py-12 text-center text-slate-500">
                   No projects found
                 </td>
               </tr>
             ) : (
-              data.map((p) => (
-                <tr
-                  key={p.projectID}
-                  className="border-t h-[52px] hover:bg-slate-50 cursor-pointer"
-                  onClick={() => canView && onView(p)}
-                >
-                  <Td>
-                    <span className="font-medium text-slate-800">
-                      {p.projectName}
-                    </span>
-                  </Td>
+              data.map((project) => {
+                const statusLabel = getProjectStatusLabel(project, statusOptions);
+                const priorityLabel = getProjectPriorityLabel(project, priorityOptions);
 
-                  <Td>{p.clientName || "-"}</Td>
-
-                  <Td>
-                    <div className="flex items-center gap-2 min-w-[100px]">
-                      <div className="flex-1 bg-slate-100 rounded-full h-1.5">
-                        <div
-                          className="h-1.5 rounded-full bg-violet-600 transition-all"
-                          style={{
-                            width: `${p.progressPercent ?? 0}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs text-slate-500 w-8 text-right">
-                        {p.progressPercent ?? 0}%
+                return (
+                  <tr
+                    key={project.projectID}
+                    className="h-[52px] cursor-pointer border-t hover:bg-slate-50"
+                    onClick={() => canView && onView(project)}
+                  >
+                    <Td>
+                      <span className="font-medium text-slate-800">
+                        {project.projectName}
                       </span>
-                    </div>
-                  </Td>
+                    </Td>
 
-                  <Td>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[p.status ?? 0]
-                        }`}
-                    >
-                      {STATUS_LABEL[p.status ?? 0] ?? "—"}
-                    </span>
-                  </Td>
+                    <Td>{project.clientName || "-"}</Td>
 
-                  <Td>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PRIORITY_STYLE[p.priority ?? 1]
-                        }`}
-                    >
-                      {PRIORITY_LABEL[p.priority ?? 1] ?? "—"}
-                    </span>
-                  </Td>
+                    <Td>
+                      <div className="flex min-w-[100px] items-center gap-2">
+                        <div className="h-1.5 flex-1 rounded-full bg-slate-100">
+                          <div
+                            className="h-1.5 rounded-full bg-violet-600 transition-all"
+                            style={{ width: `${project.progressPercent ?? 0}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right text-xs text-slate-500">
+                          {project.progressPercent ?? 0}%
+                        </span>
+                      </div>
+                    </Td>
 
-                  <Td>
-                    {p.deadline
-                      ? new Date(p.deadline).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })
-                      : "-"}
-                  </Td>
-
-                  <Td className="text-center">
-                    {(canView || canUpdate || canDelete) && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openDropdown(e, p);
-                        }}
-                        className="p-2 rounded hover:bg-slate-200"
+                    <Td>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getProjectStatusStyle(statusLabel)}`}
                       >
-                        <MoreVertical size={16} />
-                      </button>
-                    )}
-                  </Td>
-                </tr>
-              ))
+                        {statusLabel}
+                      </span>
+                    </Td>
+
+                    <Td>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getProjectPriorityStyle(priorityLabel)}`}
+                      >
+                        {priorityLabel}
+                      </span>
+                    </Td>
+
+                    <Td>
+                      {project.deadline
+                        ? new Date(project.deadline).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "-"}
+                    </Td>
+
+                    <Td className="text-center">
+                      {(canView || canUpdate || canDelete) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDropdown(e, project);
+                          }}
+                          className="rounded p-2 hover:bg-slate-200"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                      )}
+                    </Td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         )}
       </table>
 
-      {/* DROPDOWN */}
       {openProject && (
         <div
           ref={dropdownRef}
-          className="fixed z-50 w-[180px] bg-white border rounded-lg shadow-lg"
+          className="fixed z-50 w-[180px] rounded-lg border bg-white shadow-lg"
           style={style}
           onClick={(e) => e.stopPropagation()}
         >
-          {canView && (
-            <MenuItem label="View Details" onClick={handleView} />
-          )}
-
-          {canUpdate && (
-            <MenuItem label="Edit Project" onClick={handleEdit} />
-          )}
-
+          {canView && <MenuItem label="View Details" onClick={handleView} />}
+          {canUpdate && <MenuItem label="Edit Project" onClick={handleEdit} />}
           {canDelete && (
             <MenuItem
               label="Delete Project"
@@ -247,35 +219,29 @@ const ProjectTable = ({
         </div>
       )}
 
-      {/* CONFIRM DELETE MODAL */}
       {confirmDelete && canDelete && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg w-[420px] p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">
-                Delete Project
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-[420px] rounded-lg bg-white p-6 shadow-lg">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Delete Project</h3>
               <button onClick={() => setConfirmDelete(null)}>
                 <X size={18} />
               </button>
             </div>
 
-            <p className="text-sm text-gray-600 mb-1">
+            <p className="mb-1 text-sm text-gray-600">
               Are you sure you want to delete{" "}
-              <span className="font-medium">
-                {confirmDelete.projectName}
-              </span>
-              ?
+              <span className="font-medium">{confirmDelete.projectName}</span>?
             </p>
 
-            <p className="text-sm text-red-600 font-medium mb-6">
+            <p className="mb-6 text-sm font-medium text-red-600">
               This action cannot be undone.
             </p>
 
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 border rounded hover:bg-gray-100"
+                className="rounded border px-4 py-2 hover:bg-gray-100"
               >
                 Cancel
               </button>
@@ -283,7 +249,7 @@ const ProjectTable = ({
               <button
                 onClick={handleDelete}
                 disabled={isPending}
-                className="px-4 py-2 btn-danger rounded disabled:opacity-50"
+                className="btn-danger rounded px-4 py-2 disabled:opacity-50"
               >
                 {isPending ? "Deleting..." : "Delete"}
               </button>
@@ -297,12 +263,8 @@ const ProjectTable = ({
 
 export default ProjectTable;
 
-/* HELPERS */
 const Th = ({ children, className }: any) => (
-  <th
-    className={`px-4 py-3 text-left font-semibold text-slate-700 ${className ?? ""
-      }`}
-  >
+  <th className={`px-4 py-3 text-left font-semibold text-slate-700 ${className ?? ""}`}>
     {children}
   </th>
 );
@@ -322,8 +284,9 @@ const MenuItem = ({
 }) => (
   <button
     onClick={onClick}
-    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50" : ""
-      }`}
+    className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-slate-100 ${
+      danger ? "text-red-600 hover:bg-red-50" : ""
+    }`}
   >
     {danger && <X size={14} />}
     {label}

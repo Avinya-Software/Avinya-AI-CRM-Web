@@ -4,6 +4,7 @@ import { X, Save, Loader2 } from "lucide-react";
 import { useCreateFollowUp, useUpdateFollowUp } from "../../hooks/followup/useFollowUpMutations";
 import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { usePermissions } from "../../context/PermissionContext";
+import { useLeadFollowupStatuses } from "../../hooks/followup/useLeadFollowupStatuses";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
 
@@ -16,11 +17,7 @@ interface LeadFollowUpCreateSheetProps {
   onSuccess?: () => void;
 }
 
-const STATUS_OPTIONS = [
-  { leadFollowupStatusID: 1, statusName: "Pending" },
-  { leadFollowupStatusID: 2, statusName: "In Progress" },
-  { leadFollowupStatusID: 3, statusName: "Completed" },
-];
+// STATUS_OPTIONS are now fetched from the API via useLeadFollowupStatuses hook
 
 const LeadFollowUpCreateSheet = ({
   open,
@@ -50,6 +47,7 @@ const LeadFollowUpCreateSheet = ({
   const createFollowUp = useCreateFollowUp();
   const updateFollowUp = useUpdateFollowUp();
   const usersDropdownMutation = useUsersDropdown();
+  const { data: statusOptions = [], isLoading: statusesLoading } = useLeadFollowupStatuses();
 
   useEffect(() => {
     if (open) usersDropdownMutation.mutate(undefined);
@@ -249,13 +247,18 @@ const LeadFollowUpCreateSheet = ({
                 onChange={(e) =>
                   setFormData({ ...formData, status: Number(e.target.value) })
                 }
-                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                disabled={statusesLoading}
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:opacity-60"
               >
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
-                    {s.statusName}
-                  </option>
-                ))}
+                {statusesLoading ? (
+                  <option>Loading...</option>
+                ) : (
+                  statusOptions.map((s) => (
+                    <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
+                      {s.statusName}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           )}

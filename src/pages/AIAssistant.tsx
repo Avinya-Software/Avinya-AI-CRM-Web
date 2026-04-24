@@ -50,6 +50,13 @@ const MODULE_COLORS: Record<string, string> = {
 const formatLabel = (label: string) =>
   label.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
 
+const isCountKey = (key: string) =>
+  /count|orders?|clients?|leads?|tasks?|projects?|results?|records?|qty|quantity|units?|items?/i.test(key);
+
+const isCurrencyKey = (key: string) =>
+  !isCountKey(key) &&
+  /revenue|amount|price|charge|outstanding|grandtotal|balance|cost|subtotal|payment|invoice|expense|sales|profit|income|value/i.test(key);
+
 const formatValue = (key: string, value: any): string => {
   if (value === null || value === undefined) return "-";
   
@@ -63,7 +70,7 @@ const formatValue = (key: string, value: any): string => {
 
   const num = Number(stringValue);
   if (!isNaN(num) && stringValue !== "" && !lowerKey.includes("id") && !lowerKey.includes("no")) {
-    if (lowerKey.includes("revenue") || lowerKey.includes("amount") || lowerKey.includes("price") || lowerKey.includes("total") || lowerKey.includes("charge") || lowerKey.includes("outstanding") || lowerKey.includes("grandtotal")) {
+    if (isCurrencyKey(lowerKey)) {
       return new Intl.NumberFormat('en-IN', { 
         style: 'currency', 
         currency: 'INR', 

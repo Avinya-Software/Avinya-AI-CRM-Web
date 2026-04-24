@@ -75,3 +75,16 @@ export const getFollowupHistoryList = async (
   );
   return response.data;
 };
+
+// ── GET: Lead Follow-up Status Dropdown ────────────────────────────
+export interface LeadFollowupStatusOption {
+  leadFollowupStatusID: number;
+  statusName: string;
+}
+
+export const getLeadFollowupStatuses = async (): Promise<LeadFollowupStatusOption[]> => {
+  // Note: URL has a typo in the controller ("followpstatus") — kept as-is to match backend
+  const response = await api.get("/FollowUp/get-leadfollowpstatus-dropdown-list");
+  // Backend wraps in { data: [...] } ResponseModel pattern
+  return response.data?.data ?? response.data ?? [];
+};

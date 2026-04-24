@@ -14,6 +14,14 @@ import { Combobox, ComboboxOption } from "../ui/combobox";
 import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { useGetTeamsDropdown } from "../../hooks/team/useTeamMutation";
 import { usePermissions } from "../../context/PermissionContext";
+import {
+    normalizeProjectPriorityOptions,
+    normalizeProjectStatusOptions,
+} from "../../lib/project-display";
+import {
+    useProjectPriorityDropdown,
+    useProjectStatusDropdown,
+} from "../../hooks/project/useProjectDropdowns";
 
 interface Props {
     open: boolean;
@@ -21,20 +29,6 @@ interface Props {
     project?: Project | null;
     onSuccess: () => void;
 }
-
-const STATUS_OPTIONS = [
-    { value: 0, label: "Planning" },
-    { value: 1, label: "Active" },
-    { value: 2, label: "Completed" },
-    { value: 3, label: "On Hold" },
-];
-
-const PRIORITY_OPTIONS = [
-    { value: 0, label: "Low" },
-    { value: 1, label: "Medium" },
-    { value: 2, label: "High" },
-    { value: 3, label: "Critical" },
-];
 
 const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
     const isEdit = !!project;
@@ -62,6 +56,8 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
 
     const usersDropdownMutation = useUsersDropdown();
     const teamsDropdownMutation = useGetTeamsDropdown();
+    const { data: projectStatusData = [] } = useProjectStatusDropdown();
+    const { data: projectPriorityData = [] } = useProjectPriorityDropdown();
 
     useEffect(() => {
         usersDropdownMutation.mutate(undefined);
@@ -77,16 +73,20 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
     const teamOptions: ComboboxOption[] = (teamResponse?.data ?? []).map(
         (t: any) => ({ value: String(t.id), label: t.name })
     );
+    const statusOptions = normalizeProjectStatusOptions(projectStatusData);
+    const priorityOptions = normalizeProjectPriorityOptions(projectPriorityData);
+    const defaultStatus = statusOptions[0]?.value ?? 1;
+    const defaultPriority = priorityOptions[0]?.value ?? 1;
 
     /* FORM STATE */
-    const initialForm: CreateProjectDto = {
+    const getInitialForm = (): CreateProjectDto => ({
         projectID: null,
         projectName: "",
         description: "",
         clientID: null,
         location: "",
-        status: 0,
-        priority: 1,
+        status: defaultStatus,
+        priority: defaultPriority,
         progressPercent: 0,
         projectManagerId: null,
         assignedToUserId: null,
@@ -96,9 +96,9 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
         deadline: null,
         estimatedValue: null,
         notes: "",
-    };
+    });
 
-    const [form, setForm] = useState<CreateProjectDto>(initialForm);
+    const [form, setForm] = useState<CreateProjectDto>(getInitialForm);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [saving, setSaving] = useState(false);
 
@@ -114,8 +114,8 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                 description: project.description ?? "",
                 clientID: project.clientID ?? null,
                 location: project.location ?? "",
-                status: project.status ?? 0,
-                priority: project.priority ?? 1,
+                status: project.status ?? defaultStatus,
+                priority: project.priority ?? defaultPriority,
                 progressPercent: project.progressPercent ?? 0,
                 projectManagerId: project.projectManagerId ? String(project.projectManagerId) : null,
                 assignedToUserId: project.assignedToUserId ? String(project.assignedToUserId) : null,
@@ -128,11 +128,11 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
             });
         } else {
             setSelectedCustomerId("");
-            setForm(initialForm);
+            setForm(getInitialForm());
         }
 
         setErrors({});
-    }, [open, project]);
+    }, [open, project, defaultStatus, defaultPriority]);
 
     /* VALIDATION */
     const validate = () => {
@@ -260,11 +260,11 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                             <label className="text-sm font-medium">Status</label>
                             <select
                                 className="input w-full mt-1"
-                                value={form.status ?? 0}
+                                value={form.status ?? defaultStatus}
                                 onChange={(e) => setForm({ ...form, status: Number(e.target.value) })}
                                 disabled={isReadOnly}
                             >
-                                {STATUS_OPTIONS.map(o => (
+                                {statusOptions.map(o => (
                                     <option key={o.value} value={o.value}>{o.label}</option>
                                 ))}
                             </select>
@@ -273,11 +273,11 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                             <label className="text-sm font-medium">Priority</label>
                             <select
                                 className="input w-full mt-1"
-                                value={form.priority ?? 1}
+                                value={form.priority ?? defaultPriority}
                                 onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })}
                                 disabled={isReadOnly}
                             >
-                                {PRIORITY_OPTIONS.map(o => (
+                                {priorityOptions.map(o => (
                                     <option key={o.value} value={o.value}>{o.label}</option>
                                 ))}
                             </select>

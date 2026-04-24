@@ -10,25 +10,18 @@ import { useCreateTask } from "../../hooks/task/useTaskMutations";
 import { useGetTeamsDropdown } from "../../hooks/team/useTeamMutation";
 import { Users } from "lucide-react";
 import { usePermissions } from "../../context/PermissionContext";
-
-const STATUS_LABEL: Record<number, string> = {
-  0: "Planning", 1: "Active", 2: "Completed", 3: "On Hold",
-};
-const STATUS_STYLE: Record<number, string> = {
-  0: "bg-slate-100 text-slate-600",
-  1: "bg-blue-100 text-blue-700",
-  2: "bg-green-100 text-green-700",
-  3: "bg-orange-100 text-orange-700",
-};
-const PRIORITY_LABEL: Record<number, string> = {
-  0: "Low", 1: "Medium", 2: "High", 3: "Critical",
-};
-const PRIORITY_STYLE: Record<number, string> = {
-  0: "bg-slate-100 text-slate-500",
-  1: "bg-amber-100 text-amber-700",
-  2: "bg-orange-100 text-orange-700",
-  3: "bg-red-100 text-red-700",
-};
+import {
+  getProjectPriorityLabel,
+  getProjectPriorityStyle,
+  getProjectStatusLabel,
+  getProjectStatusStyle,
+  normalizeProjectPriorityOptions,
+  normalizeProjectStatusOptions,
+} from "../../lib/project-display";
+import {
+  useProjectPriorityDropdown,
+  useProjectStatusDropdown,
+} from "../../hooks/project/useProjectDropdowns";
 const AVATAR_COLORS = [
   "bg-violet-500", "bg-blue-500", "bg-green-500",
   "bg-amber-500", "bg-red-500", "bg-pink-500",
@@ -59,6 +52,8 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit, onSuccess }
 
   const teamsDropdownMutation = useGetTeamsDropdown();
   const { mutate: addTask, isPending: addingTask } = useCreateTask();
+  const { data: projectStatusData = [] } = useProjectStatusDropdown();
+  const { data: projectPriorityData = [] } = useProjectPriorityDropdown();
 
   useEffect(() => {
     teamsDropdownMutation.mutate(undefined);
@@ -67,6 +62,8 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit, onSuccess }
   const { data: teamResponse } = teamsDropdownMutation;
 
   const project = initialData;
+  const statusOptions = normalizeProjectStatusOptions(projectStatusData);
+  const priorityOptions = normalizeProjectPriorityOptions(projectPriorityData);
 
   const projectTeamName = project?.teamId
     ? teamResponse?.data?.find((t: any) => t.id === Number(project.teamId))?.name
@@ -115,6 +112,8 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit, onSuccess }
   if (!project) return null;
 
   const tasks = project.tasks ?? [];
+  const statusLabel = getProjectStatusLabel(project, statusOptions);
+  const priorityLabel = getProjectPriorityLabel(project, priorityOptions);
 
   const taskStats = {
     total: tasks.length,
@@ -148,11 +147,11 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit, onSuccess }
             </button>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[project.status ?? 0]}`}>
-              {STATUS_LABEL[project.status ?? 0]}
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getProjectStatusStyle(statusLabel)}`}>
+              {statusLabel}
             </span>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${PRIORITY_STYLE[project.priority ?? 1]}`}>
-              {PRIORITY_LABEL[project.priority ?? 1]}
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getProjectPriorityStyle(priorityLabel)}`}>
+              {priorityLabel}
             </span>
           </div>
         </div>
