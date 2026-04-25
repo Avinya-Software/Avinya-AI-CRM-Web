@@ -184,10 +184,12 @@ const OrderReport: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2">
             <Select
+              showSearch
               value={activePreset}
               className="min-w-[140px] h-10 shadow-sm"
               onChange={(val) => handleDatePreset(val)}
               style={{ height: '34px' }}
+              optionFilterProp="children"
             >
               <Select.Option value="this_month">THIS MONTH</Select.Option>
               <Select.Option value="last_month">LAST MONTH</Select.Option>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Select as AntSelect } from "antd";
 import { 
   X, 
   Calendar, 
@@ -153,36 +154,45 @@ const LeadLifecycleModal: React.FC<LeadLifecycleModalProps> = ({
                 />
               </div>
               <div className="flex items-center gap-2">
-                <select 
-                   className="bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold px-3 py-2 uppercase tracking-wide focus:outline-none cursor-pointer"
-                   value={filters.leadSourceId || ""}
-                   onChange={(e) => onFilterChange("leadSourceId", e.target.value)}
+                <AntSelect
+                   showSearch
+                   className="min-w-[140px] h-9"
+                   value={filters.leadSourceId || undefined}
+                   onChange={(val) => onFilterChange("leadSourceId", val || "")}
+                   placeholder="All Sources"
+                   optionFilterProp="children"
+                   allowClear
                 >
-                  <option value="">All Sources</option>
                   {sources?.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <AntSelect.Option key={s.id} value={String(s.id)}>{s.name}</AntSelect.Option>
                   ))}
-                </select>
-                <select 
-                   className="bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold px-3 py-2 uppercase tracking-wide focus:outline-none cursor-pointer"
-                   value={filters.assignedTo || ""}
-                   onChange={(e) => onFilterChange("assignedTo", e.target.value)}
+                </AntSelect>
+                <AntSelect
+                   showSearch
+                   className="min-w-[140px] h-9"
+                   value={filters.assignedTo || undefined}
+                   onChange={(val) => onFilterChange("assignedTo", val || "")}
+                   placeholder="All Users"
+                   optionFilterProp="children"
+                   allowClear
                 >
-                  <option value="">All Users</option>
                   {users?.map((u) => (
-                    <option key={u.id} value={u.fullName}>{u.fullName}</option>
+                    <AntSelect.Option key={u.id} value={u.fullName}>{u.fullName}</AntSelect.Option>
                   ))}
-                </select>
-                <select 
-                   className="bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold px-3 py-2 uppercase tracking-wide focus:outline-none cursor-pointer"
-                   value={filters.leadStatusId || ""}
-                   onChange={(e) => onFilterChange("leadStatusId", e.target.value)}
+                </AntSelect>
+                <AntSelect
+                   showSearch
+                   className="min-w-[140px] h-9"
+                   value={filters.leadStatusId || undefined}
+                   onChange={(val) => onFilterChange("leadStatusId", val || "")}
+                   placeholder="All Status"
+                   optionFilterProp="children"
+                   allowClear
                 >
-                  <option value="">All Status</option>
                   {statuses?.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <AntSelect.Option key={s.id} value={String(s.id)}>{s.name}</AntSelect.Option>
                   ))}
-                </select>
+                </AntSelect>
                 <button 
                   onClick={() => onRefresh(currentPage)}
                   disabled={isLoading}

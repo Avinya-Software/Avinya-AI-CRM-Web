@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
@@ -270,46 +270,70 @@ const RenewalUpsertSheet = ({
                 />
               </div>
 
-              <Select
-                label="Policy"
-                required
-                value={form.policyId}
-                error={errors.policyId}
-                options={policies || []}
-                valueKey="id"
-                labelKey="policyNumber"
-                disabled={isFromPolicy}
-                onChange={(v) => {
-                  const selectedPolicy = policies?.find(
-                    (p: any) => p.id === v
-                  );
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">
+                  Policy <span className="text-red-500">*</span>
+                </label>
+                <AntSelect
+                  showSearch
+                  className="w-full h-10"
+                  value={form.policyId || undefined}
+                  disabled={isFromPolicy}
+                  onChange={(v) => {
+                    const selectedPolicy = policies?.find(
+                      (p: any) => p.id === v
+                    );
 
-                  setForm({
-                    ...form,
-                    policyId: v,
-                    renewalDate: selectedPolicy?.renewalDate
-                      ? selectedPolicy.renewalDate.split("T")[0]
-                      : "",
-                    renewalPremium: selectedPolicy?.premiumGross ?? 0,
-                  });
-                }}
-              />
+                    setForm({
+                      ...form,
+                      policyId: v,
+                      renewalDate: selectedPolicy?.renewalDate
+                        ? selectedPolicy.renewalDate.split("T")[0]
+                        : "",
+                      renewalPremium: selectedPolicy?.premiumGross ?? 0,
+                    });
+                  }}
+                  placeholder="Select Policy"
+                  optionFilterProp="children"
+                >
+                  {policies?.map((o: any) => (
+                    <AntSelect.Option key={o.id} value={o.id}>
+                      {o.policyNumber}
+                    </AntSelect.Option>
+                  ))}
+                </AntSelect>
+                {errors.policyId && (
+                  <p className="text-xs text-red-600 mt-1">{errors.policyId}</p>
+                )}
+              </div>
 
-              <Select
-                label="Renewal Status"
-                required
-                value={form.renewalStatusId}
-                error={errors.renewalStatusId}
-                options={statuses || []}
-                valueKey="id"
-                labelKey="name"
-                onChange={(v) =>
-                  setForm({
-                    ...form,
-                    renewalStatusId: Number(v),
-                  })
-                }
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">
+                  Renewal Status <span className="text-red-500">*</span>
+                </label>
+                <AntSelect
+                  showSearch
+                  className="w-full h-10"
+                  value={form.renewalStatusId || undefined}
+                  onChange={(v) =>
+                    setForm({
+                      ...form,
+                      renewalStatusId: Number(v),
+                    })
+                  }
+                  placeholder="Select Status"
+                  optionFilterProp="children"
+                >
+                  {statuses?.map((o: any) => (
+                    <AntSelect.Option key={o.id} value={o.id}>
+                      {o.name}
+                    </AntSelect.Option>
+                  ))}
+                </AntSelect>
+                {errors.renewalStatusId && (
+                  <p className="text-xs text-red-600 mt-1">{errors.renewalStatusId}</p>
+                )}
+              </div>
 
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">

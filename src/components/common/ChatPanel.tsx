@@ -533,11 +533,11 @@ export const ChatPanel = () => {
                   )}
                 </div>
 
-                {msg.role === "ai" && msg.totalTokens !== undefined && (
+                {msg.role === "ai" && msg.creditsUsed !== undefined && (
                   <div className="flex items-center gap-1.5 bg-slate-100/50 px-2 py-0.5 rounded-full border border-slate-100">
                     <Zap className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
                     <span className="text-[10px] font-bold text-slate-500">
-                      {msg.totalTokens.toLocaleString()} tokens
+                      {msg.creditsUsed.toLocaleString()} credits
                     </span>
                   </div>
                 )}

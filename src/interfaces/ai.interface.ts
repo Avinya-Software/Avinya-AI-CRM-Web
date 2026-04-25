@@ -27,7 +27,7 @@ export interface AIResponse {
   suggestions?: string[];
   
   // Token Credit System
-  totalTokens?: number;
+  creditsUsed?: number;
   remainingCredits?: number;
 
   // Clarification logic
@@ -77,7 +77,7 @@ export interface ChatMessage {
   dashboardData?: DashboardPayload;
   /** Populated when the backend returns a single-string universal summary */
   universalDashboard?: any;
-  totalTokens?: number; // How many tokens THIS message used
+  creditsUsed?: number; // How many tokens THIS message used
   timestamp: Date;
   action?: string;
   parameters?: Record<string, any>;

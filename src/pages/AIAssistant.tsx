@@ -636,7 +636,7 @@ const SingleMetricCard = ({ data }: { data: any }) => {
                   <h3 className="text-2xl font-black text-slate-900 tracking-tight">
                     {formatValue(key, val)}
                   </h3>
-                  {lowerKey.includes("outstanding") && (
+                  {(lowerKey.includes("outstanding") || lowerKey === "amountafterdiscount") && (
                     <span className="text-[8px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded uppercase shrink-0">Action Required</span>
                   )}
                 </div>
@@ -819,7 +819,7 @@ const AIAssistant = () => {
                 )}
 
                 {/* Data Rendering: Single Metric vs List/Table (Inside Bubble for visibility) */}
-                {!msg.universalDashboard && !msg.dashboardData && msg.data !== undefined && (
+                {!msg.universalDashboard && !msg.dashboardData && msg.data !== undefined && (msg.data.length > 0 || !msg.action) && (
                   <div className="mt-6 w-full border-t border-slate-100 pt-4">
                     <div className="flex items-center gap-2 mb-3">
                        <BarChart2 className="h-3.5 w-3.5 text-emerald-500" />
@@ -876,11 +876,11 @@ const AIAssistant = () => {
                   )}
                 </div>
 
-                {msg.role === "ai" && msg.totalTokens !== undefined && (
+                {msg.role === "ai" && msg.creditsUsed !== undefined && (
                   <div className="flex items-center gap-1.5 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
                     <Zap className="h-3 w-3 text-amber-500 fill-amber-500" />
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
-                      {msg.totalTokens.toLocaleString()} tokens used
+                      {msg.creditsUsed.toLocaleString()} credits used
                     </span>
                   </div>
                 )}
@@ -1021,12 +1021,12 @@ const AIAssistant = () => {
               <span className="text-sm font-black text-slate-800 tracking-tight">
                 {remainingCredits.toLocaleString()}
               </span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tokens</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Credits</span>
             </div>
           </div>
         )}
         <p className="max-w-5xl mx-auto mt-2 text-[10px] text-slate-400 italic px-1">
-          * You get 15,000 free tokens daily. For more, please purchase.
+          * You get 30 free credits daily. For more, please purchase.
         </p>
       </div>
     </div>

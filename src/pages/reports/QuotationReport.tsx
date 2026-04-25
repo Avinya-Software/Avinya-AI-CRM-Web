@@ -203,10 +203,12 @@ const QuotationReport: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             {/* Date Preset Filter */}
             <Select
+               showSearch
                value={activePreset}
                className="min-w-[140px] h-10 shadow-sm"
                onChange={(val) => handleDatePreset(val)}
                style={{ height: '34px' }}
+               optionFilterProp="children"
             >
                <Select.Option value="this_month">THIS MONTH</Select.Option>
                <Select.Option value="last_month">LAST MONTH</Select.Option>
@@ -234,9 +236,11 @@ const QuotationReport: React.FC = () => {
             
             {/* Status Dropdown */}
             <Select
+               showSearch
                placeholder="ALL STATUS"
                className="min-w-[140px] h-10 shadow-sm"
                allowClear
+               optionFilterProp="children"
                onChange={(val) => handleFilterChange("quotationStatusId", val)}
                style={{ height: '34px' }}
                loading={isLoadingStatuses}

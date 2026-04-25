@@ -12,7 +12,7 @@ import { Combobox, ComboboxOption } from "../ui/combobox";
 import { useStates } from "../../hooks/state/useStates";
 import { useCities } from "../../hooks/city/useCities";
 import { usePermissions } from "../../context/PermissionContext";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 
 interface Props {
@@ -111,10 +111,15 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     otherSources: "",
   };
 
-  // Auto-select first status for new leads once statuses load
+  // Auto-select 'New' status for new leads once statuses load
   useEffect(() => {
     if (!isEdit && open && statuses && statuses.length > 0 && !form.leadStatusId) {
-      setForm((prev) => ({ ...prev, leadStatusId: String(statuses[0].id) }));
+      const newStatus = statuses.find((s: any) => s.name.toLowerCase() === "new");
+      if (newStatus) {
+        setForm((prev) => ({ ...prev, leadStatusId: String(newStatus.id) }));
+      } else {
+        setForm((prev) => ({ ...prev, leadStatusId: String(statuses[0].id) }));
+      }
     }
   }, [statuses, open, isEdit]);
 
@@ -336,16 +341,18 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             />
             <div>
               <label className="text-xs font-semibold text-slate-600 mb-1 block">Customer Type</label>
-              <select
-                className="input w-full disabled:bg-slate-50 disabled:text-slate-500"
+              <AntSelect
+                showSearch
+                className="w-full h-10"
                 value={form.clientType}
-                onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
+                onChange={(val) => setForm({ ...form, clientType: val })}
                 disabled={isReadOnly}
+                optionFilterProp="children"
               >
                 {CLIENT_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+                  <AntSelect.Option key={t.value} value={t.value}>{t.label}</AntSelect.Option>
                 ))}
-              </select>
+              </AntSelect>
             </div>
 
             {/* Company Name | GST No (only if type is Company) */}
@@ -386,37 +393,73 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
           {/* ── SECTION: Lead Details ── */}
           <Section icon={<Briefcase className="w-3.5 h-3.5" />} title="Lead Details">
             {/* Lead Status | Lead Source */}
-            <Select
-              label="Lead Status"
-              required
-              value={form.leadStatusId}
-              options={statuses ?? []}
-              error={errors.leadStatusId}
-              onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
-              disabled={isReadOnly}
-            />
-            <Select
-              label="Lead Source"
-              value={form.leadSourceId}
-              options={sources ?? []}
-              onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
-              disabled={isReadOnly}
-            />
+            <div>
+              <label className="text-xs font-semibold text-slate-600 mb-1 block">
+                Lead Status <span className="text-red-500">*</span>
+              </label>
+              <AntSelect
+                showSearch
+                className={`w-full h-10 ${errors.leadStatusId ? "ant-select-error" : ""}`}
+                value={form.leadStatusId || undefined}
+                onChange={(val) => setForm({ ...form, leadStatusId: val })}
+                disabled={isReadOnly || !isEdit}
+                placeholder="Select Status"
+                optionFilterProp="children"
+              >
+                {Array.isArray(statuses) && statuses.map((s: any) => (
+                  <AntSelect.Option key={s.id} value={String(s.id)}>{s.name}</AntSelect.Option>
+                ))}
+              </AntSelect>
+              {errors.leadStatusId && <p className="text-xs text-red-500 mt-0.5">{errors.leadStatusId}</p>}
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-600 mb-1 block">Lead Source</label>
+              <AntSelect
+                showSearch
+                className="w-full h-10"
+                value={form.leadSourceId || undefined}
+                onChange={(val) => setForm({ ...form, leadSourceId: val })}
+                disabled={isReadOnly}
+                placeholder="Select Source"
+                optionFilterProp="children"
+              >
+                {Array.isArray(sources) && sources.map((s: any) => (
+                  <AntSelect.Option key={s.id} value={String(s.id)}>{s.name}</AntSelect.Option>
+                ))}
+              </AntSelect>
+            </div>
+
+            {/* Conditionally show Other Sources text area */}
+            {Array.isArray(sources) && 
+             sources.find(s => String(s.id) === form.leadSourceId)?.name?.toLowerCase() === "other sources" && (
+              <div className="col-span-2">
+                <Textarea
+                  label="Other Source Details"
+                  required
+                  value={form.otherSources}
+                  onChange={(v: any) => setForm({ ...form, otherSources: v })}
+                  disabled={isReadOnly}
+                  placeholder="Please specify the source details..."
+                />
+              </div>
+            )}
 
             {/* Assigned To — full width */}
             <div className="col-span-2">
               <label className="text-xs font-semibold text-slate-600 mb-1 block">Assigned To</label>
-              <Combobox
-                options={userOptions}
-                value={form.assignedTo}
-                onValueChange={(val) =>
-                  !isReadOnly && setForm({ ...form, assignedTo: val })
-                }
-                placeholder="Select user..."
-                searchPlaceholder="Search users..."
-                emptyText="No users found."
+              <AntSelect
+                showSearch
+                className="w-full h-10"
+                value={form.assignedTo || undefined}
+                onChange={(val) => setForm({ ...form, assignedTo: val })}
                 disabled={isReadOnly}
-              />
+                placeholder="Select user..."
+                optionFilterProp="children"
+              >
+                {userOptions.map((opt) => (
+                  <AntSelect.Option key={opt.value} value={opt.value}>{opt.label}</AntSelect.Option>
+                ))}
+              </AntSelect>
             </div>
 
             {/* Requirement Details — full width, mandatory */}
@@ -475,33 +518,35 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             {/* State | City */}
             <div>
               <label className="text-xs font-semibold text-slate-600 mb-1 block">State</label>
-              <select
-                className="input w-full disabled:bg-slate-50 disabled:text-slate-500"
-                value={selectedStateId}
-                onChange={(e) => handleStateChange(e.target.value)}
+              <AntSelect
+                showSearch
+                className="w-full h-10"
+                value={selectedStateId || undefined}
+                onChange={(val) => handleStateChange(val)}
                 disabled={isReadOnly}
+                placeholder="Select State"
+                optionFilterProp="children"
               >
-                <option value="">Select State</option>
                 {(states as any[]).map((s) => (
-                  <option key={s.stateID} value={s.stateID}>{s.stateName}</option>
+                  <AntSelect.Option key={s.stateID} value={String(s.stateID)}>{s.stateName}</AntSelect.Option>
                 ))}
-              </select>
+              </AntSelect>
             </div>
             <div>
               <label className="text-xs font-semibold text-slate-600 mb-1 block">City</label>
-              <select
-                className="input w-full disabled:bg-slate-50 disabled:text-slate-400"
-                value={form.cityId}
+              <AntSelect
+                showSearch
+                className="w-full h-10"
+                value={form.cityId || undefined}
                 disabled={!selectedStateId || isReadOnly}
-                onChange={(e) => setForm({ ...form, cityId: e.target.value })}
+                onChange={(val) => setForm({ ...form, cityId: val })}
+                placeholder={selectedStateId ? "Select City" : "Select state first"}
+                optionFilterProp="children"
               >
-                <option value="">
-                  {selectedStateId ? "Select City" : "Select state first"}
-                </option>
                 {(cities as any[]).map((c) => (
-                  <option key={c.cityID} value={c.cityID}>{c.cityName}</option>
+                  <AntSelect.Option key={c.cityID} value={String(c.cityID)}>{c.cityName}</AntSelect.Option>
                 ))}
-              </select>
+              </AntSelect>
             </div>
 
             {/* Billing Address — full width */}
@@ -572,26 +617,7 @@ const Input = ({ label, required, value, error, onChange, type = "text", disable
   </div>
 );
 
-const Select = ({ label, required, value, options, onChange, error, disabled }: any) => (
-  <div>
-    <label className="text-xs font-semibold text-slate-600 mb-1 block">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    <select
-      className={`input w-full ${error ? "border-red-400 focus:ring-red-500 focus:border-red-500" : ""} disabled:bg-slate-50 disabled:text-slate-500`}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      disabled={disabled}
-    >
-      <option value="">Select</option>
-      {Array.isArray(options) &&
-        options.map((o: any) => (
-          <option key={o.id} value={o.id}>{o.name}</option>
-        ))}
-    </select>
-    {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
-  </div>
-);
+
 
 const Textarea = ({ label, required, value, error, onChange, disabled }: any) => (
   <div>

@@ -1,6 +1,6 @@
 // src/components/invoice/PaymentCreateSheet.tsx
 import { useState, useEffect } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X, Save, Loader2, IndianRupee, Calendar, CreditCard, FileText, CheckCircle2, History } from "lucide-react";
 import { CreatePaymentDto, Payment } from "../../interfaces/payment.interface";
@@ -187,16 +187,18 @@ const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
                     <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
                       <CreditCard size={14} className="text-slate-400" /> Method
                     </label>
-                    <select
-                      required
+                    <AntSelect
+                      showSearch
+                      className="w-full h-10 mt-1"
                       value={formData.paymentMethod}
-                      onChange={e => setFormData({ ...formData, paymentMethod: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+                      onChange={(val) => setFormData({ ...formData, paymentMethod: val })}
+                      placeholder="Select Method"
+                      optionFilterProp="children"
                     >
                       {PAYMENT_METHODS.map(m => (
-                        <option key={m} value={m}>{m}</option>
+                        <AntSelect.Option key={m} value={m}>{m}</AntSelect.Option>
                       ))}
-                    </select>
+                    </AntSelect>
                   </div>
                 </div>
 

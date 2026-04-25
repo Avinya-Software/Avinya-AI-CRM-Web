@@ -1,6 +1,6 @@
 // src/components/order/OrderUpsertSheet.tsx
 import { useState, useEffect } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X, Save, Loader2, Plus, Trash2 } from "lucide-react";
 import type { Order, CreateOrderDto, OrderItemDto } from "../../interfaces/order.interface";
@@ -249,7 +249,17 @@ const OrderUpsertSheet = ({
         if (!formData.isUseBillingAddress && !formData.shippingAddress.trim()) {
             newErrors.shippingAddress = "Shipping address is required";
         }
-        if (productItems.some(i => !i.productID)) newErrors.items = "All product rows must have a product selected";
+        
+        const hasEmptyProduct = productItems.some(i => !i.productID);
+        if (hasEmptyProduct) newErrors.items = "All product rows must have a product selected";
+
+        if (formData.enableTax) {
+            const hasEmptyTax = productItems.some(i => !i.taxCategoryID);
+            if (hasEmptyTax) {
+                newErrors.items = (newErrors.items ? newErrors.items + " and " : "") + "Tax Category is required for all items when tax is enabled";
+            }
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -310,13 +320,11 @@ const OrderUpsertSheet = ({
     };
 
     const addProductItem = () => {
-        setProductItems(prev => [...prev, {
+        setProductItems(prev => [{
             id: Date.now().toString(), orderItemId: null,
             productID: "", description: "", unitType: "", unitPrice: 0, quantity: 1,
             taxCategoryID: formData.taxCategoryID,
-        }]);
-
-
+        }, ...prev]);
     };
 
     const removeProductItem = (id: string) => {
@@ -401,22 +409,21 @@ const OrderUpsertSheet = ({
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Company Name <span className="text-red-500">*</span>
                             </label>
-                            <select
-                                value={formData.clientID}
-                                onChange={(e) => setFormData({ ...formData, clientID: e.target.value })}
+                            <AntSelect
+                                showSearch
+                                value={formData.clientID || undefined}
+                                onChange={(val) => setFormData({ ...formData, clientID: val })}
                                 disabled={isEdit || !!sourceQuotation || isFormReadOnly}
-                                className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.clientID
-                                    ? "border-red-500 focus:ring-red-500"
-                                    : "border-slate-300 focus:ring-blue-500"
-                                    } disabled:bg-slate-50 disabled:text-slate-500`}
+                                className={`w-full h-10 ${errors.clientID ? "ant-select-error" : ""}`}
+                                placeholder="Select Company"
+                                optionFilterProp="children"
                             >
-                                <option value="">Select Company</option>
                                 {(clients as any[]).map((c) => (
-                                    <option key={c.clientID} value={c.clientID}>
+                                    <AntSelect.Option key={c.clientID} value={c.clientID}>
                                         {c.companyName || "Unknown"}
-                                    </option>
+                                    </AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                             {errors.clientID && <p className="text-red-500 text-xs mt-1">{errors.clientID}</p>}
                         </div>
 
@@ -505,31 +512,35 @@ const OrderUpsertSheet = ({
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">State</label>
-                                    <select
-                                        value={formData.stateID}
-                                        onChange={(e) => handleStateChange(e.target.value)}
+                                    <AntSelect
+                                        showSearch
+                                        value={formData.stateID || undefined}
+                                        onChange={(val) => handleStateChange(val)}
                                         disabled={isFormReadOnly}
-                                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-50 disabled:text-slate-500"
+                                        className="w-full h-10"
+                                        placeholder="Select State"
+                                        optionFilterProp="children"
                                     >
-                                        <option value="">Select State</option>
                                         {(states as any[]).map((s) => (
-                                            <option key={s.stateID} value={s.stateID}>{s.stateName}</option>
+                                            <AntSelect.Option key={s.stateID} value={String(s.stateID)}>{s.stateName}</AntSelect.Option>
                                         ))}
-                                    </select>
+                                    </AntSelect>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">City</label>
-                                    <select
-                                        value={formData.cityID}
-                                        onChange={(e) => setFormData({ ...formData, cityID: e.target.value })}
+                                    <AntSelect
+                                        showSearch
+                                        value={formData.cityID || undefined}
+                                        onChange={(val) => setFormData({ ...formData, cityID: val })}
                                         disabled={!formData.stateID || isFormReadOnly}
-                                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:bg-slate-50 disabled:text-slate-400"
+                                        className="w-full h-10"
+                                        placeholder={formData.stateID ? "Select City" : "Select state first"}
+                                        optionFilterProp="children"
                                     >
-                                        <option value="">{formData.stateID ? "Select City" : "Select state first"}</option>
                                         {(cities as any[]).map((c) => (
-                                            <option key={c.cityID} value={c.cityID}>{c.cityName}</option>
+                                            <AntSelect.Option key={c.cityID} value={String(c.cityID)}>{c.cityName}</AntSelect.Option>
                                         ))}
-                                    </select>
+                                    </AntSelect>
                                 </div>
                             </div>
                         </div>
@@ -564,7 +575,9 @@ const OrderUpsertSheet = ({
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Unit Price</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Qty</th>
                                         {formData.enableTax && (
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Tax Category</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">
+                                                Tax Category <span className="text-red-500">*</span>
+                                            </th>
                                         )}
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Total</th>
 
@@ -575,17 +588,19 @@ const OrderUpsertSheet = ({
                                     {productItems.map((item) => (
                                         <tr key={item.id}>
                                             <td className="px-3 py-2">
-                                                <select
-                                                    value={item.productID}
-                                                    onChange={(e) => handleProductChange(item.id, e.target.value)}
+                                                <AntSelect
+                                                    showSearch
+                                                    value={item.productID || undefined}
+                                                    onChange={(val) => handleProductChange(item.id, val)}
                                                     disabled={isFormReadOnly}
-                                                    className="w-40 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
+                                                    className="w-40 h-9"
+                                                    placeholder="Select"
+                                                    optionFilterProp="children"
                                                 >
-                                                    <option value="">Select</option>
                                                     {(products as ProductDropdown[])?.map((p) => (
-                                                        <option key={p.productID} value={p.productID}>{p.productName}</option>
+                                                        <AntSelect.Option key={p.productID} value={p.productID}>{p.productName}</AntSelect.Option>
                                                     ))}
-                                                </select>
+                                                </AntSelect>
                                             </td>
                                             <td className="px-3 py-2">
                                                 <input
@@ -628,19 +643,22 @@ const OrderUpsertSheet = ({
                                             </td>
                                             {formData.enableTax && (
                                                 <td className="px-3 py-2">
-                                                    <select
-                                                        value={item.taxCategoryID}
-                                                        onChange={(e) => updateItem(item.id, "taxCategoryID", e.target.value)}
+                                                    <AntSelect
+                                                        showSearch
+                                                        value={item.taxCategoryID || undefined}
+                                                        onChange={(val) => updateItem(item.id, "taxCategoryID", val)}
                                                         disabled={isFormReadOnly}
-                                                        className="w-36 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
+                                                        className="w-36 h-9"
+                                                        placeholder="No Tax"
+                                                        allowClear
+                                                        optionFilterProp="children"
                                                     >
-                                                        <option value="">No Tax</option>
                                                         {(taxCategories as TaxCategory[])?.map(t => (
-                                                            <option key={t.taxCategoryID} value={t.taxCategoryID}>
+                                                            <AntSelect.Option key={t.taxCategoryID} value={t.taxCategoryID}>
                                                                 {t.taxName} 
-                                                            </option>
+                                                            </AntSelect.Option>
                                                         ))}
-                                                    </select>
+                                                    </AntSelect>
                                                 </td>
                                             )}
                                             <td className="px-3 py-2 text-slate-700 font-medium whitespace-nowrap">
@@ -671,21 +689,20 @@ const OrderUpsertSheet = ({
                                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                     Order Status <span className="text-red-500">*</span>
                                 </label>
-                                <select
-                                    value={formData.orderStatusID}
-                                    onChange={(e) => setFormData({ ...formData, orderStatusID: e.target.value })}
-                                    className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.orderStatusID
-                                        ? "border-red-500 focus:ring-red-500"
-                                        : "border-slate-300 focus:ring-blue-500"
-                                        } disabled:bg-slate-50 disabled:text-slate-500`}
+                                <AntSelect
+                                    showSearch
+                                    value={formData.orderStatusID || undefined}
+                                    onChange={(val) => setFormData({ ...formData, orderStatusID: val })}
+                                    className={`w-full h-10 ${errors.orderStatusID ? "ant-select-error" : ""}`}
+                                    placeholder="Select Order Status"
+                                    optionFilterProp="children"
                                 >
-                                    <option value="">Select Order Status</option>
                                     {(orderStatusData as any[]).map((o) => (
-                                        <option key={o.statusID} value={o.statusID}>
+                                        <AntSelect.Option key={o.statusID} value={String(o.statusID)}>
                                             {o.statusName || "Unknown"}
-                                        </option>
+                                        </AntSelect.Option>
                                     ))}
-                                </select>
+                                </AntSelect>
                                 {errors.designStatusID && <p className="text-red-500 text-xs mt-1">{errors.designStatusID}</p>}
                             </div>
 

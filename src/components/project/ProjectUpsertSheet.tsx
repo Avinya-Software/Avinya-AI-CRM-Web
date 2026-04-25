@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
@@ -258,29 +258,29 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
                     <div className="grid grid-cols-3 gap-3">
                         <div>
                             <label className="text-sm font-medium">Status</label>
-                            <select
-                                className="input w-full mt-1"
+                            <AntSelect
+                                className="w-full h-10 mt-1"
                                 value={form.status ?? defaultStatus}
-                                onChange={(e) => setForm({ ...form, status: Number(e.target.value) })}
+                                onChange={(val) => setForm({ ...form, status: val })}
                                 disabled={isReadOnly}
                             >
                                 {statusOptions.map(o => (
-                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                    <AntSelect.Option key={o.value} value={o.value}>{o.label}</AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                         </div>
                         <div>
                             <label className="text-sm font-medium">Priority</label>
-                            <select
-                                className="input w-full mt-1"
+                            <AntSelect
+                                className="w-full h-10 mt-1"
                                 value={form.priority ?? defaultPriority}
-                                onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })}
+                                onChange={(val) => setForm({ ...form, priority: val })}
                                 disabled={isReadOnly}
                             >
                                 {priorityOptions.map(o => (
-                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                    <AntSelect.Option key={o.value} value={o.value}>{o.label}</AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                         </div>
                         <Input
                             label="Progress %"

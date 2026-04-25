@@ -11,7 +11,7 @@ import { Combobox, ComboboxOption } from "../../components/ui/combobox"; // your
 import { AddTeamModal } from "../../components/team/Addteammodal"; // the new modal we created
 import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { usePermissions } from "../../context/PermissionContext";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 
 const TaskUpsertSheet = ({
@@ -387,18 +387,16 @@ const TaskUpsertSheet = ({
             {isEdit && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
-                <select
+                <AntSelect
+                  className="w-full h-10"
                   value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.value as TaskStatus })
-                  }
-                  className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  onChange={(val) => setFormData({ ...formData, status: val as TaskStatus })}
                 >
-                  <option value={TaskStatus.Pending}>Pending</option>
-                  <option value={TaskStatus.InProgress}>In Progress</option>
-                  <option value={TaskStatus.Completed}>Completed</option>
-                  <option value={TaskStatus.Cancelled}>Cancelled</option>
-                </select>
+                  <AntSelect.Option value={TaskStatus.Pending}>Pending</AntSelect.Option>
+                  <AntSelect.Option value={TaskStatus.InProgress}>In Progress</AntSelect.Option>
+                  <AntSelect.Option value={TaskStatus.Completed}>Completed</AntSelect.Option>
+                  <AntSelect.Option value={TaskStatus.Cancelled}>Cancelled</AntSelect.Option>
+                </AntSelect>
               </div>
             )}
 

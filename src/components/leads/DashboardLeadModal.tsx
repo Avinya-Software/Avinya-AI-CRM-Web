@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X } from "lucide-react";
 import { useUpsertLead } from "../../hooks/lead/useUpsertLead";
@@ -290,16 +290,19 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
 
               <div>
                 <label className="text-sm font-medium">Customer Type</label>
-                <select
-                  className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
+                <AntSelect
+                  showSearch
+                  className="w-full h-10 mt-1"
                   value={form.clientType}
-                  onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
+                  onChange={(val) => setForm({ ...form, clientType: val })}
                   disabled={isReadOnly}
+                  placeholder="Select Type"
+                  optionFilterProp="children"
                 >
                   {CLIENT_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+                    <AntSelect.Option key={t.value} value={t.value}>{t.label}</AntSelect.Option>
                   ))}
-                </select>
+                </AntSelect>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -338,56 +341,78 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium">State</label>
-                  <select
-                    className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-500"
-                    value={selectedStateId}
-                    onChange={(e) => handleStateChange(e.target.value)}
+                  <AntSelect
+                    showSearch
+                    className="w-full h-10 mt-1"
+                    value={selectedStateId || undefined}
+                    onChange={(val) => handleStateChange(val)}
                     disabled={isReadOnly}
+                    placeholder="Select State"
+                    optionFilterProp="children"
                   >
-                    <option value="">Select State</option>
                     {(states as any[]).map((s) => (
-                      <option key={s.stateID} value={s.stateID}>{s.stateName}</option>
+                      <AntSelect.Option key={s.stateID} value={String(s.stateID)}>{s.stateName}</AntSelect.Option>
                     ))}
-                  </select>
+                  </AntSelect>
                 </div>
 
                 <div>
                   <label className="text-sm font-medium">City</label>
-                  <select
-                    className="input w-full mt-1 disabled:bg-slate-50 disabled:text-slate-400"
-                    value={form.cityId}
+                  <AntSelect
+                    showSearch
+                    className="w-full h-10 mt-1"
+                    value={form.cityId || undefined}
                     disabled={!selectedStateId || isReadOnly}
-                    onChange={(e) => setForm({ ...form, cityId: e.target.value })}
+                    onChange={(val) => setForm({ ...form, cityId: val })}
+                    placeholder={selectedStateId ? "Select City" : "Select state first"}
+                    optionFilterProp="children"
                   >
-                    <option value="">
-                      {selectedStateId ? "Select City" : "Select state first"}
-                    </option>
                     {(cities as any[]).map((c) => (
-                      <option key={c.cityID} value={c.cityID}>{c.cityName}</option>
+                      <AntSelect.Option key={c.cityID} value={String(c.cityID)}>{c.cityName}</AntSelect.Option>
                     ))}
-                  </select>
+                  </AntSelect>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Select
-                  label="Lead Status"
-                  required
-                  value={form.leadStatusId}
-                  options={statuses ?? []}
-                  error={errors.leadStatusId}
-                  onChange={(v: any) => setForm({ ...form, leadStatusId: v })}
-                  disabled={isReadOnly}
-                />
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium">
+                    Lead Status <span className="text-red-500">*</span>
+                  </label>
+                  <AntSelect
+                    showSearch
+                    className="w-full h-10 mt-1"
+                    value={form.leadStatusId || undefined}
+                    onChange={(val) => setForm({ ...form, leadStatusId: val })}
+                    disabled={isReadOnly}
+                    placeholder="Select Status"
+                    optionFilterProp="children"
+                  >
+                    {statuses?.map((o: any) => (
+                      <AntSelect.Option key={o.id} value={o.id}>{o.name}</AntSelect.Option>
+                    ))}
+                  </AntSelect>
+                  {errors.leadStatusId && <p className="text-xs text-red-600 mt-1">{errors.leadStatusId}</p>}
+                </div>
 
-                <Select
-                  label="Lead Source"
-                  required
-                  value={form.leadSourceId}
-                  options={sources ?? []}
-                  error={errors.leadStatusId}
-                  onChange={(v: any) => setForm({ ...form, leadSourceId: v })}
-                  disabled={isReadOnly}
-                />
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium">
+                    Lead Source <span className="text-red-500">*</span>
+                  </label>
+                  <AntSelect
+                    showSearch
+                    className="w-full h-10 mt-1"
+                    value={form.leadSourceId || undefined}
+                    onChange={(val) => setForm({ ...form, leadSourceId: val })}
+                    disabled={isReadOnly}
+                    placeholder="Select Source"
+                    optionFilterProp="children"
+                  >
+                    {sources?.map((o: any) => (
+                      <AntSelect.Option key={o.id} value={o.id}>{o.name}</AntSelect.Option>
+                    ))}
+                  </AntSelect>
+                  {errors.leadSourceId && <p className="text-xs text-red-600 mt-1">{errors.leadSourceId}</p>}
+                </div>
               </div>
             </div>
 

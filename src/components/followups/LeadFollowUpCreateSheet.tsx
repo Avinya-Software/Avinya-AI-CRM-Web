@@ -5,7 +5,7 @@ import { useCreateFollowUp, useUpdateFollowUp } from "../../hooks/followup/useFo
 import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { usePermissions } from "../../context/PermissionContext";
 import { useLeadFollowupStatuses } from "../../hooks/followup/useLeadFollowupStatuses";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 
 interface LeadFollowUpCreateSheetProps {
@@ -242,24 +242,22 @@ const LeadFollowUpCreateSheet = ({
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Status
               </label>
-              <select
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: Number(e.target.value) })
-                }
+              <AntSelect
+                showSearch
+                value={formData.status || undefined}
+                onChange={(val) => setFormData({ ...formData, status: val })}
                 disabled={statusesLoading}
-                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:opacity-60"
+                className="w-full h-10"
+                placeholder="Select Status"
+                optionFilterProp="children"
+                loading={statusesLoading}
               >
-                {statusesLoading ? (
-                  <option>Loading...</option>
-                ) : (
-                  statusOptions.map((s) => (
-                    <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
-                      {s.statusName}
-                    </option>
-                  ))
-                )}
-              </select>
+                {statusOptions.map((s) => (
+                  <AntSelect.Option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
+                    {s.statusName}
+                  </AntSelect.Option>
+                ))}
+              </AntSelect>
             </div>
           )}
 
@@ -267,23 +265,20 @@ const LeadFollowUpCreateSheet = ({
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Follow-Up By <span className="text-red-500">*</span>
             </label>
-            <select
-              value={formData.followUpBy}
-              onChange={(e) =>
-                setFormData({ ...formData, followUpBy: e.target.value })
-              }
-              className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.followUpBy
-                ? "border-red-500 focus:ring-red-500"
-                : "border-slate-300 focus:ring-blue-500"
-                }`}
+            <AntSelect
+              showSearch
+              value={formData.followUpBy || undefined}
+              onChange={(val) => setFormData({ ...formData, followUpBy: val })}
+              className={`w-full h-10 ${errors.followUpBy ? "ant-select-error" : ""}`}
+              placeholder="Select employee"
+              optionFilterProp="children"
             >
-              <option value="">Select employee</option>
               {employees?.map((emp: any) => (
-                <option key={emp.id} value={emp.id}>
+                <AntSelect.Option key={emp.id} value={emp.id}>
                   {emp.fullName} - {emp.email}
-                </option>
+                </AntSelect.Option>
               ))}
-            </select>
+            </AntSelect>
             {errors.followUpBy && (
               <p className="text-red-500 text-xs mt-1">{errors.followUpBy}</p>
             )}

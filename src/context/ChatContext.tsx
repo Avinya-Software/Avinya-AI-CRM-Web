@@ -23,7 +23,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     {
       id: "1",
       role: "ai",
-      content: "Hello! I'm your Avinya AI CRM assistant. I can provide you with information and insights across all your data. You get 15,000 tokens as free daily, for more please purchase. How can I help you today?",
+      content: "Hello! I'm your Avinya AI CRM assistant. I can provide you with information and insights across all your data. You get 30 credits as free daily, for more please purchase. How can I help you today?",
       suggestions: [
         "Show my leads",
         "How is my business doing?",
@@ -92,7 +92,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       suggestions: data.suggestions,
       dashboardData,
       universalDashboard,
-      totalTokens: data.totalTokens,
+      creditsUsed: data.creditsUsed,
       timestamp: new Date(),
       query: data.query || data.sql,
       originalMessage: originalContent,

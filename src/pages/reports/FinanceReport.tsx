@@ -184,9 +184,11 @@ const FinanceReport: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2">
             <Select
+               showSearch
                value={activePreset}
                className="min-w-[140px] h-[34px]"
                onChange={(val) => handleDatePreset(val)}
+               optionFilterProp="children"
             >
                <Select.Option value="this_month">THIS MONTH</Select.Option>
                <Select.Option value="last_month">LAST MONTH</Select.Option>
@@ -223,9 +225,11 @@ const FinanceReport: React.FC = () => {
             </Select>
 
             <Select
+               showSearch
                placeholder="INV STATUS"
                className="min-w-[140px] h-[34px]"
                allowClear
+               optionFilterProp="children"
                onChange={(val) => handleFilterChange("invoiceStatusId", val)}
             >
                {invoiceStatuses?.map((s: any) => (

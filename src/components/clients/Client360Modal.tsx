@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import ReportModalFooter from "../common/ReportModalFooter";
 import { format } from "date-fns";
-import { Modal, Tag } from "antd";
+import { Modal, Tag, Select as AntSelect } from "antd";
 import { Client360Item, ClientReportFilter } from "../../interfaces/report.interface";
 
 interface Client360ModalProps {
@@ -90,16 +90,19 @@ const Client360Modal: React.FC<Client360ModalProps> = ({
             </div>
             
             <div className="flex items-center gap-2">
-              <select 
-                 className="bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold px-3 py-2 uppercase tracking-wide focus:outline-none cursor-pointer"
-                 value={filters.clientType || ""}
-                 onChange={(e) => onFilterChange("clientType", e.target.value ? Number(e.target.value) : undefined)}
+              <AntSelect 
+                 showSearch
+                 className="min-w-[120px] h-9"
+                 value={filters.clientType || undefined}
+                 onChange={(val) => onFilterChange("clientType", val || undefined)}
+                 placeholder="All Types"
+                 optionFilterProp="children"
+                 allowClear
               >
-                <option value="">All Types</option>
                 {CLIENT_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+                  <AntSelect.Option key={t.value} value={t.value}>{t.label}</AntSelect.Option>
                 ))}
-              </select>
+              </AntSelect>
 
              
 

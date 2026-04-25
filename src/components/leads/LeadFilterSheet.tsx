@@ -4,7 +4,7 @@ import { useLeadStatuses } from "../../hooks/lead/useLeadStatuses";
 import { useLeadSources } from "../../hooks/lead/useLeadSources";
 import Spinner from "../common/Spinner";
 import type { LeadFilters } from "../../interfaces/lead.interface";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 
 interface Props {
@@ -96,23 +96,21 @@ const LeadFilterSheet = ({
                                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                     Lead Status
                                 </label>
-                                <select
-                                    className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                                    value={localFilters.status || ""}
-                                    onChange={(e) =>
-                                        setLocalFilters({
-                                            ...localFilters,
-                                            status: e.target.value,
-                                        })
-                                    }
+                                <AntSelect
+                                    showSearch
+                                    className="w-full h-10"
+                                    value={localFilters.status || undefined}
+                                    onChange={(val) => setLocalFilters({ ...localFilters, status: val })}
+                                    placeholder="All Statuses"
+                                    optionFilterProp="children"
+                                    allowClear
                                 >
-                                    <option value="">All Statuses</option>
                                     {statuses?.map((o: any) => (
-                                        <option key={o.id} value={o.id}>
+                                        <AntSelect.Option key={o.id} value={o.id}>
                                             {o.name}
-                                        </option>
+                                        </AntSelect.Option>
                                     ))}
-                                </select>
+                                </AntSelect>
                             </div>
 
                              {/* Start Date */}
@@ -152,21 +150,16 @@ const LeadFilterSheet = ({
                                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                     Records per page
                                 </label>
-                                <select
-                                    className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                <AntSelect
+                                    className="w-full h-10"
                                     value={localFilters.pageSize || 10}
-                                    onChange={(e) =>
-                                        setLocalFilters({
-                                            ...localFilters,
-                                            pageSize: Number(e.target.value),
-                                        })
-                                    }
+                                    onChange={(val) => setLocalFilters({ ...localFilters, pageSize: val })}
                                 >
-                                    <option value={10}>10 per page</option>
-                                    <option value={25}>25 per page</option>
-                                    <option value={50}>50 per page</option>
-                                    <option value={100}>100 per page</option>
-                                </select>
+                                    <AntSelect.Option value={10}>10 per page</AntSelect.Option>
+                                    <AntSelect.Option value={25}>25 per page</AntSelect.Option>
+                                    <AntSelect.Option value={50}>50 per page</AntSelect.Option>
+                                    <AntSelect.Option value={100}>100 per page</AntSelect.Option>
+                                </AntSelect>
                             </div>
                         </>
                     )}

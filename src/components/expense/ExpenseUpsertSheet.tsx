@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X, Upload, FileText, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
@@ -208,16 +208,18 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                         </div>
 
                         <Field label="Expense Type" required error={errors.expenseType}>
-                            <select
-                                className={`input w-full ${errors.expenseType ? "border-red-500" : ""}`}
-                                value={form.expenseType}
-                                onChange={(e) => setForm({ ...form, expenseType: e.target.value })}
+                            <AntSelect
+                                showSearch
+                                className={`w-full h-10 ${errors.expenseType ? "ant-select-error" : ""}`}
+                                value={form.expenseType || undefined}
+                                onChange={(val) => setForm({ ...form, expenseType: val })}
+                                placeholder="Select Type"
+                                optionFilterProp="children"
                             >
-                                <option value="">Select Type</option>
                                 {EXPENSE_TYPES.map((t) => (
-                                    <option key={t} value={t}>{t}</option>
+                                    <AntSelect.Option key={t} value={t}>{t}</AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                         </Field>
                     </div>
 
@@ -322,16 +324,16 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                     {/* Status (edit only) */}
                     {isEdit && (
                         <Field label="Status">
-                            <select
-                                className="input w-full"
+                            <AntSelect
+                                className="w-full h-10"
                                 value={form.status}
-                                onChange={(e) => setForm({ ...form, status: e.target.value })}
+                                onChange={(val) => setForm({ ...form, status: val })}
                             >
-                                <option value="pending">Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                                <option value="paid">Paid</option>
-                            </select>
+                                <AntSelect.Option value="pending">Pending</AntSelect.Option>
+                                <AntSelect.Option value="approved">Approved</AntSelect.Option>
+                                <AntSelect.Option value="rejected">Rejected</AntSelect.Option>
+                                <AntSelect.Option value="paid">Paid</AntSelect.Option>
+                            </AntSelect>
                         </Field>
                     )}
 

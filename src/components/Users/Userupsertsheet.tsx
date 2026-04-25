@@ -1,5 +1,6 @@
 // src/components/users/UserUpsertSheet.tsx
 import { useState, useEffect } from "react";
+import { Select as AntSelect } from "antd";
 import { X } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -224,19 +225,21 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
                                         <label className="block text-sm font-medium text-slate-700 mb-1">
                                             Company <span className="text-red-500">*</span>
                                         </label>
-                                        <select
-                                            value={formData.tenantId}
-                                            onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
+                                        <AntSelect
+                                            showSearch
+                                            className="w-full h-10"
+                                            value={formData.tenantId || undefined}
+                                            onChange={(val) => setFormData({ ...formData, tenantId: val })}
                                             disabled={isReadOnly}
-                                            className="w-full px-3 py-2 border rounded text-sm disabled:bg-slate-50 disabled:text-slate-500"
+                                            placeholder="Select Company"
+                                            optionFilterProp="children"
                                         >
-                                            <option value="">Select Company</option>
                                             {companies.map((company) => (
-                                                <option key={company.tenantId} value={company.tenantId}>
+                                                <AntSelect.Option key={company.tenantId} value={company.tenantId}>
                                                     {company.companyName}
-                                                </option>
+                                                </AntSelect.Option>
                                             ))}
-                                        </select>
+                                        </AntSelect>
                                     </div>
                                 )}
 
@@ -244,19 +247,21 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
                                     <label className="block text-sm font-medium text-slate-700 mb-1">
                                         Role <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={formData.role}
-                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                    <AntSelect
+                                        showSearch
+                                        className="w-full h-10"
+                                        value={formData.role || undefined}
+                                        onChange={(val) => setFormData({ ...formData, role: val })}
                                         disabled={isReadOnly}
-                                        className="w-full px-3 py-2 border rounded text-sm disabled:bg-slate-50 disabled:text-slate-500"
+                                        placeholder="Select Role"
+                                        optionFilterProp="children"
                                     >
-                                        <option value="">Select Role</option>
                                         {availableRoles.map((role) => (
-                                            <option key={role.id} value={role.name}>
+                                            <AntSelect.Option key={role.id} value={role.name}>
                                                 {role.name}
-                                            </option>
+                                            </AntSelect.Option>
                                         ))}
-                                    </select>
+                                    </AntSelect>
                                 </div>
                             </>
                         )}

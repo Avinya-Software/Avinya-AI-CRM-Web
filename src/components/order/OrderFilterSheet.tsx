@@ -1,7 +1,7 @@
 // src/components/order/OrderFilterSheet.tsx
 
 import { useState, useEffect } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X } from "lucide-react";
 import { OrderFilters } from "../../interfaces/order.interface";
@@ -82,18 +82,21 @@ const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) =
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Order Status
                         </label>
-                        <select
-                            value={local.status}
-                            onChange={(e) => setLocal((p) => ({ ...p, status: e.target.value }))}
-                            className="w-full h-10 px-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        <AntSelect
+                            showSearch
+                            className="w-full h-10"
+                            value={local.status || undefined}
+                            onChange={(val) => setLocal((p) => ({ ...p, status: val }))}
+                            placeholder="Select option..."
+                            optionFilterProp="children"
+                            allowClear
                         >
-                            <option value="">Select option...</option>
                             {(orderStatusData as any[]).map((o) => (
-                                <option key={o.statusID} value={o.statusID}>
+                                <AntSelect.Option key={o.statusID} value={String(o.statusID)}>
                                     {o.statusName || "Unknown"}
-                                </option>
+                                </AntSelect.Option>
                             ))}
-                        </select>
+                        </AntSelect>
                     </div>
 
                     {/* From Date */}

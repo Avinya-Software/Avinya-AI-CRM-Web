@@ -1,6 +1,6 @@
 // src/components/quotations/QuotationUpsertSheet.tsx
 import { useState, useEffect } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X, Save, Loader2, Plus, Trash2 } from "lucide-react";
 import { Quotation, TaxCategory, QuotationStatusDropdownItem } from "../../interfaces/quotation.interface";
@@ -195,8 +195,17 @@ const QuotationUpsertSheet = ({
         const newErrors: Record<string, string> = {};
         if (!formData.clientID) newErrors.clientID = "Company is required";
         if (!formData.validTill) newErrors.validTill = "Valid till is required";
+        
         const hasEmptyProduct = productItems.some(i => !i.productID);
         if (hasEmptyProduct) newErrors.items = "All product rows must have a product selected";
+
+        if (formData.enableTax) {
+            const hasEmptyTax = productItems.some(i => !i.taxCategoryID);
+            if (hasEmptyTax) {
+                newErrors.items = (newErrors.items ? newErrors.items + " and " : "") + "Tax Category is required for all items when tax is enabled";
+            }
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -277,7 +286,7 @@ const QuotationUpsertSheet = ({
 
     // ---------- Product item helpers ----------
     const addProductItem = () => {
-        setProductItems(prev => [...prev, {
+        setProductItems(prev => [{
             id: Date.now().toString(),
             quotationItemID: null,
             productID: "",
@@ -286,7 +295,7 @@ const QuotationUpsertSheet = ({
             unitPrice: 0,
             taxCategoryID: "",
             unitType: "",
-        }]);
+        }, ...prev]);
     };
 
     const removeProductItem = (id: string) => {
@@ -354,20 +363,21 @@ const QuotationUpsertSheet = ({
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Company Name <span className="text-red-500">*</span>
                             </label>
-                            <select
-                                value={formData.clientID}
-                                onChange={(e) => setFormData({ ...formData, clientID: e.target.value })}
+                            <AntSelect
+                                showSearch
+                                value={formData.clientID || undefined}
+                                onChange={(val) => setFormData({ ...formData, clientID: val })}
                                 disabled={isEdit}
-                                className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.clientID ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:ring-blue-500"
-                                    }`}
+                                className={`w-full h-10 ${errors.clientID ? "ant-select-error" : ""}`}
+                                placeholder="Select Company"
+                                optionFilterProp="children"
                             >
-                                <option value="">Select Company</option>
                                 {clients.map((c: any) => (
-                                    <option key={c.clientID} value={c.clientID}>
+                                    <AntSelect.Option key={c.clientID} value={c.clientID}>
                                         {c.companyName || "Unknown"}
-                                    </option>
+                                    </AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                             {errors.clientID && <p className="text-red-500 text-xs mt-1">{errors.clientID}</p>}
                         </div>
 
@@ -458,7 +468,9 @@ const QuotationUpsertSheet = ({
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Unit Price</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Qty</th>
                                         {formData.enableTax && (
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">Tax Category</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-600">
+                                                Tax Category <span className="text-red-500">*</span>
+                                            </th>
                                         )}
                                         <th className="px-3 py-2 text-center text-xs font-medium text-slate-600 w-10"></th>
                                     </tr>
@@ -468,18 +480,20 @@ const QuotationUpsertSheet = ({
                                         <tr key={item.id}>
                                             {/* Product */}
                                             <td className="px-3 py-2">
-                                                <select
-                                                    value={item.productID}
-                                                    onChange={(e) => handleProductChange(item.id, e.target.value)}
-                                                    className="w-36 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                <AntSelect
+                                                    showSearch
+                                                    value={item.productID || undefined}
+                                                    onChange={(val) => handleProductChange(item.id, val)}
+                                                    className="w-36 h-9"
+                                                    placeholder="Select"
+                                                    optionFilterProp="children"
                                                 >
-                                                    <option value="">Select</option>
                                                     {(products as ProductDropdown[])?.map(p => (
-                                                        <option key={p.productID} value={p.productID}>
+                                                        <AntSelect.Option key={p.productID} value={p.productID}>
                                                             {p.productName}
-                                                        </option>
+                                                        </AntSelect.Option>
                                                     ))}
-                                                </select>
+                                                </AntSelect>
                                             </td>
 
                                             {/* Description */}
@@ -528,18 +542,21 @@ const QuotationUpsertSheet = ({
                                             {/* Tax Category Dropdown */}
                                             {formData.enableTax && (
                                                 <td className="px-3 py-2">
-                                                    <select
-                                                        value={item.taxCategoryID}
-                                                        onChange={(e) => updateItem(item.id, "taxCategoryID", e.target.value)}
-                                                        className="w-36 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    <AntSelect
+                                                        showSearch
+                                                        value={item.taxCategoryID || undefined}
+                                                        onChange={(val) => updateItem(item.id, "taxCategoryID", val)}
+                                                        className="w-36 h-9"
+                                                        placeholder="No Tax"
+                                                        allowClear
+                                                        optionFilterProp="children"
                                                     >
-                                                        <option value="">No Tax</option>
                                                         {(taxCategories as TaxCategory[])?.map(t => (
-                                                            <option key={t.taxCategoryID} value={t.taxCategoryID}>
+                                                            <AntSelect.Option key={t.taxCategoryID} value={t.taxCategoryID}>
                                                                 {t.taxName} ({t.rate}%)
-                                                            </option>
+                                                            </AntSelect.Option>
                                                         ))}
-                                                    </select>
+                                                    </AntSelect>
                                                 </td>
                                             )}
 
@@ -585,18 +602,20 @@ const QuotationUpsertSheet = ({
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Status
                             </label>
-                            <select
-                                value={formData.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            <AntSelect
+                                showSearch
+                                value={formData.status || undefined}
+                                onChange={(val) => setFormData({ ...formData, status: val })}
+                                className="w-full h-10"
+                                placeholder="Select Status"
+                                optionFilterProp="children"
                             >
-                                <option value="">Select Status</option>
                                 {(statusData as QuotationStatusDropdownItem[]).map((o) => (
-                                    <option key={o.quotationStatusID} value={o.quotationStatusID}>
+                                    <AntSelect.Option key={o.quotationStatusID} value={o.quotationStatusID}>
                                         {o.statusName}
-                                    </option>
+                                    </AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                         </div>
                     )}
 

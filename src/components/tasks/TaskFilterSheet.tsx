@@ -2,7 +2,7 @@
 import { X, Filter } from "lucide-react";
 import { useState, useEffect } from "react";
 import { TaskFilters, TaskStatus } from "../../interfaces/task.interface";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 
 interface TaskFilterSheetProps {
@@ -66,22 +66,23 @@ const TaskFilterSheet = ({
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Status
             </label>
-            <select
-              value={localFilters.status || ""}
-              onChange={(e) =>
+            <AntSelect
+              className="w-full h-10"
+              value={localFilters.status || undefined}
+              onChange={(val) =>
                 setLocalFilters({
                   ...localFilters,
-                  status: e.target.value ? (e.target.value as TaskStatus) : null,
+                  status: val ? (val as TaskStatus) : null,
                 })
               }
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="All Status"
+              allowClear
             >
-              <option value="">All Status</option>
-              <option value={TaskStatus.Pending}>Pending</option>
-              <option value={TaskStatus.InProgress}>In Progress</option>
-              <option value={TaskStatus.Completed}>Completed</option>
-              <option value={TaskStatus.Cancelled}>Cancelled</option>
-            </select>
+              <AntSelect.Option value={TaskStatus.Pending}>Pending</AntSelect.Option>
+              <AntSelect.Option value={TaskStatus.InProgress}>In Progress</AntSelect.Option>
+              <AntSelect.Option value={TaskStatus.Completed}>Completed</AntSelect.Option>
+              <AntSelect.Option value={TaskStatus.Cancelled}>Cancelled</AntSelect.Option>
+            </AntSelect>
           </div>
 
           {/* DATE RANGE */}

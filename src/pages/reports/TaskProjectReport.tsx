@@ -202,9 +202,11 @@ const TaskProjectReport: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2">
             <Select
+              showSearch
               value={activePreset}
               className="w-36 h-9"
               onChange={(val) => handleDatePreset(val)}
+              optionFilterProp="children"
             >
               <Select.Option value="this_month">THIS MONTH</Select.Option>
               <Select.Option value="last_month">LAST MONTH</Select.Option>
@@ -250,9 +252,11 @@ const TaskProjectReport: React.FC = () => {
             />
 
             <Select
+              showSearch
               placeholder="PRIORITY"
               className="w-32 h-9"
               allowClear
+              optionFilterProp="label"
               options={[
                 { label: "Low", value: 0 },
                 { label: "Medium", value: 1 },
@@ -263,9 +267,11 @@ const TaskProjectReport: React.FC = () => {
             />
 
             <Select
+              showSearch
               placeholder="SCOPE"
               className="w-32 h-9"
               allowClear
+              optionFilterProp="label"
               options={[
                 { label: "Personal", value: "Personal" },
                 { label: "Team", value: "Team" },

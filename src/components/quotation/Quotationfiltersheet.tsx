@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { QuotationFilters, QuotationStatus, QuotationStatusDropdownItem } from "../../interfaces/quotation.interface";
 import { useQuotationStatusDropdown } from "../../hooks/quotation/useQuotations";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 
 interface QuotationFilterSheetProps {
@@ -78,23 +78,21 @@ const QuotationFilterSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Status
                         </label>
-                        <select
-                            value={localFilters.status || ""}
-                            onChange={(e) =>
-                                setLocalFilters(prev => ({
-                                    ...prev,
-                                    status: e.target.value as QuotationStatus | "",
-                                }))
-                            }
-                            className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        <AntSelect
+                            showSearch
+                            className="w-full h-10"
+                            value={localFilters.status || undefined}
+                            onChange={(val) => setLocalFilters(prev => ({ ...prev, status: val }))}
+                            placeholder="All Statuses"
+                            optionFilterProp="children"
+                            allowClear
                         >
-                            <option value="">All Statuses</option>
                             {(statusData as QuotationStatusDropdownItem[]).map((s) => (
-                                <option key={s.quotationStatusID} value={s.quotationStatusID}>
+                                <AntSelect.Option key={s.quotationStatusID} value={s.quotationStatusID}>
                                     {s.statusName}
-                                </option>
+                                </AntSelect.Option>
                             ))}
-                        </select>
+                        </AntSelect>
                     </div>
 
                     {/* Start Date */}
@@ -134,18 +132,16 @@ const QuotationFilterSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">
                             Records per page
                         </label>
-                        <select
+                        <AntSelect
+                            className="w-full h-10"
                             value={localFilters.pageSize}
-                            onChange={(e) =>
-                                setLocalFilters(prev => ({ ...prev, pageSize: Number(e.target.value) }))
-                            }
-                            className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            onChange={(val) => setLocalFilters(prev => ({ ...prev, pageSize: val }))}
                         >
-                            <option value={10}>10 per page</option>
-                            <option value={25}>25 per page</option>
-                            <option value={50}>50 per page</option>
-                            <option value={100}>100 per page</option>
-                        </select>
+                            <AntSelect.Option value={10}>10 per page</AntSelect.Option>
+                            <AntSelect.Option value={25}>25 per page</AntSelect.Option>
+                            <AntSelect.Option value={50}>50 per page</AntSelect.Option>
+                            <AntSelect.Option value={100}>100 per page</AntSelect.Option>
+                        </AntSelect>
                     </div>
                 </div>
 

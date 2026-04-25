@@ -1,5 +1,6 @@
 // src/components/product/ProductUpsertSheet.tsx
 import { useEffect, useState } from "react";
+import { Select as AntSelect } from "antd";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -203,25 +204,21 @@ const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
 
         {/* Unit Type */}
         <Field label="Unit Type" required error={errors.unitType}>
-          {unitLoading ? (
-            <div className="flex items-center gap-2 text-sm text-slate-400">
-              <Spinner /> Loading unit types...
-            </div>
-          ) : (
-            <select
-          className={`input w-full ${errors.unitType ? "border-red-500" : ""}`}
-          value={form.unitType || ""}
-          onChange={(e) => setForm({ ...form, unitType: e.target.value })}
-        >
-          <option value="">Select Unit Type</option>
-
-          {unitTypes?.data?.map((u: any) => (
-            <option key={u.unitTypeID} value={u.unitTypeID}>
-              {u.unitName}
-            </option>
-          ))}
-        </select>
-          )}
+          <AntSelect
+            showSearch
+            className="w-full h-10"
+            value={form.unitType || undefined}
+            onChange={(val) => setForm({ ...form, unitType: val })}
+            placeholder="Select Unit Type"
+            optionFilterProp="children"
+            loading={unitLoading}
+          >
+            {unitTypes?.data?.map((u: any) => (
+              <AntSelect.Option key={u.unitTypeID} value={u.unitTypeID}>
+                {u.unitName}
+              </AntSelect.Option>
+            ))}
+          </AntSelect>
         </Field>
 
         {/* Price Row */}
@@ -269,31 +266,22 @@ const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
 
         {/* Tax Category */}
         <Field label="Tax Category">
-          {taxLoading ? (
-            <div className="flex items-center gap-2 text-sm text-slate-400">
-              <Spinner /> Loading tax categories...
-            </div>
-          ) : (
-            <select
-              className="input w-full"
-              value={form.taxCategoryID || ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  taxCategoryID: e.target.value || null,
-                })
-              }
-            >
-              <option value="">Select Tax Category</option>
-
-              {taxCategories?.map((t: any) => (
-                <option key={t.taxCategoryID} value={t.taxCategoryID}>
-                  {t.taxName || t.categoryName}
-                </option>
-              ))}
-
-            </select>
-          )}
+          <AntSelect
+            showSearch
+            className="w-full h-10"
+            value={form.taxCategoryID || undefined}
+            onChange={(val) => setForm({ ...form, taxCategoryID: val || null })}
+            placeholder="Select Tax Category"
+            optionFilterProp="children"
+            loading={taxLoading}
+            allowClear
+          >
+            {taxCategories?.map((t: any) => (
+              <AntSelect.Option key={t.taxCategoryID} value={t.taxCategoryID}>
+                {t.taxName || t.categoryName}
+              </AntSelect.Option>
+            ))}
+          </AntSelect>
         </Field>
 
         {/* Design Toggle */}
@@ -338,16 +326,14 @@ const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
 
         {/* Status */}
         <Field label="Status">
-          <select
-            className="input w-full"
+          <AntSelect
+            className="w-full h-10"
             value={form.status}
-            onChange={(e) =>
-              setForm({ ...form, status: Number(e.target.value) })
-            }
+            onChange={(val) => setForm({ ...form, status: val })}
           >
-            <option value={1}>Active</option>
-            <option value={0}>Inactive</option>
-          </select>
+            <AntSelect.Option value={1}>Active</AntSelect.Option>
+            <AntSelect.Option value={0}>Inactive</AntSelect.Option>
+          </AntSelect>
         </Field>
 
         </div>

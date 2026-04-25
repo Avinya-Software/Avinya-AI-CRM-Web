@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Select as AntSelect } from "antd";
 import { X ,Users} from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -8,7 +9,6 @@ import type { Client } from "../../interfaces/client.interface";
 import { useStates } from "../../hooks/state/useStates";
 import { useCities } from "../../hooks/city/useCities";
 import { usePermissions } from "../../context/PermissionContext";
-import { Select } from "@radix-ui/react-select";
 
 interface Props {
     open: boolean;
@@ -223,16 +223,19 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
 
                         <div className="col-span-2 sm:col-span-1">
                             <label className="text-xs font-semibold text-slate-600 mb-1 block">Customer Type</label>
-                            <select
-                                className="input w-full disabled:bg-slate-50 disabled:text-slate-500"
+                            <AntSelect
+                                showSearch
+                                className="w-full h-10"
                                 value={form.clientType}
-                                onChange={(e) => setForm({ ...form, clientType: Number(e.target.value) })}
+                                onChange={(val) => setForm({ ...form, clientType: val })}
                                 disabled={isReadOnly}
+                                placeholder="Select Type"
+                                optionFilterProp="children"
                             >
                                 {CLIENT_TYPES.map((t) => (
-                                    <option key={t.value} value={t.value}>{t.label}</option>
+                                    <AntSelect.Option key={t.value} value={t.value}>{t.label}</AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                         </div>
 
                         <Input
@@ -269,38 +272,40 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                     <Section title="Location">
                         <div>
                             <label className="text-xs font-semibold text-slate-600 mb-1 block">State</label>
-                            <select
-                                className="input w-full disabled:bg-slate-50 disabled:text-slate-500"
-                                value={selectedStateId}
-                                onChange={(e) => handleStateChange(e.target.value)}
+                            <AntSelect
+                                showSearch
+                                className="w-full h-10"
+                                value={selectedStateId || undefined}
+                                onChange={(val) => handleStateChange(val)}
                                 disabled={isReadOnly}
+                                placeholder="Select State"
+                                optionFilterProp="children"
                             >
-                                <option value="">Select State</option>
                                 {(states as any[]).map((s) => (
-                                    <option key={s.stateID} value={s.stateID}>
+                                    <AntSelect.Option key={s.stateID} value={String(s.stateID)}>
                                         {s.stateName}
-                                    </option>
+                                    </AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                         </div>
 
                         <div>
                             <label className="text-xs font-semibold text-slate-600 mb-1 block">City</label>
-                            <select
-                                className="input w-full disabled:bg-slate-50 disabled:text-slate-400"
-                                value={form.cityID}
+                            <AntSelect
+                                showSearch
+                                className="w-full h-10"
+                                value={form.cityID || undefined}
                                 disabled={!selectedStateId || isReadOnly}
-                                onChange={(e) => setForm({ ...form, cityID: e.target.value })}
+                                onChange={(val) => setForm({ ...form, cityID: val })}
+                                placeholder={selectedStateId ? "Select City" : "Select state first"}
+                                optionFilterProp="children"
                             >
-                                <option value="">
-                                    {selectedStateId ? "Select City" : "Select state first"}
-                                </option>
                                 {(cities as any[]).map((c) => (
-                                    <option key={c.cityID} value={c.cityID}>
+                                    <AntSelect.Option key={c.cityID} value={String(c.cityID)}>
                                         {c.cityName}
-                                    </option>
+                                    </AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                         </div>
 
                         <div className="col-span-2">

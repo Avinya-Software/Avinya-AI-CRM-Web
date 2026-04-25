@@ -1,5 +1,6 @@
 // src/components/followups/LeadFollowUpBottomSheet.tsx
 import { useState, useEffect } from "react";
+import { Select as AntSelect } from "antd";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useLeadFollowUps } from "../../hooks/followup/useFollowUps";
 import { useDeleteFollowUp, useUpdateFollowUpStatus } from "../../hooks/followup/useFollowUpMutations";
@@ -108,16 +109,16 @@ const LeadFollowUpBottomSheet = ({
               </span>
             </div>
 
-            <select
+            <AntSelect
+              className="w-[120px] h-10"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-10 px-3 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(val) => setStatusFilter(val)}
             >
-              <option value="All">All</option>
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
+              <AntSelect.Option value="All">All</AntSelect.Option>
+              <AntSelect.Option value="Pending">Pending</AntSelect.Option>
+              <AntSelect.Option value="Completed">Completed</AntSelect.Option>
+              <AntSelect.Option value="Cancelled">Cancelled</AntSelect.Option>
+            </AntSelect>
 
             <button
               onClick={() => { if (leadId) followUpsMutation.mutate(leadId); }}

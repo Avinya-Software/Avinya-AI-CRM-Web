@@ -1,5 +1,6 @@
 // src/components/users/UserFilterSheet.tsx
 import { useState, useEffect } from "react";
+import { Select as AntSelect } from "antd";
 import { X } from "lucide-react";
 import type { UserFilters } from "../../interfaces/user.interface";
 import { useAuth } from "../../auth/useAuth";
@@ -110,22 +111,25 @@ const UserFilterSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1">
                             Role
                         </label>
-                        <select
-                            value={localFilters.role || ""}
-                            onChange={(e) =>
+                        <AntSelect
+                            showSearch
+                            className="w-full h-10"
+                            value={localFilters.role || undefined}
+                            onChange={(val) =>
                                 setLocalFilters({
                                     ...localFilters,
-                                    role: e.target.value,
+                                    role: val,
                                 })
                             }
-                            className="w-full px-3 py-2 border rounded text-sm"
+                            placeholder="All Roles"
+                            optionFilterProp="children"
+                            allowClear
                         >
-                            <option value="">All Roles</option>
-                            {isSuperAdmin && <option value="SuperAdmin">SuperAdmin</option>}
-                            <option value="Admin">Admin</option>
-                            <option value="Manager">Manager</option>
-                            <option value="User">User</option>
-                        </select>
+                            {isSuperAdmin && <AntSelect.Option value="SuperAdmin">SuperAdmin</AntSelect.Option>}
+                            <AntSelect.Option value="Admin">Admin</AntSelect.Option>
+                            <AntSelect.Option value="Manager">Manager</AntSelect.Option>
+                            <AntSelect.Option value="User">User</AntSelect.Option>
+                        </AntSelect>
                     </div>
 
                     {/* Status */}
@@ -133,29 +137,25 @@ const UserFilterSheet = ({
                         <label className="block text-sm font-medium text-slate-700 mb-1">
                             Status
                         </label>
-                        <select
+                        <AntSelect
+                            className="w-full h-10"
                             value={
                                 localFilters.isActive === null
-                                    ? ""
+                                    ? undefined
                                     : localFilters.isActive
-                                        ? "true"
-                                        : "false"
                             }
-                            onChange={(e) =>
+                            onChange={(val) =>
                                 setLocalFilters({
                                     ...localFilters,
-                                    isActive:
-                                        e.target.value === ""
-                                            ? null
-                                            : e.target.value === "true",
+                                    isActive: val === undefined ? null : val,
                                 })
                             }
-                            className="w-full px-3 py-2 border rounded text-sm"
+                            placeholder="All Status"
+                            allowClear
                         >
-                            <option value="">All Status</option>
-                            <option value="true">Active</option>
-                            <option value="false">Inactive</option>
-                        </select>
+                            <AntSelect.Option value={true}>Active</AntSelect.Option>
+                            <AntSelect.Option value={false}>Inactive</AntSelect.Option>
+                        </AntSelect>
                     </div>
                 </div>
 

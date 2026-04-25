@@ -1,6 +1,7 @@
 // src/pages/Expenses.tsx
 import { useState, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
+import { Select as AntSelect } from "antd";
 
 
 import Pagination from "../components/leads/Pagination";
@@ -101,21 +102,21 @@ const Expenses = () => {
                                 </span>
                             </div>
 
-                            <select
-                                className="h-10 border rounded px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={status ?? ""}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setStatus(val === "" ? undefined : val);
+                            <AntSelect
+                                className="h-10 w-40"
+                                value={status ?? undefined}
+                                onChange={(val) => {
+                                    setStatus(val);
                                     setPage(1);
                                 }}
+                                placeholder="All Status"
+                                allowClear
                             >
-                                <option value="">All Status</option>
-                                <option value="pending">Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                                <option value="paid">Paid</option>
-                            </select>
+                                <AntSelect.Option value="pending">Pending</AntSelect.Option>
+                                <AntSelect.Option value="approved">Approved</AntSelect.Option>
+                                <AntSelect.Option value="rejected">Rejected</AntSelect.Option>
+                                <AntSelect.Option value="paid">Paid</AntSelect.Option>
+                            </AntSelect>
                         </div>
                         <div />
                     </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Calendar, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 
 interface RecurringModalProps {
@@ -222,17 +222,20 @@ const RecurringModal = ({
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Day of Month
               </label>
-              <select
+              <AntSelect
+                showSearch
+                className="w-full h-10"
                 value={monthDay}
-                onChange={(e) => setMonthDay(parseInt(e.target.value))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-none focus:border-blue-500"
+                onChange={(val) => setMonthDay(val)}
+                placeholder="Select Day"
+                optionFilterProp="children"
               >
                 {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                  <option key={day} value={day}>
+                  <AntSelect.Option key={day} value={day}>
                     Day {day}
-                  </option>
+                  </AntSelect.Option>
                 ))}
-              </select>
+              </AntSelect>
             </div>
           )}
 
@@ -243,33 +246,39 @@ const RecurringModal = ({
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Month
                 </label>
-                <select
+                <AntSelect
+                  showSearch
+                  className="w-full h-10"
                   value={yearMonth}
-                  onChange={(e) => setYearMonth(parseInt(e.target.value))}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-none focus:border-blue-500"
+                  onChange={(val) => setYearMonth(val)}
+                  placeholder="Select Month"
+                  optionFilterProp="children"
                 >
                   {months.map((month, idx) => (
-                    <option key={idx} value={idx + 1}>
+                    <AntSelect.Option key={idx} value={idx + 1}>
                       {month}
-                    </option>
+                    </AntSelect.Option>
                   ))}
-                </select>
+                </AntSelect>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Day
                 </label>
-                <select
+                <AntSelect
+                  showSearch
+                  className="w-full h-10"
                   value={yearDay}
-                  onChange={(e) => setYearDay(parseInt(e.target.value))}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-none focus:border-blue-500"
+                  onChange={(val) => setYearDay(val)}
+                  placeholder="Select Day"
+                  optionFilterProp="children"
                 >
                   {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                    <option key={day} value={day}>
+                    <AntSelect.Option key={day} value={day}>
                       Day {day}
-                    </option>
+                    </AntSelect.Option>
                   ))}
-                </select>
+                </AntSelect>
               </div>
             </div>
           )}

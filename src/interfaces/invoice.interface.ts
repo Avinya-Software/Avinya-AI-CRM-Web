@@ -29,7 +29,7 @@ export interface Invoice {
   invoiceStatusID: number;
   statusName?: string;
   placeOfSupply?: string;
-  outstandingAmount?: number;
+  amountAfterDiscount?: number;
   reverseCharge: boolean;
   grrrNo?: string;
   transport?: string;
