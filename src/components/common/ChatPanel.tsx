@@ -603,23 +603,13 @@ export const ChatPanel = () => {
               <span className="text-xs font-black text-slate-800 tracking-tight">
                 {remainingCredits.toLocaleString()}
               </span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase">Tokens</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase">CREDITS</span>
             </div>
           </div>
         )}
 
         {/* Input */}
         <div className="p-4 border-t bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.03)] flex gap-2 shrink-0">
-          <Button
-            onClick={toggleListening}
-            variant="outline"
-            className={cn(
-              "h-11 w-11 rounded-xl flex items-center justify-center transition-all",
-              isListening ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse" : "bg-slate-50 border-slate-200 text-slate-400 hover:text-emerald-600"
-            )}
-          >
-            {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-          </Button>
           <Input
             placeholder={isListening ? "Listening..." : "Ask me anything..."}
             value={input}
