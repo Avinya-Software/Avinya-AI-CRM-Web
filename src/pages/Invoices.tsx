@@ -46,8 +46,12 @@ const Invoices = () => {
     const statusDropdownMutation = useInvoiceStatusDropdown();
     const deleteMutation = useDeleteInvoice();
 
-    useEffect(() => {
+    const fetchInvoices = () => {
         invoicesMutation.mutate(filters);
+    };
+
+    useEffect(() => {
+        fetchInvoices();
     }, [filters]);
 
     useEffect(() => {
@@ -438,7 +442,7 @@ const Invoices = () => {
                 invoice={paymentInvoice}
                 onSuccess={() => {
                     // Refetch invoices to update outstanding amounts
-                    // useInvoices already has invalidateQueries in the mutation but we can also refetch manually if needed
+                    fetchInvoices();
                 }}
             />
 

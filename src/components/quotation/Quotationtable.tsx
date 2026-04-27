@@ -5,10 +5,12 @@ import { MoreVertical, X, Eye, FileText, Loader2 } from "lucide-react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import TableSkeleton from "../common/TableSkeleton";
 import type { Quotation } from "../../interfaces/quotation.interface";
-import { useDeleteQuotation } from "../../hooks/quotation/Usequotationmutations ";
+import { useDeleteQuotation, useUpdateQuotation } from "../../hooks/quotation/Usequotationmutations ";
+import { useQuotationStatusDropdown } from "../../hooks/quotation/useQuotations";
 import { usePermissions } from "../../context/PermissionContext";
 import { downloadQuotationPdf } from "../../api/Quotation.api";
 import { toast } from "react-hot-toast";
+import { Check, X as XIcon } from "lucide-react";
 
 // Re-calculate based on fewer items (4 items + divider)
 const DROPDOWN_HEIGHT = 180;
@@ -53,6 +55,23 @@ const QuotationTable = ({
   useOutsideClick(dropdownRef, () => setOpenQuotation(null));
 
   const { mutate: deleteQuotation, isPending: isDeleting } = useDeleteQuotation();
+  const { data: statusData = [] } = useQuotationStatusDropdown();
+  const updateQuotationStatus = useUpdateQuotation();
+
+  const handleStatusUpdate = (quotation: Quotation, statusName: string) => {
+    const status = statusData.find(s => s.statusName === statusName);
+    if (!status) {
+      toast.error(`Status "${statusName}" not found`);
+      return;
+    }
+
+    updateQuotationStatus.mutate({
+      id: quotation.quotationID,
+      data: {
+        status: status.quotationStatusID
+      }
+    });
+  };
 
   const openDropdown = (e: React.MouseEvent<HTMLButtonElement>, quotation: Quotation) => {
     e.stopPropagation();
@@ -219,10 +238,22 @@ const QuotationTable = ({
               />
             )}
 
-          <MenuItem
-            label="Reject"
-            onClick={() => handleAction(() => console.log("Reject"))}
-          />
+          {openQuotation.statusName !== "Accepted" && (
+            <MenuItem
+              label="Accept"
+              icon={Check}
+              className="text-emerald-600 hover:bg-emerald-50"
+              onClick={() => handleAction(() => handleStatusUpdate(openQuotation, "Accepted"))}
+            />
+          )}
+
+          {openQuotation.statusName !== "Rejected" && (
+            <MenuItem
+              label="Reject"
+              danger
+              onClick={() => handleAction(() => handleStatusUpdate(openQuotation, "Rejected"))}
+            />
+          )}
 
           {canDelete && (
             <>
@@ -300,10 +331,14 @@ const MenuItem = ({
   label,
   onClick,
   danger = false,
+  icon: Icon,
+  className = "",
 }: {
   label: string;
   onClick: () => void;
   danger?: boolean;
+  icon?: any;
+  className?: string;
 }) => (
   <button
     onClick={(e) => {
@@ -311,9 +346,10 @@ const MenuItem = ({
       onClick();
     }}
     className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50 font-medium" : ""
-      }`}
+      } ${className}`}
   >
-    {danger && <X size={14} />}
+    {Icon && <Icon size={14} />}
+    {danger && !Icon && <X size={14} />}
     {label}
   </button>
 );

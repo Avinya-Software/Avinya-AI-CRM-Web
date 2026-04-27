@@ -8,7 +8,7 @@ export const upsertProductApi = async (payload: {
   productID?: string | null;
   productName: string;
   category?: string | null;
-  unitType?: string | null;       // unitTypeID (guid)
+  unitTypeId?: string | null;       // unitTypeID (guid)
   defaultRate?: number | null;
   purchasePrice?: number | null;
   hsnCode?: string | null;
@@ -26,7 +26,7 @@ export const upsertUpdateProductApi = async (id: string,payload: {
   productID?: string | null;
   productName: string;
   category?: string | null;
-  unitType?: string | null;       // unitTypeID (guid)
+  unitTypeId?: string | null;       // unitTypeID (guid)
   defaultRate?: number | null;
   purchasePrice?: number | null;
   hsnCode?: string | null;

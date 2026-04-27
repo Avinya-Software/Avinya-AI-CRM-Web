@@ -10,6 +10,7 @@ import type { Product } from "../../interfaces/product.interface";
 import { useUnitTypeDropdown } from "../../hooks/product/useUnitTypeDropdown";
 import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
 import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
+import { useAuth } from "../../auth/useAuth";
 
 interface Props {
   open: boolean;
@@ -22,6 +23,7 @@ const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
   const { mutateAsync, isPending } = useUpsertProduct();
   const unitTypeDropdownMutation = useUnitTypeDropdown();
   const taxCategoriesMutation = useTaxCategories();
+  const { userId } = useAuth();
 
   useEffect(() => {
     if (open) {
@@ -131,7 +133,7 @@ const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
       productID: form.productID,
       productName: form.productName.trim(),
       category: form.category.trim() || null,
-      unitType: form.unitType || null,
+      unitTypeId: form.unitType || null,
       defaultRate:
         form.defaultRate !== "" ? Number(form.defaultRate) : null,
       purchasePrice:
@@ -141,6 +143,7 @@ const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
       isDesignByUs: form.isDesignByUs,
       description: form.description.trim() || null,
       status: form.status,
+      createdBy: userId || "System",
     };
 
     const result = await mutateAsync(payload);

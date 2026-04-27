@@ -64,12 +64,15 @@ const Orders = () => {
   }, [debouncedSearchTerm]);
 
   const ordersMutation = useOrders();
+  const { data, isPending: isLoading } = ordersMutation;
+
+  const fetchOrders = () => {
+    ordersMutation.mutate(filters);
+  };
 
   useEffect(() => {
-    ordersMutation.mutate(filters);
+    fetchOrders();
   }, [filters]);
-
-  const { data, isPending: isLoading } = ordersMutation;
   const hasActiveFilters =
     filters.status || filters.startDate || filters.endDate;
 
@@ -98,7 +101,9 @@ const Orders = () => {
 
   const handleDeleteOrder = (order: Order) => {
     if (!canDeleteOrder) return; // ✅ protection
-    deleteMutation.mutate(order.orderID);
+    deleteMutation.mutate(order.orderID, {
+      onSuccess: () => fetchOrders()
+    });
   };
 
   const handleCreateInvoice = (order: Order) => {
@@ -286,6 +291,7 @@ const Orders = () => {
           setOpenOrderSheet(false);
           setSelectedOrder(null);
         }}
+        onSuccess={fetchOrders}
         order={selectedOrder}
       />
 

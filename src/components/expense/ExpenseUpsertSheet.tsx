@@ -21,7 +21,7 @@ const EXPENSE_TYPES = [
 ];
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
-const MAX_SIZE_MB = 5;
+const MAX_SIZE_MB = 2;
 
 interface Props {
     open: boolean;

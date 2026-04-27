@@ -5,6 +5,7 @@ import { useUpsertProduct } from "../../hooks/product/useUpsertProduct";
 import { useUnitTypeDropdown } from "../../hooks/product/useUnitTypeDropdown";
 import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
 import { Loader2, X } from "lucide-react";
+import { useAuth } from "../../auth/useAuth";
 
 interface Props {
   open: boolean;
@@ -17,6 +18,7 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
   const { mutateAsync: upsertProduct, isPending: isSaving } = useUpsertProduct();
   const { data: unitTypes, mutate: fetchUnits, isPending: unitLoading } = useUnitTypeDropdown();
   const { data: taxCategories, mutate: fetchTaxes, isPending: taxLoading } = useTaxCategories();
+  const { userId } = useAuth();
 
   useEffect(() => {
     if (open) {
@@ -32,11 +34,12 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
       
       const payload = {
         productName: values.productName.trim(),
-        unitType: values.unitType,
+        unitTypeId: values.unitType,
         defaultRate: values.defaultRate,
         purchasePrice: values.purchasePrice,
         taxCategoryID: values.taxCategoryID || null,
         status: 1, // Default to Active
+        createdBy: userId || "System",
       };
 
       const result = await upsertProduct(payload);

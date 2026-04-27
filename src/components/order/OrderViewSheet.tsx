@@ -90,9 +90,6 @@ const OrderViewSheet = ({ open, onClose, order, onEdit }: Props) => {
                     <span className={`px-3 py-0.5 rounded text-xs font-medium ${STATUS_STYLE[order.status ?? 0]}`}>
                       Order: {order.statusName}
                     </span>
-                    <span className={`px-3 py-0.5 rounded text-xs font-medium ${DESIGN_STATUS_STYLE[order.designStatus ?? 0]}`}>
-                      Design: {order.designStatusName}
-                    </span>
                   </div>
                 </div>
 
