@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { Select as AntSelect } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { useLeadFollowUps } from "../hooks/followup/useFollowUps";
@@ -110,16 +111,18 @@ const LeadFollowup = () => {
                             className="w-[320px] h-10 border rounded px-3"
                         />
 
-                        <select
+                        <AntSelect
+                            showSearch
+                            className="w-40 h-10"
                             value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="h-10 border rounded px-3"
+                            onChange={(val) => setStatusFilter(val)}
+                            optionFilterProp="children"
                         >
-                            <option value="All">All</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Cancelled">Cancelled</option>
-                        </select>
+                            <AntSelect.Option value="All">All</AntSelect.Option>
+                            <AntSelect.Option value="Pending">Pending</AntSelect.Option>
+                            <AntSelect.Option value="Completed">Completed</AntSelect.Option>
+                            <AntSelect.Option value="Cancelled">Cancelled</AntSelect.Option>
+                        </AntSelect>
 
                         <button
                             onClick={() => { if (leadId) followUpsMutation.mutate(leadId); }}

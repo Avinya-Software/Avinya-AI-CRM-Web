@@ -76,7 +76,8 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
         // Skip JSON bundling for specific settings that should be plain
         const type = s.entityType.toLowerCase();
         if (type.includes("payment q r") || type.includes("paymentqr") || 
-            type.includes("payment u p i id") || type.includes("paymentupiid")) {
+            type.includes("payment u p i id") || type.includes("paymentupiid") ||
+            type.includes("termsandconditions") || type.includes("terms and conditions")) {
           return { ...s, value: newVal.toString() };
         }
 
@@ -96,9 +97,11 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
         delete currentData.preFix;
         delete currentData.Digits;
 
+        const isTerms = s.entityType.toLowerCase().includes("termsandconditions") || s.entityType.toLowerCase().includes("terms and conditions");
+
         const updatedData = { 
           ...currentData, 
-          [field]: field === "LastNumber" && newVal !== "" ? Number(newVal) : newVal 
+          [field]: (field === "LastNumber" && !isTerms && newVal !== "") ? Number(newVal) : newVal 
         };
         return { ...s, value: JSON.stringify(updatedData) };
       })
@@ -227,16 +230,17 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-6">
-                               {(() => {
+                                {(() => {
+                                 const isTerms = setting.entityType.toLowerCase().includes("termsandconditions") || setting.entityType.toLowerCase().includes("terms and conditions");
                                  // Check if this setting is a sequence setting (has LastNumber)
                                  const hasLastNumber = getField(setting.value, "LastNumber", undefined) !== undefined;
-                                 const editField = hasLastNumber ? "LastNumber" : "value";
-                                 const label = hasLastNumber ? "Last Number" : "Value";
+                                 const editField = isTerms ? "value" : (hasLastNumber ? "LastNumber" : "value");
+                                 const label = isTerms ? "Terms and Conditions" : (hasLastNumber ? "Last Number" : "Value");
 
                                  return (
                                    <div className="space-y-2">
                                      <Label className="text-[13px] font-bold text-slate-500">{label}</Label>
-                                     {setting.entityType.toLowerCase().includes("termsandconditions") || setting.entityType.toLowerCase().includes("terms and conditions") ? (
+                                     {isTerms ? (
                                        <textarea
                                          value={getField(setting.value, editField)}
                                          onChange={(e) => handleDetailChange(setting.settingID, editField, e.target.value)}

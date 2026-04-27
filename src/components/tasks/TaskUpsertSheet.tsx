@@ -118,7 +118,7 @@ const TaskUpsertSheet = ({
         title: "",
         description: "",
         notes: "",
-        dueDateTime: now.toISOString().substring(0, 16),
+        dueDateTime: dayjs(now).format("YYYY-MM-DD HH:mm"),
         status: TaskStatus.Pending,
         scope: parentScope,
         teamId: "",
@@ -187,7 +187,7 @@ const TaskUpsertSheet = ({
           recurrenceStartDate: recurring ? recurring.startsOn : null,
           recurrenceEndDate: recurring && !recurring.neverEnds ? recurring.endsOn : null,
           reminderAt: reminder
-            ? new Date(`${reminder.date}T${reminder.time}`).toISOString()
+            ? dayjs(`${reminder.date}T${reminder.time}`).format("YYYY-MM-DDTHH:mm:ss")
             : undefined,
           reminderChannel: reminder ? "in-app" : "",
           scope: formData.scope,

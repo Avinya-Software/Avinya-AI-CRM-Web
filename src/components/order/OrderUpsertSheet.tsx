@@ -1,6 +1,6 @@
 // src/components/order/OrderUpsertSheet.tsx
 import { useState, useEffect } from "react";
-import { DatePicker, Select as AntSelect } from "antd";
+import { DatePicker, Select as AntSelect, Divider } from "antd";
 import dayjs from "dayjs";
 import { X, Save, Loader2, Plus, Trash2 } from "lucide-react";
 import type { Order, CreateOrderDto, OrderItemDto } from "../../interfaces/order.interface";
@@ -13,6 +13,7 @@ import { useStates } from "../../hooks/state/useStates";
 import { usePermissions } from "../../context/PermissionContext";
 import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
 import { TaxCategory } from "../../interfaces/quotation.interface";
+import ProductQuickAddModal from "../product/ProductQuickAddModal";
 
 
 interface OrderUpsertSheetProps {
@@ -52,7 +53,7 @@ const OrderUpsertSheet = ({
 
     const [formData, setFormData] = useState({
         clientID: "",
-        orderDate: new Date().toISOString().substring(0, 10),
+        orderDate: dayjs().format("YYYY-MM-DD"),
         expectedDeliveryDate: "",
         isUseBillingAddress: false,
         shippingAddress: "",
@@ -78,6 +79,8 @@ const OrderUpsertSheet = ({
 
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+    const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
     const clientsDropdownMutation = useClientsDropdown();
     const productDropdownMutation = useProductDropdown();
@@ -126,10 +129,10 @@ const OrderUpsertSheet = ({
             setFormData({
                 clientID: order.clientID || "",
                 orderDate: order.orderDate
-                    ? new Date(order.orderDate).toISOString().substring(0, 10)
-                    : new Date().toISOString().substring(0, 10),
+                    ? dayjs(order.orderDate).format("YYYY-MM-DD")
+                    : dayjs().format("YYYY-MM-DD"),
                 expectedDeliveryDate: order.expectedDeliveryDate
-                    ? new Date(order.expectedDeliveryDate).toISOString().substring(0, 10)
+                    ? dayjs(order.expectedDeliveryDate).format("YYYY-MM-DD")
                     : "",
                 isUseBillingAddress: order.isUseBillingAddress ?? false,
                 shippingAddress: order.shippingAddress || "",
@@ -178,8 +181,8 @@ const OrderUpsertSheet = ({
 
             setFormData({
                 clientID: sourceQuotation.clientID || "",
-                orderDate: new Date().toISOString().substring(0, 10),
-                expectedDeliveryDate: delivery.toISOString().substring(0, 10),
+                orderDate: dayjs().format("YYYY-MM-DD"),
+                expectedDeliveryDate: dayjs(delivery).format("YYYY-MM-DD"),
                 isUseBillingAddress: false,
                 shippingAddress: "",
                 stateID: "",
@@ -218,8 +221,8 @@ const OrderUpsertSheet = ({
 
             setFormData({
                 clientID: "",
-                orderDate: new Date().toISOString().substring(0, 10),
-                expectedDeliveryDate: delivery.toISOString().substring(0, 10),
+                orderDate: dayjs().format("YYYY-MM-DD"),
+                expectedDeliveryDate: dayjs(delivery).format("YYYY-MM-DD"),
                 isUseBillingAddress: false,
                 shippingAddress: "",
                 stateID: "",
@@ -269,8 +272,8 @@ const OrderUpsertSheet = ({
         orderNo: isEdit ? order!.orderNo : null,
         clientID: formData.clientID,
         quotationID: sourceQuotation?.quotationID ?? (isEdit ? order!.quotationID : null) ?? null,
-        orderDate: new Date(formData.orderDate).toISOString(),
-        expectedDeliveryDate: new Date(formData.expectedDeliveryDate).toISOString(),
+        orderDate: dayjs(formData.orderDate).format("YYYY-MM-DDTHH:mm:ss"),
+        expectedDeliveryDate: dayjs(formData.expectedDeliveryDate).format("YYYY-MM-DDTHH:mm:ss"),
         isDesignByUs: false,
         designingCharge: 0,
         status: Number(formData.orderStatusID != "" ? formData.orderStatusID : (isEdit ? order!.status : 1) ?? 1),
@@ -349,10 +352,34 @@ const OrderUpsertSheet = ({
                         productID: selected.productID,
                         description: selected.description || selected.productName || "",
                         unitType: selected.unitName != null ? String(selected.unitName) : "",
+                        unitPrice: selected.defaultRate || 0,
+                        taxCategoryID: selected.taxCategoryID || "",
                     }
                     : item
             )
         );
+    };
+
+    const handleProductQuickAddSuccess = (newProduct?: any) => {
+        productDropdownMutation.mutate(undefined);
+        if (newProduct && activeRowId) {
+            setProductItems(prev =>
+                prev.map(item =>
+                    item.id === activeRowId
+                        ? {
+                            ...item,
+                            productID: newProduct.productID,
+                            description: newProduct.description || newProduct.productName || "",
+                            unitType: newProduct.unitName != null ? String(newProduct.unitName) : "",
+                            unitPrice: newProduct.defaultRate || 0,
+                            taxCategoryID: newProduct.taxCategoryID || "",
+                        }
+                        : item
+                )
+            );
+        }
+        setIsProductModalOpen(false);
+        setActiveRowId(null);
     };
 
     const subtotal = productItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
@@ -596,6 +623,25 @@ const OrderUpsertSheet = ({
                                                     className="w-40 h-9"
                                                     placeholder="Select"
                                                     optionFilterProp="children"
+                                                    dropdownRender={(menu) => (
+                                                        <>
+                                                            {menu}
+                                                            <Divider style={{ margin: '8px 0' }} />
+                                                            <div className="px-2 pb-1">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setActiveRowId(item.id);
+                                                                        setIsProductModalOpen(true);
+                                                                    }}
+                                                                    className="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded-md transition"
+                                                                >
+                                                                    <Plus size={14} />
+                                                                    Add New Product
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 >
                                                     {(products as ProductDropdown[])?.map((p) => (
                                                         <AntSelect.Option key={p.productID} value={p.productID}>{p.productName}</AntSelect.Option>
@@ -707,27 +753,26 @@ const OrderUpsertSheet = ({
                             </div>
 
 
-                            {/* <div>
+                            <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                     Design Status <span className="text-red-500">*</span>
                                 </label>
-                                <select
-                                    value={formData.designStatusID}
-                                    onChange={(e) => setFormData({ ...formData, designStatusID: e.target.value })}
-                                    className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${errors.designStatusID
-                                        ? "border-red-500 focus:ring-red-500"
-                                        : "border-slate-300 focus:ring-blue-500"
-                                        } disabled:bg-slate-50 disabled:text-slate-500`}
+                                <AntSelect
+                                    showSearch
+                                    value={formData.designStatusID || undefined}
+                                    onChange={(val) => setFormData({ ...formData, designStatusID: val })}
+                                    className={`w-full h-10 ${errors.designStatusID ? "ant-select-error" : ""}`}
+                                    placeholder="Select Design Status"
+                                    optionFilterProp="children"
                                 >
-                                    <option value="">Select Design Status</option>
                                     {(designStatusData as any[]).map((o) => (
-                                        <option key={o.designStatusID} value={o.designStatusID}>
+                                        <AntSelect.Option key={o.designStatusID} value={String(o.designStatusID)}>
                                             {o.designStatusName || "Unknown"}
-                                        </option>
+                                        </AntSelect.Option>
                                     ))}
-                                </select>
+                                </AntSelect>
                                 {errors.designStatusID && <p className="text-red-500 text-xs mt-1">{errors.designStatusID}</p>}
-                            </div> */}
+                            </div>
                         </div>
                     )}
 
@@ -778,6 +823,15 @@ const OrderUpsertSheet = ({
                     </div>
                 </form>
             </div>
+
+            <ProductQuickAddModal
+                open={isProductModalOpen}
+                onClose={() => {
+                    setIsProductModalOpen(false);
+                    setActiveRowId(null);
+                }}
+                onSuccess={handleProductQuickAddSuccess}
+            />
         </div>
     );
 };

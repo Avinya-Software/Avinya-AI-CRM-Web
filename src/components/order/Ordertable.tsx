@@ -1,6 +1,7 @@
 // src/components/order/OrderTable.tsx
 
 import { useState, useRef, useEffect } from "react";
+import dayjs from "dayjs";
 import { MoreVertical, Eye, Pencil, Trash2, PackageOpen, X, FileText, Loader2 } from "lucide-react";
 import type { Order } from "../../interfaces/order.interface";
 import { usePermissions } from "../../context/PermissionContext";
@@ -238,8 +239,8 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateIn
 
                     <tbody className="divide-y divide-slate-100">
                         {data.map((order) => (
-                            <tr 
-                                key={order.orderID} 
+                            <tr
+                                key={order.orderID}
                                 className="hover:bg-slate-50 transition-colors cursor-pointer h-[52px]"
                                 onClick={() => canViewOrder && onView(order)}
                             >
@@ -254,18 +255,18 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateIn
 
                                 <td className="px-4 py-3 text-slate-500">
                                     {order.orderDate
-                                        ? new Date(order.orderDate).toLocaleDateString("en-IN")
+                                        ? dayjs(order.orderDate).format("DD/MM/YYYY")
                                         : "—"}
                                 </td>
 
                                 <td className="px-4 py-3 text-slate-500">
                                     {order.expectedDeliveryDate
-                                        ? new Date(order.expectedDeliveryDate).toLocaleDateString("en-IN")
+                                        ? dayjs(order.expectedDeliveryDate).format("DD/MM/YYYY")
                                         : "—"}
                                 </td>
 
                                 <td className="px-4 py-3 font-medium">
-                                    ₹{order.totalAmount?.toFixed(2) ?? "0.00"}
+                                    ₹{order.grandTotal?.toFixed(2) ?? "0.00"}
                                 </td>
 
                                 <td className="px-4 py-3">

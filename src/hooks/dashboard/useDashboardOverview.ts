@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { getDashboardOverviewApi } from "../../api/dashboard.api";
 
 export const useDashboardOverview = () => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const todayDefault = new Date().toISOString().split("T")[0];
+  const todayDefault = dayjs().format("YYYY-MM-DD");
   const [fromDate, setFromDate] = useState<string | null>(todayDefault);
   const [toDate, setToDate] = useState<string | null>(todayDefault);
 

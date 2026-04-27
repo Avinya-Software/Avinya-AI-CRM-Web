@@ -157,9 +157,9 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
             const payload: CreateProjectDto = {
                 ...form,
                 teamId: form.teamId ? Number(form.teamId) : null,
-                startDate: form.startDate ? new Date(form.startDate).toISOString() : null,
-                endDate: form.endDate ? new Date(form.endDate).toISOString() : null,
-                deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
+                startDate: form.startDate ? dayjs(form.startDate).format("YYYY-MM-DDTHH:mm:ss") : null,
+                endDate: form.endDate ? dayjs(form.endDate).format("YYYY-MM-DDTHH:mm:ss") : null,
+                deadline: form.deadline ? dayjs(form.deadline).format("YYYY-MM-DDTHH:mm:ss") : null,
             };
 
             if (project?.projectID) {

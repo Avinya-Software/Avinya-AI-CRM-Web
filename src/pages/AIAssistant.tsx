@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { Bot, Send, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash, Coins, Zap, Wallet, Briefcase, Users, LayoutDashboard, Calendar, ClipboardList, MapPin, Phone, Mail, FileText, IndianRupee, Activity, ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Mic, MicOff } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import dayjs from "dayjs";
 import { useChat } from "../context/ChatContext";
 import { cn } from "../lib/utils";
 import { ChatDataRenderer } from "../components/common/ChatDataRenderer";
@@ -82,11 +83,10 @@ const formatValue = (key: string, value: any): string => {
 
   // Handle Dates
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
-    try {
-      const date = new Date(value);
-      if (!isNaN(date.getTime()))
-        return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-    } catch { }
+    const d = dayjs(value);
+    if (d.isValid()) {
+      return d.format('DD MMM YYYY');
+    }
   }
 
   return String(value).replace(/^\?/, "₹");

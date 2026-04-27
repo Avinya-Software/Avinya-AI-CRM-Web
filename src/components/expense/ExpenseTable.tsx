@@ -1,5 +1,6 @@
 // src/components/expense/ExpenseTable.tsx
 import { useState, useRef } from "react";
+import dayjs from "dayjs";
 import { MoreVertical, X } from "lucide-react";
 
 import { useOutsideClick } from "../../hooks/useOutsideClick";
@@ -109,7 +110,7 @@ const ExpenseTable = ({ data = [], loading = false, onEdit }: Props) => {
                                     >
                                         <Td>
                                             {exp.expenseDate
-                                                ? new Date(exp.expenseDate).toLocaleDateString("en-IN")
+                                                ? dayjs(exp.expenseDate).format("DD/MM/YYYY")
                                                 : "-"}
                                         </Td>
 
@@ -162,7 +163,7 @@ const ExpenseTable = ({ data = [], loading = false, onEdit }: Props) => {
 
                                         <Td>
                                             {exp.createdDate
-                                                ? new Date(exp.createdDate).toLocaleDateString("en-IN")
+                                                ? dayjs(exp.createdDate).format("DD/MM/YYYY")
                                                 : "-"}
                                         </Td>
 

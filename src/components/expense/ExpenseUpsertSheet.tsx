@@ -39,7 +39,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
     const canUpdate = hasPermission("expense", "edit");
     const hasAccess = isEdit ? canUpdate : canCreate;
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = dayjs().format("YYYY-MM-DD");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const initialForm = {
@@ -73,7 +73,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
             setForm({
                 expenseID: expense.expenseId ?? null,
                 expenseDate: expense.expenseDate
-                    ? expense.expenseDate.split("T")[0]
+                    ? dayjs(expense.expenseDate).format("YYYY-MM-DD")
                     : today,
                 expenseType: expense.expenseCategory?.categoryName ?? "",
                 amount: expense.amount ?? "",

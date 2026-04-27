@@ -8,7 +8,7 @@ import TaskList from "../components/tasks/TaskList";
 import TaskUpsertSheet from "../components/tasks/TaskUpsertSheet";
 import TaskFilterSheet from "../components/tasks/TaskFilterSheet";
 import { Task, TaskFilters, TaskStatus } from "../interfaces/task.interface";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import dayjs from "dayjs";
 import VoiceTaskModal from "../components/voice/VoiceTaskModal";
 import { useIsMutating } from "@tanstack/react-query";
 import { usePermissions } from "../context/PermissionContext";
@@ -44,22 +44,17 @@ const Tasks = () => {
   };
 
   const getDateRange = () => {
-    const today = new Date();
-
     switch (view) {
       case "today":
         return {
-          from: new Date(today.setHours(0, 0, 0, 0)).toISOString(),
-          to: new Date(today.setHours(23, 59, 59, 999)).toISOString(),
+          from: dayjs().startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+          to: dayjs().endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         };
 
       case "week":
-        const start = startOfWeek(new Date());
-        const end = endOfWeek(new Date());
-
         return {
-          from: new Date(start.setHours(0, 0, 0, 0)).toISOString(),
-          to: new Date(end.setHours(23, 59, 59, 999)).toISOString(),
+          from: dayjs().startOf("week").add(1, "day").format("YYYY-MM-DDTHH:mm:ss"), // Monday
+          to: dayjs().endOf("week").add(1, "day").format("YYYY-MM-DDTHH:mm:ss"), // Sunday
         };
 
       default:
@@ -98,16 +93,14 @@ const Tasks = () => {
       return false;
 
     if (filters.from || filters.to) {
-      const taskDate = new Date(task.dueDateTime);
+      const taskDate = dayjs(task.dueDateTime);
       if (filters.from) {
-        const fromDate = new Date(filters.from);
-        fromDate.setHours(0, 0, 0, 0);
-        if (taskDate < fromDate) return false;
+        const fromDate = dayjs(filters.from).startOf("day");
+        if (taskDate.isBefore(fromDate)) return false;
       }
       if (filters.to) {
-        const toDate = new Date(filters.to);
-        toDate.setHours(23, 59, 59, 999);
-        if (taskDate > toDate) return false;
+        const toDate = dayjs(filters.to).endOf("day");
+        if (taskDate.isAfter(toDate)) return false;
       }
     }
     return true;

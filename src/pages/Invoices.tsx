@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { Filter, X, Eye, Loader2, WalletIcon , FileText, PackageOpen } from "lucide-react";
 import { Toaster } from "react-hot-toast";
@@ -258,11 +258,11 @@ const Invoices = () => {
                                         </td>
 
                                         <td className="px-4 py-3 text-slate-500">
-                                            {invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString("en-IN") : "—"}
+                                            {invoice.invoiceDate ? dayjs(invoice.invoiceDate).format("DD/MM/YYYY") : "—"}
                                         </td>
 
                                         <td className="px-4 py-3 text-slate-500">
-                                            {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString("en-IN") : "—"}
+                                            {invoice.dueDate ? dayjs(invoice.dueDate).format("DD/MM/YYYY") : "—"}
                                         </td>
 
                                         <td className="px-4 py-3">
@@ -355,18 +355,21 @@ const Invoices = () => {
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
-                            <select
-                                value={filters.status}
-                                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value, page: 1 }))}
-                                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                            <AntSelect
+                                showSearch
+                                className="w-full h-10"
+                                value={filters.status || undefined}
+                                onChange={(val) => setFilters(prev => ({ ...prev, status: val, page: 1 }))}
+                                placeholder="All Statuses"
+                                optionFilterProp="children"
+                                allowClear
                             >
-                                <option value="">All Statuses</option>
                                 {statusDropdown.map((s: any) => (
-                                    <option key={s.invoiceStatusID} value={String(s.invoiceStatusID)}>
+                                    <AntSelect.Option key={s.invoiceStatusID} value={String(s.invoiceStatusID)}>
                                         {s.statusName || s.invoiceStatusName}
-                                    </option>
+                                    </AntSelect.Option>
                                 ))}
-                            </select>
+                            </AntSelect>
                         </div>
 
                         <div>

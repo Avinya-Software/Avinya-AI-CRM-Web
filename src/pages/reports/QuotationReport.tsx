@@ -246,7 +246,7 @@ const QuotationReport: React.FC = () => {
                loading={isLoadingStatuses}
             >
                {statusData?.map((s: any) => (
-                 <Select.Option key={s.quotationStatusID} value={s.quotationStatusID}>{s.statusName}</Select.Option>
+                 <Select.Option key={s.quotationStatusID} value={s.quotationStatusID} label={s.statusName}>{s.statusName}</Select.Option>
                ))}
             </Select>
 
@@ -264,7 +264,7 @@ const QuotationReport: React.FC = () => {
                }
             >
                {clients?.map((c: any) => (
-                 <Select.Option key={c.clientID} value={c.clientID}>{c.companyName}</Select.Option>
+                 <Select.Option key={c.clientID} value={c.clientID} label={c.companyName}>{c.companyName}</Select.Option>
                ))}
             </Select>
 

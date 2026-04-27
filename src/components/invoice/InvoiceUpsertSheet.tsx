@@ -40,8 +40,8 @@ const InvoiceUpsertSheet = ({
 
     const [formData, setFormData] = useState({
         clientID: "",
-        invoiceDate: new Date().toISOString().substring(0, 10),
-        dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
+        invoiceDate: dayjs().format("YYYY-MM-DD"),
+        dueDate: dayjs().add(15, "day").format("YYYY-MM-DD"),
         invoiceStatusID: 0,
         discount: 0,
         placeOfSupply: "",
@@ -83,8 +83,8 @@ const InvoiceUpsertSheet = ({
         if (invoice) {
             setFormData({
                 clientID: invoice.clientID,
-                invoiceDate: invoice.invoiceDate ? new Date(invoice.invoiceDate).toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10),
-                dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().substring(0, 10) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
+                invoiceDate: invoice.invoiceDate ? dayjs(invoice.invoiceDate).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
+                dueDate: invoice.dueDate ? dayjs(invoice.dueDate).format("YYYY-MM-DD") : dayjs().add(15, "day").format("YYYY-MM-DD"),
                 invoiceStatusID: invoice.invoiceStatusID || pendingStatusID,
 
                 discount: invoice.discount || 0,
@@ -112,8 +112,8 @@ const InvoiceUpsertSheet = ({
         } else if (sourceOrder) {
             setFormData({
                 clientID: sourceOrder.clientID || "",
-                invoiceDate: new Date().toISOString().substring(0, 10),
-                dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
+                invoiceDate: dayjs().format("YYYY-MM-DD"),
+                dueDate: dayjs().add(15, "day").format("YYYY-MM-DD"),
                 invoiceStatusID: pendingStatusID,
 
                 discount: 0,

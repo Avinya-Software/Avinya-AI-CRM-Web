@@ -1,6 +1,6 @@
 // src/components/quotations/QuotationUpsertSheet.tsx
 import { useState, useEffect } from "react";
-import { DatePicker, Select as AntSelect } from "antd";
+import { DatePicker, Select as AntSelect, Divider } from "antd";
 import dayjs from "dayjs";
 import { X, Save, Loader2, Plus, Trash2 } from "lucide-react";
 import { Quotation, TaxCategory, QuotationStatusDropdownItem } from "../../interfaces/quotation.interface";
@@ -13,6 +13,7 @@ import { useCreateQuotation, useUpdateQuotation } from "../../hooks/quotation/Us
 import { usePermissions } from "../../context/PermissionContext";
 import { useQuotationStatusDropdown } from "../../hooks/quotation/useQuotations";
 import { useAuth } from "../../auth/useAuth";
+import ProductQuickAddModal from "../product/ProductQuickAddModal";
 
 interface QuotationUpsertSheetProps {
     open: boolean;
@@ -62,7 +63,7 @@ const QuotationUpsertSheet = ({
     const [formData, setFormData] = useState({
         clientID: "",
         leadID: null as string | null,
-        quotationDate: new Date().toISOString().substring(0, 10),
+        quotationDate: dayjs().format("YYYY-MM-DD"),
         validTill: "",
         status: "",
         firmID: 1,
@@ -85,6 +86,8 @@ const QuotationUpsertSheet = ({
     ]);
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+    const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
     const clientsDropdownMutation = useClientsDropdown();
     const settingsMutation = useSettings();
@@ -126,10 +129,10 @@ const QuotationUpsertSheet = ({
                 clientID: quotation.clientID || "",
                 leadID: quotation.leadID || null,
                 quotationDate: quotation.quotationDate
-                    ? new Date(quotation.quotationDate).toISOString().substring(0, 10)
-                    : new Date().toISOString().substring(0, 10),
+                    ? dayjs(quotation.quotationDate).format("YYYY-MM-DD")
+                    : dayjs().format("YYYY-MM-DD"),
                 validTill: quotation.validTill
-                    ? new Date(quotation.validTill).toISOString().substring(0, 10)
+                    ? dayjs(quotation.validTill).format("YYYY-MM-DD")
                     : "",
                 status: quotation.status || "",
                 firmID: quotation.firmID || 1,
@@ -167,8 +170,8 @@ const QuotationUpsertSheet = ({
                 ...prev,
                 clientID: clientID || "",
                 leadID: leadID || null,
-                quotationDate: new Date().toISOString().substring(0, 10),
-                validTill: validTill.toISOString().substring(0, 10),
+                quotationDate: dayjs().format("YYYY-MM-DD"),
+                validTill: dayjs(validTill).format("YYYY-MM-DD"),
                 status: "",
                 firmID: 1,
                 rejectedNotes: "",
@@ -226,8 +229,8 @@ const QuotationUpsertSheet = ({
             quotationNo: isEdit ? quotation?.quotationNo : "",
             clientID: formData.clientID,
             leadID: formData.leadID,
-            quotationDate: new Date(formData.quotationDate).toISOString(),
-            validTill: new Date(formData.validTill).toISOString(),
+            quotationDate: dayjs(formData.quotationDate).format("YYYY-MM-DDTHH:mm:ss"),
+            validTill: dayjs(formData.validTill).format("YYYY-MM-DDTHH:mm:ss"),
             status: formData.status != "" ? formData.status : null,
             firmID: formData.firmID,
             rejectedNotes: formData.rejectedNotes,
@@ -320,10 +323,34 @@ const QuotationUpsertSheet = ({
                         productID: selected.productID,
                         description: selected.description || selected.productName || "",
                         unitType: selected.unitName != null ? String(selected.unitName) : "",
+                        unitPrice: selected.defaultRate || 0,
+                        taxCategoryID: selected.taxCategoryID || "",
                     }
                     : item
             )
         );
+    };
+
+    const handleProductQuickAddSuccess = (newProduct?: any) => {
+        productDropdownMutation.mutate(undefined);
+        if (newProduct && activeRowId) {
+            setProductItems(prev =>
+                prev.map(item =>
+                    item.id === activeRowId
+                        ? {
+                            ...item,
+                            productID: newProduct.productID,
+                            description: newProduct.description || newProduct.productName || "",
+                            unitType: newProduct.unitName != null ? String(newProduct.unitName) : "",
+                            unitPrice: newProduct.defaultRate || 0,
+                            taxCategoryID: newProduct.taxCategoryID || "",
+                        }
+                        : item
+                )
+            );
+        }
+        setIsProductModalOpen(false);
+        setActiveRowId(null);
     };
 
     // ---------- Totals ----------
@@ -487,6 +514,25 @@ const QuotationUpsertSheet = ({
                                                     className="w-36 h-9"
                                                     placeholder="Select"
                                                     optionFilterProp="children"
+                                                    dropdownRender={(menu) => (
+                                                        <>
+                                                            {menu}
+                                                            <Divider style={{ margin: '8px 0' }} />
+                                                            <div className="px-2 pb-1">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setActiveRowId(item.id);
+                                                                        setIsProductModalOpen(true);
+                                                                    }}
+                                                                    className="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded-md transition"
+                                                                >
+                                                                    <Plus size={14} />
+                                                                    Add New Product
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 >
                                                     {(products as ProductDropdown[])?.map(p => (
                                                         <AntSelect.Option key={p.productID} value={p.productID}>
@@ -665,6 +711,15 @@ const QuotationUpsertSheet = ({
                     </div>
                 </form>
             </div>
+
+            <ProductQuickAddModal
+                open={isProductModalOpen}
+                onClose={() => {
+                    setIsProductModalOpen(false);
+                    setActiveRowId(null);
+                }}
+                onSuccess={handleProductQuickAddSuccess}
+            />
         </div>
     );
 };

@@ -1,5 +1,6 @@
 // src/pages/Products.tsx
 import { useState, useEffect } from "react";
+import { Select as AntSelect } from "antd";
 import { Toaster } from "react-hot-toast";
 
 import { useProducts } from "../hooks/product/useProducts";
@@ -104,19 +105,18 @@ const Products = () => {
                 </span>
               </div>
 
-              <select
-                className="h-10 border rounded px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <AntSelect
+                className="w-40 h-10"
                 value={status === undefined ? "" : status ? "true" : "false"}
-                onChange={(e) => {
-                  const val = e.target.value;
+                onChange={(val) => {
                   setStatus(val === "" ? undefined : val === "true");
                   setPageNumber(1);
                 }}
               >
-                <option value="">All Status</option>
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
+                <AntSelect.Option value="">All Status</AntSelect.Option>
+                <AntSelect.Option value="true">Active</AntSelect.Option>
+                <AntSelect.Option value="false">Inactive</AntSelect.Option>
+              </AntSelect>
             </div>
             <div />
           </div>

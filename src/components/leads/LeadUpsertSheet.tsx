@@ -45,13 +45,6 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     return () => { document.body.style.overflow = "unset"; };
   }, [open]);
 
-  useEffect(() => {
-    if (open) {
-      leadStatusesMutation.mutate(undefined);
-      leadSourcesMutation.mutate(undefined);
-    }
-  }, [open]);
-
   const statuses = leadStatusesMutation.data;
   const sources = leadSourcesMutation.data;
 
@@ -61,19 +54,16 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
 
   useEffect(() => {
     getCustomerDropdownApi().then(setCustomers);
+    leadStatusesMutation.mutate(undefined);
+    leadSourcesMutation.mutate(undefined);
+    usersDropdownMutation.mutate(undefined);
+    statesMutation.mutate(undefined);
   }, []);
 
   const usersDropdownMutation = useUsersDropdown();
   const statesMutation = useStates();
   const citiesMutation = useCities();
   const [selectedStateId, setSelectedStateId] = useState<string>("");
-
-  useEffect(() => {
-    if (open) {
-      usersDropdownMutation.mutate(undefined);
-      statesMutation.mutate(undefined);
-    }
-  }, [open]);
 
   useEffect(() => {
     if (selectedStateId) citiesMutation.mutate(Number(selectedStateId));
@@ -146,7 +136,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       assignedTo: lead.assignedTo ?? "",
       requirementDetails: lead.requirementDetails ?? "",
       links: lead.links ?? "",
-      nextFollowupDate: lead.nextFollowupDate ? lead.nextFollowupDate.slice(0, 16) : "",
+      nextFollowupDate: lead.nextFollowupDate ? dayjs(lead.nextFollowupDate).format("YYYY-MM-DD HH:mm") : "",
       leadSourceId: lead.leadSourceID ?? "",
       leadStatusId: lead.leadStatusID ?? lead.status ?? "",
       notes: lead.notes ?? "",
@@ -186,11 +176,14 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
         setForm((prev) => ({
           ...prev,
           customerId: customerId,
+          companyName:customer.companyName||"",
           fullName: customer.contactPerson || "",
           email: customer.email || "",
           mobile: customer.mobileNumber || "",
           address: customer.billAddress || "",
           cityId: customer.cityID?.toString() ?? "",
+          StateID:customer.stateID?.toString()??"",
+
         }));
 
         // load cities automatically
@@ -260,8 +253,8 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       RequirementDetails: form.requirementDetails,
       Links: form.links,
       Notes: form.notes,
-      Date: isEdit ? (lead.date || new Date().toISOString()) : new Date().toISOString(),
-      NextFollowupDate: form.nextFollowupDate ? new Date(form.nextFollowupDate) : null,
+      Date: isEdit ? (lead.date || dayjs().format("YYYY-MM-DDTHH:mm:ss")) : dayjs().format("YYYY-MM-DDTHH:mm:ss"),
+      NextFollowupDate: form.nextFollowupDate ? dayjs(form.nextFollowupDate).format("YYYY-MM-DDTHH:mm:ss") : null,
       LeadStatusID: form.leadStatusId,
       LeadSourceID: form.leadSourceId || "00000000-0000-0000-0000-000000000000",
       OtherSources: form.otherSources || null,
@@ -497,6 +490,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
                 onChange={(date, dateString) =>
                   setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
                 }
+                disabledDate={(current) => current && current < dayjs().startOf('day')}
                 disabled={isReadOnly}
               />
               {errors.nextFollowupDate && <p className="text-xs text-red-500 mt-0.5">{errors.nextFollowupDate}</p>}

@@ -227,7 +227,7 @@ const OrderReport: React.FC = () => {
               }
             >
               {clients?.map((c: any) => (
-                <Select.Option key={c.clientID} value={c.clientID}>{c.companyName}</Select.Option>
+                <Select.Option key={c.clientID} value={c.clientID} label={c.companyName}>{c.companyName}</Select.Option>
               ))}
             </Select>
 

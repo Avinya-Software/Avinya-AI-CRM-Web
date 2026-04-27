@@ -36,7 +36,7 @@ const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
 
   const [formData, setFormData] = useState<CreatePaymentDto>({
     invoiceID: invoice?.invoiceID || "",
-    paymentDate: new Date().toISOString().substring(0, 10),
+    paymentDate: dayjs().format("YYYY-MM-DD"),
     amount: invoice?.remainingPayment || 0,
     paymentMethod: "UPI",
     referenceNo: "",
@@ -47,7 +47,7 @@ const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
     if (open && invoice) {
       setFormData({
         invoiceID: invoice.invoiceID,
-        paymentDate: new Date().toISOString().substring(0, 10),
+        paymentDate: dayjs().format("YYYY-MM-DD"),
         amount: invoice.remainingPayment || 0,
         paymentMethod: "UPI",
         referenceNo: "",

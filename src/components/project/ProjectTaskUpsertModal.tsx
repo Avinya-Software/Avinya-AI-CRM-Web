@@ -45,7 +45,7 @@ const ProjectTaskUpsertModal = ({
             setFormData({
                 taskName: "",
                 description: "",
-                dueDate: now.toISOString().substring(0, 16),
+                dueDate: dayjs(now).format("YYYY-MM-DD HH:mm"),
                 assignedTo: "",
             });
             setErrors({});
@@ -73,7 +73,7 @@ const ProjectTaskUpsertModal = ({
             {
                 title: formData.taskName,
                 description: formData.description,
-                dueDateTime: new Date(formData.dueDate).toISOString(),
+                dueDateTime: dayjs(formData.dueDate).format("YYYY-MM-DDTHH:mm:ss"),
                 isRecurring: false,
                 scope: projectTeamId ? "Team" : "Personal",
                 teamId: projectTeamId ? String(projectTeamId) : undefined,

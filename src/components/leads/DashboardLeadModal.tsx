@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X } from "lucide-react";
+
 import { useUpsertLead } from "../../hooks/lead/useUpsertLead";
 import { useLeadStatuses } from "../../hooks/lead/useLeadStatuses";
 import { useLeadSources } from "../../hooks/lead/useLeadSources";
@@ -123,7 +124,7 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
       assignedTo: lead.assignedTo ?? "",
       requirementDetails: lead.requirementDetails ?? "",
       links: lead.links ?? "",
-      nextFollowupDate: lead.nextFollowupDate ? lead.nextFollowupDate.slice(0, 16) : "",
+      nextFollowupDate: lead.nextFollowupDate ? dayjs(lead.nextFollowupDate).format("YYYY-MM-DD HH:mm") : "",
       leadSourceId: lead.leadSourceID ?? "",
       leadStatusId: lead.leadStatusID ?? lead.status ?? "",
       notes: lead.notes ?? "",
@@ -229,7 +230,7 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
       RequirementDetails: form.requirementDetails,
       Links: form.links,
       Notes: form.notes,
-      NextFollowupDate: form.nextFollowupDate ? new Date(form.nextFollowupDate) : null,
+      NextFollowupDate: form.nextFollowupDate ? dayjs(form.nextFollowupDate).format("YYYY-MM-DDTHH:mm:ss") : null,
       LeadStatusID: form.leadStatusId,
       LeadSourceID: form.leadSourceId,
       AssignedTo: form.assignedTo || advisorId,
@@ -464,6 +465,7 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
                     onChange={(date, dateString) =>
                       setForm({ ...form, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
                     }
+                    disabledDate={(current) => current && current < dayjs().startOf('day')}
                     disabled={isReadOnly}
                   />
                   {errors.nextFollowupDate && <p className="text-xs text-red-600 mt-1">{errors.nextFollowupDate}</p>}
@@ -522,18 +524,20 @@ const Select = ({ label, required, value, options, onChange, error, disabled }: 
     <label className="block text-sm font-medium text-slate-700 mb-1.5">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
-    <select
-      className={`w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm ${error ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:ring-blue-500"} disabled:bg-slate-50 disabled:text-slate-500`}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
+    <AntSelect
+      showSearch
+      className={`w-full h-10 ${error ? "ant-select-error" : ""}`}
+      value={value || undefined}
+      onChange={(val) => onChange(val)}
       disabled={disabled}
+      placeholder="Select"
+      optionFilterProp="children"
     >
-      <option value="">Select</option>
       {Array.isArray(options) &&
         options.map((o: any) => (
-          <option key={o.id} value={o.id}>{o.name}</option>
+          <AntSelect.Option key={o.id} value={String(o.id)}>{o.name}</AntSelect.Option>
         ))}
-    </select>
+    </AntSelect>
     {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
   </div>
 );
