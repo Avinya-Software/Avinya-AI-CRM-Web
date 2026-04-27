@@ -229,6 +229,7 @@ const TaskProjectReport: React.FC = () => {
               placeholder="CLIENT"
               className="w-44 h-9"
               allowClear
+              optionFilterProp="label"
               options={clients?.map(c => ({ label: c.companyName, value: c.clientID }))}
               onChange={(val) => handleFilterChange("clientId", val)}
             />
@@ -238,6 +239,7 @@ const TaskProjectReport: React.FC = () => {
               placeholder="MANAGER"
               className="w-44 h-9"
               allowClear
+              optionFilterProp="label"
               options={userOptions}
               onChange={(val) => handleFilterChange("projectManagerId", val)}
             />
@@ -247,6 +249,7 @@ const TaskProjectReport: React.FC = () => {
               placeholder="TEAM"
               className="w-44 h-9"
               allowClear
+              optionFilterProp="label"
               options={teamOptions}
               onChange={(val) => handleFilterChange("teamId", val)}
             />

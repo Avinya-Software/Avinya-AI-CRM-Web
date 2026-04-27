@@ -220,7 +220,7 @@ const FinanceReport: React.FC = () => {
                onChange={(val) => handleFilterChange("clientId", val)}
             >
                {clients?.map((c: any) => (
-                 <Select.Option key={c.clientID} value={c.clientID}>{c.companyName}</Select.Option>
+                 <Select.Option key={c.clientID} value={c.clientID} label={c.companyName}>{c.companyName}</Select.Option>
                ))}
             </Select>
 
@@ -233,7 +233,7 @@ const FinanceReport: React.FC = () => {
                onChange={(val) => handleFilterChange("invoiceStatusId", val)}
             >
                {invoiceStatuses?.map((s: any) => (
-                 <Select.Option key={s.invoiceStatusID} value={s.invoiceStatusID}>{s.invoiceStatusName}</Select.Option>
+                 <Select.Option key={s.invoiceStatusID} value={s.invoiceStatusID} label={s.invoiceStatusName}>{s.invoiceStatusName}</Select.Option>
                ))}
             </Select>
 

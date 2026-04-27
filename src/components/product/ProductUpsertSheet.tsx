@@ -15,7 +15,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   product?: Product | null;
-  onSuccess: () => void;
+  onSuccess: (newProduct?: any) => void;
 }
 
 const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
@@ -143,14 +143,14 @@ const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
       status: form.status,
     };
 
-    await mutateAsync(payload);
+    const result = await mutateAsync(payload);
 
     toast.success(
       `Product ${product ? "updated" : "created"} successfully`
     );
 
     onClose();
-    onSuccess();
+    onSuccess(result?.data);
   };
 
   if (!open || !hasAccess) return null;

@@ -35,4 +35,6 @@ export interface ProductDropdown {
   unitName?: string | null;     // display name e.g. "Page", "Pcs"
   unitTypeId?: string | null;
   defaultRate?: number | null;
+  taxCategoryID?: string | null;
+  taxCategoryName?: string | null;
 }

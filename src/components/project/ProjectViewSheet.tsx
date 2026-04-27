@@ -83,7 +83,7 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit, onSuccess }
       {
         title: taskForm.taskName,
         description: taskForm.description,
-        dueDateTime: new Date(taskForm.dueDate).toISOString(),
+        dueDateTime: dayjs(taskForm.dueDate).format("YYYY-MM-DDTHH:mm:ss"),
         isRecurring: false,
         scope: project?.teamId ? "Team" : "Personal",
         teamId: project?.teamId ? String(project.teamId) : undefined,

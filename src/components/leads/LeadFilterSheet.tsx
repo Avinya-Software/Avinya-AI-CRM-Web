@@ -220,17 +220,20 @@ const Select = ({
     <label className="text-sm font-medium">
       {label}
     </label>
-    <select
-      className="input w-full"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
+    <AntSelect
+      showSearch
+      className="w-full h-10"
+      value={value || undefined}
+      onChange={(val) => onChange(val)}
+      placeholder="All"
+      optionFilterProp="children"
+      allowClear
     >
-      <option value="">All</option>
       {options?.map((o: any) => (
-        <option key={o.id} value={o.id}>
+        <AntSelect.Option key={o.id} value={String(o.id)}>
           {o.name}
-        </option>
+        </AntSelect.Option>
       ))}
-    </select>
+    </AntSelect>
   </div>
 );

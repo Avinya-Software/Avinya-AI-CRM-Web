@@ -1,5 +1,6 @@
 // src/components/quotations/QuotationTable.tsx
 import { useState, useRef } from "react";
+import dayjs from "dayjs";
 import { MoreVertical, X, Eye, FileText, Loader2 } from "lucide-react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import TableSkeleton from "../common/TableSkeleton";
@@ -144,8 +145,8 @@ const QuotationTable = ({
                 >
                   <Td>{quotation.quotationNo || "-"}</Td>
                   <Td>{quotation.companyName || "-"}</Td>
-                  <Td>{new Date(quotation.quotationDate).toLocaleDateString("en-GB")}</Td>
-                  <Td>{new Date(quotation.validTill).toLocaleDateString("en-GB")}</Td>
+                  <Td>{dayjs(quotation.quotationDate).format("DD/MM/YYYY")}</Td>
+                  <Td>{dayjs(quotation.validTill).format("DD/MM/YYYY")}</Td>
                   <Td>₹{(quotation.totalAmount ?? 0).toLocaleString()}</Td>
                   <Td className="font-medium">₹{(quotation.grandTotal ?? 0).toLocaleString()}</Td>
                   <Td>

@@ -89,20 +89,15 @@ const Dashboard = () => {
       // just reveal the custom date inputs, don't fetch yet
       return;
     }
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = dayjs().format("YYYY-MM-DD");
     if (preset === "today") {
       fetchWithDates(todayStr, todayStr);
     } else if (preset === "this_week") {
-      const d = new Date();
-      const day = d.getDay(); // 0 = Sun
-      const diffToMon = day === 0 ? -6 : 1 - day;
-      const mon = new Date(d);
-      mon.setDate(d.getDate() + diffToMon);
-      fetchWithDates(mon.toISOString().split("T")[0], todayStr);
+      const mon = dayjs().startOf("week").add(1, "day"); // Monday of current week
+      fetchWithDates(mon.format("YYYY-MM-DD"), todayStr);
     } else if (preset === "this_month") {
-      const d = new Date();
-      const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
-      fetchWithDates(firstDay.toISOString().split("T")[0], todayStr);
+      const firstDay = dayjs().startOf("month");
+      fetchWithDates(firstDay.format("YYYY-MM-DD"), todayStr);
     } else {
       // null — clear all
       clearFilter();

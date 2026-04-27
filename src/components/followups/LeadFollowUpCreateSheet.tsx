@@ -62,17 +62,17 @@ const LeadFollowUpCreateSheet = ({
       if (isEditMode && followUpData) {
         setFormData({
           followUpDate: followUpData.followUpDate
-            ? new Date(followUpData.followUpDate).toISOString().substring(0, 10)
+            ? dayjs(followUpData.followUpDate).format("YYYY-MM-DD")
             : "",
           notes: followUpData.notes || "",
           nextFollowupDate: followUpData.nextFollowupDate
-            ? new Date(followUpData.nextFollowupDate).toISOString().substring(0, 10)
+            ? dayjs(followUpData.nextFollowupDate).format("YYYY-MM-DD")
             : "",
           followUpBy: followUpData.followUpBy || "",
           status: followUpData.status || 1,
         });
       } else {
-        const today = new Date().toISOString().substring(0, 10);
+        const today = dayjs().format("YYYY-MM-DD");
         setFormData({
           followUpDate: today,
           notes: "",
@@ -117,9 +117,9 @@ const LeadFollowUpCreateSheet = ({
     if (!validate()) return;
 
     const payload = {
-      followUpDate: formData.followUpDate,
+      followUpDate: formData.followUpDate ? dayjs(formData.followUpDate).format("YYYY-MM-DDTHH:mm:ss") : undefined,
       notes: formData.notes,
-      nextFollowUpDate: formData.nextFollowupDate || undefined,
+      nextFollowupDate: formData.nextFollowupDate ? dayjs(formData.nextFollowupDate).format("YYYY-MM-DDTHH:mm:ss") : undefined,
       followUpBy: formData.followUpBy,
       status: formData.status,
     };
@@ -234,6 +234,7 @@ const LeadFollowUpCreateSheet = ({
               onChange={(date, dateString) =>
                 setFormData({ ...formData, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
               }
+              disabledDate={(current) => current && current < dayjs().startOf('day')}
             />
           </div>
 

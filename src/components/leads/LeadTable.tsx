@@ -1,5 +1,6 @@
 // src/components/leads/LeadTable.tsx
 import { useState, useRef } from "react";
+import dayjs from "dayjs";
 import { MoreVertical, X, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -215,7 +216,7 @@ const LeadTable = ({
                   </Td>
                   <Td>
                     {lead.createdDate
-                      ? new Date(lead.createdDate).toLocaleDateString()
+                      ? dayjs(lead.createdDate).format("DD/MM/YYYY")
                       : "-"}
                   </Td>
 

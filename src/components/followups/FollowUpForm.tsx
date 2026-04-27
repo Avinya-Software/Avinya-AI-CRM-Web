@@ -74,8 +74,8 @@ const FollowUpForm = ({ leadID, onSuccess }: Props) => {
 
       await createFollowUpApi({
         leadID,
-        followUpDate,
-        nextFollowupDate: nextFollowUpDate || null,
+        followUpDate: dayjs(followUpDate).format("YYYY-MM-DDTHH:mm:ss"),
+        nextFollowupDate: nextFollowUpDate ? dayjs(nextFollowUpDate).format("YYYY-MM-DDTHH:mm:ss") : null,
         remark,
         status: 1, 
         followUpBy: "", 
@@ -132,6 +132,7 @@ const FollowUpForm = ({ leadID, onSuccess }: Props) => {
           onChange={(date, dateString) =>
             setNextFollowUpDate(Array.isArray(dateString) ? dateString[0] : dateString)
           }
+          disabledDate={(current) => current && current < dayjs().startOf('day')}
         />
         {errors.nextFollowUpDate && (
           <p className="text-xs text-red-600 mt-1">

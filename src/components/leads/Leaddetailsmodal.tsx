@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { DatePicker } from "antd"
-import utc from "dayjs/plugin/utc";
+import { DatePicker, Select as AntSelect } from "antd"
 import dayjs from "dayjs";
 import { X, Phone, Mail, MapPin, Building2, Plus, Loader2, Save, Calendar } from "lucide-react";
 import { useLeadDetails } from "../../hooks/lead/useLeadDetails"; // adjust path
@@ -47,11 +46,7 @@ const OUTCOMES = ["Neutral", "Positive", "Negative"];
 
 const fmt = (dateStr?: string | null) => {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return dayjs(dateStr).format("DD MMM YYYY");
 };
 
 
@@ -83,7 +78,7 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
 
   const [form, setForm] = useState({
     followUpType: "Phone Call",
-    followUpDate: new Date().toISOString().slice(0, 10),
+    followUpDate: dayjs().format("YYYY-MM-DD"),
     notes: "",
     outcome: "Neutral",
     nextFollowupDate: "",
@@ -103,15 +98,13 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
 
   const { userId } = useAuth();
 
-  dayjs.extend(utc);
-
   useEffect(() => {
     if (editData) {
       setForm({
         notes: editData.notes || "",
         status: editData.status || 1,
         nextFollowupDate: editData.nextFollowupDate
-          ? new Date(editData.nextFollowupDate).toISOString().slice(0, 16)
+          ? dayjs(editData.nextFollowupDate).format("YYYY-MM-DD HH:mm")
           : "",
         followUpType: "",
         followUpDate: "",
@@ -150,7 +143,7 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
       mutate(
         {
           leadID: leadID,
-          followUpDate: new Date().toISOString(),
+          followUpDate: dayjs().format("YYYY-MM-DDTHH:mm:ss"),
           nextFollowupDate: form.nextFollowupDate || null,
           remark: form.notes,
           notes: form.notes,
@@ -193,24 +186,24 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
         <label className="text-xs font-medium text-slate-500 block mb-1">
           Status
         </label>
-        <select
-          className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-2 disabled:opacity-60"
+        <AntSelect
+          showSearch
+          className="w-full h-10"
           value={form.status}
           disabled={statusesLoading}
-          onChange={(e) =>
-            setForm({ ...form, status: Number(e.target.value) })
+          onChange={(val) =>
+            setForm({ ...form, status: Number(val) })
           }
+          placeholder="Select Status"
+          optionFilterProp="children"
+          loading={statusesLoading}
         >
-          {statusesLoading ? (
-            <option>Loading...</option>
-          ) : (
-            statusOptions.map((s) => (
-              <option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
-                {s.statusName}
-              </option>
-            ))
-          )}
-        </select>
+          {statusOptions.map((s) => (
+            <AntSelect.Option key={s.leadFollowupStatusID} value={s.leadFollowupStatusID}>
+              {s.statusName}
+            </AntSelect.Option>
+          ))}
+        </AntSelect>
       </div>
 
       <div className="mb-4 flex flex-col gap-1">
@@ -223,15 +216,16 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
           placeholder="Select date & time"
           value={
             form.nextFollowupDate
-              ? dayjs.utc(form.nextFollowupDate).local()
+              ? dayjs(form.nextFollowupDate)
               : null
           }
           onChange={(date) =>
             setForm({
               ...form,
-              nextFollowupDate: date ? date.toISOString() : "",
+              nextFollowupDate: date ? date.format("YYYY-MM-DDTHH:mm:ss") : "",
             })
           }
+          disabledDate={(current) => current && current < dayjs().startOf('day')}
           className={`w-full text-sm border rounded-lg px-2.5 py-2  ${errors.notes ? "border-red-400" : "border-slate-200"
             }`}
         />
