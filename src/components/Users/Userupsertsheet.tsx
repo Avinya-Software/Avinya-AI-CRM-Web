@@ -130,6 +130,7 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
         if (!formData.fullName.trim()) { toast.error("Full name is required"); return; }
         if (!formData.email.trim()) { toast.error("Email is required"); return; }
         if (!formData.tenantId) { toast.error("Tenant is required"); return; }
+        if (!formData.role) { toast.error("Role is required"); return; }
 
         const payload = { ...formData, permissionIds: selectedPermissions };
 
@@ -218,53 +219,49 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
                             />
                         </div>
 
-                        {!isEdit && (
-                            <>
-                                {isSuperAdmin && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                                            Company <span className="text-red-500">*</span>
-                                        </label>
-                                        <AntSelect
-                                            showSearch
-                                            className="w-full h-10"
-                                            value={formData.tenantId || undefined}
-                                            onChange={(val) => setFormData({ ...formData, tenantId: val })}
-                                            disabled={isReadOnly}
-                                            placeholder="Select Company"
-                                            optionFilterProp="children"
-                                        >
-                                            {companies.map((company) => (
-                                                <AntSelect.Option key={company.tenantId} value={company.tenantId}>
-                                                    {company.companyName}
-                                                </AntSelect.Option>
-                                            ))}
-                                        </AntSelect>
-                                    </div>
-                                )}
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Role <span className="text-red-500">*</span>
-                                    </label>
-                                    <AntSelect
-                                        showSearch
-                                        className="w-full h-10"
-                                        value={formData.role || undefined}
-                                        onChange={(val) => setFormData({ ...formData, role: val })}
-                                        disabled={isReadOnly}
-                                        placeholder="Select Role"
-                                        optionFilterProp="children"
-                                    >
-                                        {availableRoles.map((role) => (
-                                            <AntSelect.Option key={role.id} value={role.name}>
-                                                {role.name}
-                                            </AntSelect.Option>
-                                        ))}
-                                    </AntSelect>
-                                </div>
-                            </>
+                        {isSuperAdmin && (
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    Company <span className="text-red-500">*</span>
+                                </label>
+                                <AntSelect
+                                    showSearch
+                                    className="w-full h-10"
+                                    value={formData.tenantId || undefined}
+                                    onChange={(val) => setFormData({ ...formData, tenantId: val })}
+                                    disabled={isReadOnly}
+                                    placeholder="Select Company"
+                                    optionFilterProp="children"
+                                >
+                                    {companies.map((company) => (
+                                        <AntSelect.Option key={company.tenantId} value={company.tenantId}>
+                                            {company.companyName}
+                                        </AntSelect.Option>
+                                    ))}
+                                </AntSelect>
+                            </div>
                         )}
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Role <span className="text-red-500">*</span>
+                            </label>
+                            <AntSelect
+                                showSearch
+                                className="w-full h-10"
+                                value={formData.role || undefined}
+                                onChange={(val) => setFormData({ ...formData, role: val })}
+                                disabled={isReadOnly}
+                                placeholder="Select Role"
+                                optionFilterProp="children"
+                            >
+                                {availableRoles.map((role) => (
+                                    <AntSelect.Option key={role.id} value={role.name}>
+                                        {role.name}
+                                    </AntSelect.Option>
+                                ))}
+                            </AntSelect>
+                        </div>
 
 
                         {/* Status */}
