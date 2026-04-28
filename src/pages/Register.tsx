@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { useRegisterAdvisor } from "../hooks/advisor/useRegisterAdvisor";
 import SEO from "../components/common/SEO";
+import { useTheme } from "../context/ThemeContext";
 
 type RegisterErrors = {
   fullName?: string;
@@ -23,6 +24,8 @@ type RegisterErrors = {
 };
 
 const Register = () => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [form, setForm] = useState({
     fullName: "",
     companyName: "",
@@ -128,8 +131,12 @@ const Register = () => {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-2xl mb-4 shadow-lg">
-            <User className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img 
+              src={isDark ? '/Images/dark-logo.png' : '/Images/light-logo.png'} 
+              alt="Avinya Logo" 
+              className="h-16 w-auto object-contain"
+            />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Create Account

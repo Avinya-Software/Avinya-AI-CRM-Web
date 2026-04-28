@@ -45,6 +45,7 @@ import PublicLayout from "./pages/Publiclayouts/Publiclayout";
 import SuperAdminLogin from "./pages/SuperAdminLogin";
 import UserCredits from "./pages/UserCredits";
 import CreditTransactions from "./pages/CreditTransactions";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
     <>
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           {/* ================= PUBLIC ================= */}
 

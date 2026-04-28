@@ -127,6 +127,8 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
 
     const stateId = lead.stateID?.toString() ?? "";
     setSelectedStateId(stateId);
+    const leadSourceId = lead.leadSourceID === "00000000-0000-0000-0000-000000000000" ? "" : (lead.leadSourceID ?? "");
+
     setForm({
       customerId: lead.clientID ?? null,
       fullName: lead.contactPerson ?? "",
@@ -137,7 +139,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
       requirementDetails: lead.requirementDetails ?? "",
       links: lead.links ?? "",
       nextFollowupDate: lead.nextFollowupDate ? dayjs(lead.nextFollowupDate).format("YYYY-MM-DD HH:mm") : "",
-      leadSourceId: lead.leadSourceID ?? "",
+      leadSourceId: leadSourceId,
       leadStatusId: lead.leadStatusID ?? lead.status ?? "",
       notes: lead.notes ?? "",
       cityId: lead.cityID?.toString() ?? "",
@@ -410,7 +412,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
               <AntSelect
                 showSearch
                 className="w-full h-10"
-                value={form.leadSourceId || undefined}
+                value={(form.leadSourceId && form.leadSourceId !== "00000000-0000-0000-0000-000000000000") ? form.leadSourceId : undefined}
                 onChange={(val) => setForm({ ...form, leadSourceId: val })}
                 disabled={isReadOnly}
                 placeholder="Select Source"

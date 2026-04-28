@@ -91,7 +91,7 @@ const LeadFollowup = () => {
                             </h1>
                         </div>
 
-                        {/* <button
+                        <button
                             onClick={() => {
                                 setEditFollowUp(null);
                                 setOpenCreateSheet(true);
@@ -99,7 +99,7 @@ const LeadFollowup = () => {
                             className="btn-primary px-4 py-2 rounded text-sm"
                         >
                             + Add Follow-Up
-                        </button> */}
+                        </button>
                     </div>
 
                     {/* FILTERS */}

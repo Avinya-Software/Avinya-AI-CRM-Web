@@ -14,16 +14,21 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Home', path: '/' },
+    { name: 'Features', path: 'features', isScroll: true },
     { name: 'About', path: '/about' },
     // { name: 'Pricing', path: '/pricing' },
   ];
 
-  const scrollToBooking = () => {
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
     if (location.pathname === '/') {
-      const element = document.getElementById('booking');
-      element?.scrollIntoView({ behavior: 'smooth' });
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        // Update hash in URL
+        window.history.pushState(null, '', `/#${id}`);
+      }
     } else {
-      navigate('/#booking');
+      navigate(`/#${id}`);
     }
     setIsOpen(false);
   };
@@ -32,34 +37,55 @@ export default function Navbar() {
     <motion.nav 
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 backdrop-blur-md border-b border-black/5 dark:border-white/5 bg-white/20 dark:bg-black/20 transition-colors duration-500"
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-20 md:px-12 backdrop-blur-md border-b border-black/5 dark:border-white/5 bg-white/20 dark:bg-black/20 transition-colors duration-500"
     >
       <Link to="/" className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-          <Sparkles className="text-white w-6 h-6" />
-        </div>
-        <span className="text-xl font-bold font-display tracking-tight text-slate-900 dark:text-white">Avinya</span>
+        <img 
+          src={theme === 'dark' ? '/Images/dark-logo.png' : '/Images/light-logo.png'} 
+          alt="Avinya Logo" 
+          className="h-20 w-auto"
+        />
       </Link>
 
       <div className="hidden md:flex items-center gap-6">
         {navLinks.map((link) => (
-          <Link 
-            key={link.name} 
-            to={link.path}
-            className={cn(
-              "text-sm font-semibold transition-colors",
-              location.pathname === link.path 
-                ? "text-emerald-600 dark:text-emerald-400" 
-                : "text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white"
-            )}
-          >
-            {link.name}
-          </Link>
+          link.isScroll ? (
+            <button
+              key={link.name}
+              onClick={() => scrollToSection(link.path)}
+              className={cn(
+                "text-sm font-semibold transition-colors",
+                location.pathname === '/' && location.hash === `#${link.path}`
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white"
+              )}
+            >
+              {link.name}
+            </button>
+          ) : (
+            <Link 
+              key={link.name} 
+              to={link.path}
+              className={cn(
+                "text-sm font-semibold transition-colors",
+                location.pathname === link.path && !location.hash
+                  ? "text-emerald-600 dark:text-emerald-400" 
+                  : "text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white"
+              )}
+            >
+              {link.name}
+            </Link>
+          )
         ))}
 
         <button
-          onClick={scrollToBooking}
-          className="text-sm font-semibold text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-colors"
+          onClick={() => scrollToSection('booking')}
+          className={cn(
+            "text-sm font-semibold transition-colors",
+            location.pathname === '/' && location.hash === '#booking'
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white"
+          )}
         >
           Book Demo
         </button>
@@ -109,19 +135,34 @@ export default function Navbar() {
           className="absolute top-full left-0 right-0 p-6 bg-white/95 dark:bg-black/95 border-b border-black/5 dark:border-white/10 flex flex-col gap-6 md:hidden backdrop-blur-xl"
         >
           {navLinks.map((link) => (
-            <Link 
-              key={link.name} 
-              to={link.path}
-              className={cn(
-                "text-lg font-medium",
-                location.pathname === link.path 
-                  ? "text-emerald-600 dark:text-emerald-400" 
-                  : "text-slate-700 dark:text-white/80"
-              )}
-              onClick={() => setIsOpen(false)}
-            >
-              {link.name}
-            </Link>
+            link.isScroll ? (
+              <button
+                key={link.name}
+                onClick={() => scrollToSection(link.path)}
+                className={cn(
+                  "text-lg font-medium text-left transition-colors",
+                  location.pathname === '/' && location.hash === `#${link.path}`
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-slate-700 dark:text-white/80"
+                )}
+              >
+                {link.name}
+              </button>
+            ) : (
+              <Link 
+                key={link.name} 
+                to={link.path}
+                className={cn(
+                  "text-lg font-medium",
+                  location.pathname === link.path && !location.hash
+                    ? "text-emerald-600 dark:text-emerald-400" 
+                    : "text-slate-700 dark:text-white/80"
+                )}
+                onClick={() => setIsOpen(false)}
+              >
+                {link.name}
+              </Link>
+            )
           ))}
           <div className="flex flex-col gap-4 pt-4 border-t border-black/5 dark:border-white/10">
             <Link 
@@ -139,7 +180,7 @@ export default function Navbar() {
               Sign up
             </Link>
             <button 
-              onClick={scrollToBooking}
+              onClick={() => scrollToSection('booking')}
               className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-black rounded-xl font-bold"
             >
               Book Demo

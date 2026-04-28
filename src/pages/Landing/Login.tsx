@@ -76,7 +76,7 @@ const Login = () => {
   const errorMessage = (adminErr as any)?.response?.data?.statusMessage || (adminErr as any)?.response?.data?.message;
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-6 py-6">
       <SEO
         title="Login - Secure Access to Your Intelligent CRM"
         description="Log in to Avinya AI CRM to manage your leads, automate your tasks, and view your sales performance analytics."
@@ -98,9 +98,13 @@ const Login = () => {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-2xl mb-6 shadow-lg shadow-emerald-500/20"
+              className="inline-flex items-center justify-center mb-6"
             >
-              <Sparkles className="w-7 h-7 text-white" />
+              <img 
+                src={theme === 'dark' ? '/Images/dark-logo.png' : '/Images/light-logo.png'} 
+                alt="Avinya Logo" 
+                className="h-20 w-auto object-contain"
+              />
             </motion.div>
             <h1 className={`text-[32px] font-bold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>Welcome Back</h1>
             <p className={`text-[15px] ${isDark ? "text-slate-400" : "text-slate-600"}`}>Enter your credentials to access your account</p>

@@ -3,12 +3,32 @@
 
   <url>
     <loc>https://aicrm.avinyasoftware.com/</loc>
+    <lastmod>2026-04-28</lastmod>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://aicrm.avinyasoftware.com/#booking</loc>
+    <loc>https://aicrm.avinyasoftware.com/about</loc>
+    <lastmod>2026-04-28</lastmod>
     <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://aicrm.avinyasoftware.com/signup</loc>
+    <lastmod>2026-04-28</lastmod>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://aicrm.avinyasoftware.com/login</loc>
+    <lastmod>2026-04-28</lastmod>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://aicrm.avinyasoftware.com/register</loc>
+    <lastmod>2026-04-28</lastmod>
+    <priority>0.5</priority>
   </url>
 
 </urlset>

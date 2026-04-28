@@ -14,10 +14,11 @@ export default function Home() {
   const { hash } = useLocation();
 
   useEffect(() => {
-    if (hash === '#booking') {
-      const element = document.getElementById('booking');
+    if (hash) {
+      const targetId = hash.replace('#', '');
+      const element = document.getElementById(targetId);
       if (element) {
-        element.scrollIntoView({ behavior: 'auto' });
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     }
   }, [hash]);

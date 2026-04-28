@@ -1,16 +1,20 @@
-import { Sparkles, Twitter, Github, Linkedin, Mail } from 'lucide-react';
+import { Twitter, Github, Linkedin, Mail } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Footer() {
+  const { theme } = useTheme();
+  
   return (
     <footer className="py-20 px-6 border-t border-black/5 dark:border-white/10 transition-colors duration-500">
       <div className="container mx-auto max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-xl flex items-center justify-center">
-                <Sparkles className="text-white w-6 h-6" />
-              </div>
-              <span className="text-2xl font-bold font-display tracking-tight text-slate-900 dark:text-white">Avinya</span>
+              <img 
+                src={theme === 'dark' ? '/Images/dark-logo.png' : '/Images/light-logo.png'} 
+                alt="Avinya Logo" 
+                className="h-20 w-auto object-contain"
+              />
             </div>
             <p className="text-slate-600 dark:text-white/40 font-light leading-relaxed">
               The AI-powered CRM platform that works as hard as you do. 

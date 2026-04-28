@@ -472,14 +472,9 @@ const LeadDetailSheet = ({
                   {canAddFollowUp && !showAddForm && (
                     <button
                       onClick={() => {
-                        const hasIncomplete = followups.some((f: any) => f.statusName !== "Completed");
-                        if (hasIncomplete) {
-                          toast.error("Cannot add a new follow-up. The previous follow-up is not completed yet.");
-                          return;
-                        }
                         setShowAddForm(true);
                       }}
-                      className={`w-full flex items-center justify-center gap-2 border border-slate-200 text-slate-700 rounded-xl py-2.5 text-sm font-medium hover:bg-slate-50 transition ${followups.some((f: any) => f.statusName !== "Completed") ? "opacity-60" : ""}`}
+                      className="w-full flex items-center justify-center gap-2 border border-slate-200 text-slate-700 rounded-xl py-2.5 text-sm font-medium hover:bg-slate-50 transition"
                     >
                       <Plus size={15} />
                       Add Follow-up
