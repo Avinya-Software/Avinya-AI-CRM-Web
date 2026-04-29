@@ -60,7 +60,10 @@ const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
     e.preventDefault();
     if (!invoice) return;
 
-    createPayment.mutate(formData, {
+    createPayment.mutate({
+      ...formData,
+      paymentDate: dayjs(formData.paymentDate).format("YYYY-MM-DDTHH:mm:ss")
+    }, {
       onSuccess: () => {
         onSuccess?.();
         onClose();

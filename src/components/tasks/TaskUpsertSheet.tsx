@@ -101,7 +101,9 @@ const TaskUpsertSheet = ({
         title: task.title,
         description: (task as any).description || "",
         notes: (task as any).notes || "",
-        dueDateTime: task.dueDateTime != null ? task.dueDateTime.substring(0, 16) : "",
+        dueDateTime: task.dueDateTime
+          ? dayjs(task.dueDateTime).format("YYYY-MM-DDTHH:mm:ss")
+          : "",
         status: task.status,
         scope: (task as any).scope || parentScope,
         teamId: (task as any).teamId || task.teamId || "",
@@ -118,7 +120,7 @@ const TaskUpsertSheet = ({
         title: "",
         description: "",
         notes: "",
-        dueDateTime: dayjs(now).format("YYYY-MM-DD HH:mm"),
+        dueDateTime: dayjs(now).format("YYYY-MM-DDTHH:mm:ss"),
         status: TaskStatus.Pending,
         scope: parentScope,
         teamId: "",
@@ -166,7 +168,12 @@ const TaskUpsertSheet = ({
       updateTask.mutate(
         {
           occurrenceId: task!.occurrenceId,
-          data: { dueDateTime: formData.dueDateTime, status: formData.status, teamId: formData.teamId || undefined, assignToId: formData.assignToId || undefined },
+        data: {
+          dueDateTime: formData.dueDateTime ? dayjs(formData.dueDateTime).format("YYYY-MM-DDTHH:mm:ss") : null,
+          status: formData.status,
+          teamId: formData.teamId || undefined,
+          assignToId: formData.assignToId || undefined
+        },
         },
         {
           onSuccess: () => {
@@ -181,11 +188,15 @@ const TaskUpsertSheet = ({
           title: formData.title,
           description: formData.description,
           notes: formData.notes,
-          dueDateTime: recurring ? recurring.startsOn : formData.dueDateTime,
+          dueDateTime: recurring
+            ? dayjs(recurring.startsOn).format("YYYY-MM-DDTHH:mm:ss")
+            : (formData.dueDateTime ? dayjs(formData.dueDateTime).format("YYYY-MM-DDTHH:mm:ss") : null),
           isRecurring: !!recurring,
           recurrenceRule: recurrenceRule || undefined,
-          recurrenceStartDate: recurring ? recurring.startsOn : null,
-          recurrenceEndDate: recurring && !recurring.neverEnds ? recurring.endsOn : null,
+          recurrenceStartDate: recurring ? dayjs(recurring.startsOn).format("YYYY-MM-DDTHH:mm:ss") : null,
+          recurrenceEndDate: (recurring && !recurring.neverEnds && recurring.endsOn) 
+            ? dayjs(recurring.endsOn).format("YYYY-MM-DDTHH:mm:ss") 
+            : null,
           reminderAt: reminder
             ? dayjs(`${reminder.date}T${reminder.time}`).format("YYYY-MM-DDTHH:mm:ss")
             : undefined,

@@ -75,9 +75,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8">
-      <SEO 
-        title="Login - Avinya AI CRM" 
-        description="Sign in to your Avinya AI CRM dashboard to manage leads, tasks, and track your sales performance." 
+      <SEO
+        title="Login - Avinya AI CRM"
+        description="Sign in to your Avinya AI CRM dashboard to manage leads, tasks, and track your sales performance."
       />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">

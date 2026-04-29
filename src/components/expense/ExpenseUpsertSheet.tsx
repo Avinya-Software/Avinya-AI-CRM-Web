@@ -144,7 +144,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
 
         const payload = {
             expenseID: form.expenseID,
-            expenseDate: form.expenseDate,
+            expenseDate: dayjs(form.expenseDate).format("YYYY-MM-DDTHH:mm:ss"),
             expenseType: form.expenseType,
             amount: Number(form.amount),
             description: form.description.trim(),

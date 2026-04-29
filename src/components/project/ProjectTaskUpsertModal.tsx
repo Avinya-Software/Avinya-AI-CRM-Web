@@ -86,10 +86,8 @@ const ProjectTaskUpsertModal = ({
             } as any,
             {
                 onSuccess: () => {
-                    toast.success("Task added successfully");
                     onClose();
                 },
-                onError: () => toast.error("Failed to add task"),
             }
         );
     };

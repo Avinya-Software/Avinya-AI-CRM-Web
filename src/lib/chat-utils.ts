@@ -221,6 +221,28 @@ export function generateMarkdownReport(data: any): string {
   return markdown;
 }
 
-function formatLabel(label: string): string {
+export function formatLabel(label: string): string {
   return label.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
+}
+
+export function getErrorMessage(error: any): string {
+  const data = error.response?.data;
+  if (!data) return error.message || "An unexpected error occurred.";
+
+  if (data.message) return data.message;
+  if (data.statusMessage) return data.statusMessage;
+
+  if (data.errors) {
+    const errorMessages = Object.entries(data.errors)
+      .map(([field, messages]) => {
+        const msgs = Array.isArray(messages) ? messages.join(", ") : messages;
+        return `${field}: ${msgs}`;
+      })
+      .join("\n");
+    if (errorMessages) return errorMessages;
+  }
+
+  if (data.title) return data.title;
+
+  return "An unexpected error occurred.";
 }

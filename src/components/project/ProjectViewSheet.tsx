@@ -97,14 +97,12 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit, onSuccess }
         onSuccess: () => {
           setShowAddTask(false);
           setTaskForm({ taskName: "", description: "", dueDate: "" });
-          toast.success("Task added successfully");
           onClose();
           // Refresh parent list
           setTimeout(() => {
             onSuccess?.(); 
           }, 500);
         },
-        onError: () => toast.error("Failed to add task"),
       }
     );
   };

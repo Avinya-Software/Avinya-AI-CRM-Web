@@ -156,6 +156,8 @@ const InvoiceUpsertSheet = ({
 
         const payload: any = {
             ...formData,
+            invoiceDate: dayjs(formData.invoiceDate).format("YYYY-MM-DDTHH:mm:ss"),
+            dueDate: dayjs(formData.dueDate).format("YYYY-MM-DDTHH:mm:ss"),
             subTotal: subtotal,
             taxes: taxes,
             grandTotal: subtotal + taxes, // API takes grand total without discount subtraction

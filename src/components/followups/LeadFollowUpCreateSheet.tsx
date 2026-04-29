@@ -62,11 +62,11 @@ const LeadFollowUpCreateSheet = ({
       if (isEditMode && followUpData) {
         setFormData({
           followUpDate: followUpData.followUpDate
-            ? dayjs(followUpData.followUpDate).format("YYYY-MM-DD")
+            ? dayjs(followUpData.followUpDate).format("YYYY-MM-DDTHH:mm:ss")
             : "",
           notes: followUpData.notes || "",
           nextFollowupDate: followUpData.nextFollowupDate
-            ? dayjs(followUpData.nextFollowupDate).format("YYYY-MM-DD")
+            ? dayjs(followUpData.nextFollowupDate).format("YYYY-MM-DDTHH:mm:ss")
             : "",
           followUpBy: followUpData.followUpBy || "",
           status: followUpData.status || 1,
@@ -117,9 +117,9 @@ const LeadFollowUpCreateSheet = ({
     if (!validate()) return;
 
     const payload = {
-      followUpDate: formData.followUpDate ? dayjs(formData.followUpDate).format("YYYY-MM-DDTHH:mm:ss") : undefined,
+      followUpDate: formData.followUpDate ? dayjs(formData.followUpDate).format("YYYY-MM-DDTHH:mm:ss") : null,
       notes: formData.notes,
-      nextFollowupDate: formData.nextFollowupDate ? dayjs(formData.nextFollowupDate).format("YYYY-MM-DDTHH:mm:ss") : undefined,
+      nextFollowupDate: formData.nextFollowupDate ? dayjs(formData.nextFollowupDate).format("YYYY-MM-DDTHH:mm:ss") : null,
       followUpBy: formData.followUpBy,
       status: formData.status,
     };

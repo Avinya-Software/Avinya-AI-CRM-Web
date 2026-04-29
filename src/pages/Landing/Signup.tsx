@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { motion } from "framer-motion";
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, Mail, Lock, User, Building, Phone, AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { Sparkles, ArrowRight, Mail, Lock, User, Building, Phone, AlertCircle, CheckCircle, Loader, Eye, EyeOff } from 'lucide-react';
 import toast, { Toaster } from "react-hot-toast";
 import { useTheme } from "../../context/ThemeContext";
 import { registerAdvisorApi } from "../../api/advisor.api";
@@ -23,6 +23,7 @@ export default function Signup() {
     password: '',
     confirmPassword: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -89,7 +90,7 @@ export default function Signup() {
   // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast.error('Please fix the errors above');
       return;
@@ -112,7 +113,7 @@ export default function Signup() {
       if (response.statusCode === 200 || response.statusCode === 201) {
         setSuccess(true);
         toast.success('Account created successfully! Redirecting to login...');
-        
+
         setTimeout(() => {
           navigate('/login');
         }, 2000);
@@ -130,7 +131,7 @@ export default function Signup() {
   return (
     <div className="min-h-screen pb-20 px-6 relative overflow-hidden flex items-center justify-center">
       <Toaster position="top-right" />
-      <SEO 
+      <SEO
         title="Get Started - Join 5,000+ Teams Scaling with AI"
         description="Sign up for Avinya AI CRM and start automating your sales workflows today. Free 14-day trial included."
         keywords="Sign up AI CRM, Avinya AI Registration, CRM Free Trial"
@@ -145,9 +146,9 @@ export default function Signup() {
         >
           <div className="text-center mb-10">
             <Link to="/" className="inline-flex items-center gap-2 mb-6">
-              <img 
-                src={theme === 'dark' ? '/Images/dark-logo.png' : '/Images/light-logo.png'} 
-                alt="Avinya Logo" 
+              <img
+                src={theme === 'dark' ? '/Images/dark-logo.png' : '/Images/light-logo.png'}
+                alt="Avinya Logo"
                 className="h-20 w-auto object-contain"
               />
             </Link>
@@ -254,14 +255,23 @@ export default function Signup() {
               <label className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
                 <Lock className="w-4 h-4" /> Password
               </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="••••••••"
-                className={`${inputClassName} ${errors.password ? (isDark ? 'border-red-500/50' : 'border-red-300') : ''}`}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="••••••••"
+                  className={`${inputClassName} pr-12 ${errors.password ? (isDark ? 'border-red-500/50' : 'border-red-300') : ''}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-400 hover:text-slate-600"}`}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
               {errors.password && (
                 <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
                   <AlertCircle className="w-4 h-4" />
@@ -274,14 +284,23 @@ export default function Signup() {
               <label className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
                 <Lock className="w-4 h-4" /> Confirm Password
               </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                placeholder="••••••••"
-                className={`${inputClassName} ${errors.confirmPassword ? (isDark ? 'border-red-500/50' : 'border-red-300') : ''}`}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  placeholder="••••••••"
+                  className={`${inputClassName} pr-12 ${errors.confirmPassword ? (isDark ? 'border-red-500/50' : 'border-red-300') : ''}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-400 hover:text-slate-600"}`}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
               {errors.confirmPassword && (
                 <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
                   <AlertCircle className="w-4 h-4" />

@@ -209,7 +209,7 @@ const RenewalUpsertSheet = ({
         customerId: form.customerId,
         policyId: form.policyId,
         renewalStatusId: form.renewalStatusId,
-        renewalDate: form.renewalDate,
+        renewalDate: dayjs(form.renewalDate).format("YYYY-MM-DDTHH:mm:ss"),
         renewalPremium: form.renewalPremium,
         reminderDatesJson: JSON.stringify(reminderDays), // ✅ FINAL JSON
       });

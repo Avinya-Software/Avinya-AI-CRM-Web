@@ -98,6 +98,7 @@ const TodayWorkModal = ({ open, onClose, type }: TodayWorkModalProps) => {
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
                   {type?.includes("followup") ? (
                     <tr>
+                      <th className="px-4 py-3">Lead No</th>
                       <th className="px-4 py-3">Date</th>
                       <th className="px-4 py-3">Contact Person</th>
                       <th className="px-4 py-3">Notes</th>
@@ -118,6 +119,9 @@ const TodayWorkModal = ({ open, onClose, type }: TodayWorkModalProps) => {
                     <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                       {type?.includes("followup") ? (
                         <>
+                          <td className="px-4 py-3 font-bold text-blue-600 whitespace-nowrap">
+                            {row.leadNo || row.LeadNo || row.referenceNo || '-'}
+                          </td>
                           <td className="px-4 py-3 font-medium text-slate-700 whitespace-nowrap">
                             {row.followUpDate || row.nextFollowupDate ? new Date(row.followUpDate || row.nextFollowupDate).toLocaleDateString() : 'N/A'}
                           </td>

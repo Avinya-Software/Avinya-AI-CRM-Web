@@ -182,6 +182,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
           fullName: customer.contactPerson || "",
           email: customer.email || "",
           mobile: customer.mobileNumber || "",
+          gstNo: customer.gstNo || "",
           address: customer.billAddress || "",
           cityId: customer.cityID?.toString() ?? "",
           StateID:customer.stateID?.toString()??"",

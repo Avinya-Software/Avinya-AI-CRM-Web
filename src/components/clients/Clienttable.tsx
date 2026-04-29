@@ -13,12 +13,14 @@ interface ClientTableProps {
     data: Client[];
     loading?: boolean;
     onEdit?: (client: Client) => void;
+    onDeleteSuccess?: () => void;
 }
 
 const ClientTable = ({
     data = [],
     loading = false,
     onEdit,
+    onDeleteSuccess,
 }: ClientTableProps) => {
     const { hasPermission } = usePermissions();
 
@@ -72,6 +74,7 @@ const ClientTable = ({
             onSuccess: () => {
                 setConfirmDelete(null);
                 setOpenClient(null);
+                if (onDeleteSuccess) onDeleteSuccess();
             },
         });
     };

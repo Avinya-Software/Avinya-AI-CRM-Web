@@ -104,7 +104,7 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
         notes: editData.notes || "",
         status: editData.status || 1,
         nextFollowupDate: editData.nextFollowupDate
-          ? dayjs(editData.nextFollowupDate).format("YYYY-MM-DD HH:mm")
+          ? dayjs(editData.nextFollowupDate).format("YYYY-MM-DDTHH:mm:ss")
           : "",
         followUpType: "",
         followUpDate: "",
@@ -120,7 +120,7 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
     const payload = {
       notes: form.notes,
       status: form.status,
-      nextFollowupDate: form.nextFollowupDate || null,
+      nextFollowupDate: form.nextFollowupDate ? dayjs(form.nextFollowupDate).format("YYYY-MM-DDTHH:mm:ss") : null,
       followUpBy: userId,
     };
 
@@ -144,7 +144,7 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
         {
           leadID: leadID,
           followUpDate: dayjs().format("YYYY-MM-DDTHH:mm:ss"),
-          nextFollowupDate: form.nextFollowupDate || null,
+          nextFollowupDate: form.nextFollowupDate ? dayjs(form.nextFollowupDate).format("YYYY-MM-DDTHH:mm:ss") : null,
           remark: form.notes,
           notes: form.notes,
           status: form.status,

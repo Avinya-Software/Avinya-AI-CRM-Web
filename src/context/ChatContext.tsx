@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { ChatMessage, AIRequest, AIResponse, DashboardPayload, AIFeedback } from "../interfaces/ai.interface";
 import { useAIChat, useAIFeedback } from "../hooks/ai/useAIChat";
-import { robustParseJson, parseDashboardPayload, generateMarkdownReport, normalizeChatData } from "../lib/chat-utils";
+import { robustParseJson, parseDashboardPayload, generateMarkdownReport, normalizeChatData, getErrorMessage } from "../lib/chat-utils";
 
 interface ChatContextType {
   messages: ChatMessage[];
@@ -175,7 +175,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           const aiMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
             role: "ai",
-            content: error.response?.data?.message || "Sorry, I encountered an error while processing your request.",
+            content: getErrorMessage(error),
             timestamp: new Date(),
           };
           setMessages((prev) => [...prev, aiMessage]);

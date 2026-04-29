@@ -115,6 +115,7 @@ const Clients = () => {
                     data={data?.data ?? []}
                     loading={isLoading}
                     onEdit={canEditClient ? handleEditClient : undefined}
+                    onDeleteSuccess={() => clientsMutation.mutate({ page: pageNumber, pageSize, search: debouncedSearchTerm })}
                 />
 
                 {/* PAGINATION */}
