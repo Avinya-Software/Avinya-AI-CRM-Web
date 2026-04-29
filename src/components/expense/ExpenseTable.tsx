@@ -13,7 +13,7 @@ import { useDeleteExpense } from "../../hooks/expense/useDeleteExpense";
 const DROPDOWN_WIDTH = 180;
 
 const statusStyles: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    unpaid: "bg-yellow-100 text-yellow-700 border-yellow-200",
     approved: "bg-green-100 text-green-700 border-green-200",
     rejected: "bg-red-100 text-red-600 border-red-200",
     paid: "bg-blue-100 text-blue-700 border-blue-200",
@@ -101,7 +101,7 @@ const ExpenseTable = ({ data = [], loading = false, onEdit }: Props) => {
                             </tr>
                         ) : (
                             data.map((exp) => {
-                                const statusKey = exp.status ? exp.status.toLowerCase() : "pending";
+                                const statusKey = exp.status ? exp.status.toLowerCase() : "unpaid";
 
                                 return (
                                     <tr

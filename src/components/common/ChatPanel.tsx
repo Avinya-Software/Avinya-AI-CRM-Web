@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Bot, Send, ExternalLink, X, TrendingUp, ChevronDown, ChevronUp, BarChart2, Clock, Hash, Coins, Zap, ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Mic, MicOff, Users, Mail, Phone, Activity } from "lucide-react";
+import { Bot, Send, ExternalLink, X, TrendingUp, ChevronDown, ChevronUp, BarChart2, Clock, Hash, Coins, Zap, ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Mic, MicOff, Users, Mail, Phone, Activity, Paperclip, FileImage } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useNavigate, useLocation } from "react-router-dom";
@@ -289,7 +289,8 @@ const ReportBreakdown = ({ breakdown }: { breakdown: Record<string, Record<strin
 // ─── Main ChatPanel ───────────────────────────────────────────────────────────
 
 export const ChatPanel = () => {
-  const { messages, input, setInput, isPending, sendMessage, sendFeedback, isOpen, setIsOpen, remainingCredits } = useChat();
+  const { messages, input, setInput, isPending, sendMessage, sendFeedback, isOpen, setIsOpen, remainingCredits, selectedFile, setSelectedFile } = useChat();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -336,8 +337,15 @@ export const ChatPanel = () => {
   }, [messages, isPending, isOpen]);
 
   const handleSend = () => {
-    if (!input.trim()) return;
-    sendMessage(input);
+    if (!input.trim() && !selectedFile) return;
+    sendMessage(input, selectedFile || undefined);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
   };
 
   const handleFeedback = (msgId: string, isGood: boolean) => {
@@ -609,23 +617,55 @@ export const ChatPanel = () => {
         )}
 
         {/* Input */}
-        <div className="p-4 border-t bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.03)] flex gap-2 shrink-0">
-          <Input
-            placeholder={isListening ? "Listening..." : "Ask me anything..."}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            disabled={isPending}
-            maxLength={800}
-            className="flex-1 border-slate-200 focus-visible:ring-emerald-500 rounded-xl bg-slate-50/50 h-11"
-          />
-          <Button
-            onClick={handleSend}
-            disabled={isPending || !input.trim()}
-            className="bg-slate-800 hover:bg-slate-700 shadow-lg rounded-xl h-11 w-11 p-0 transition-all hover:scale-105 active:scale-95 text-white"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+        <div className="p-4 border-t bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.03)] shrink-0">
+          {selectedFile && (
+            <div className="mb-2 flex items-center justify-between bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 animate-slideUp">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <FileImage className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                <span className="text-[10px] font-medium text-emerald-700 truncate">{selectedFile.name}</span>
+              </div>
+              <button 
+                onClick={() => setSelectedFile(null)}
+                className="text-emerald-400 hover:text-emerald-600 transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*,.pdf"
+              onChange={handleFileChange}
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              className="border-slate-200 hover:bg-slate-50 rounded-xl h-11 w-11 shrink-0 text-slate-400 hover:text-emerald-600"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isPending}
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            <Input
+              placeholder={isListening ? "Listening..." : "Ask me anything..."}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              disabled={isPending}
+              maxLength={800}
+              className="flex-1 border-slate-200 focus-visible:ring-emerald-500 rounded-xl bg-slate-50/50 h-11"
+            />
+            <Button
+              onClick={handleSend}
+              disabled={isPending || (!input.trim() && !selectedFile)}
+              className="bg-slate-800 hover:bg-slate-700 shadow-lg rounded-xl h-11 w-11 p-0 transition-all hover:scale-105 active:scale-95 text-white"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </>

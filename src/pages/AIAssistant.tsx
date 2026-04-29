@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Bot, Send, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash, Coins, Zap, Wallet, Briefcase, Users, LayoutDashboard, Calendar, ClipboardList, MapPin, Phone, Mail, FileText, IndianRupee, Activity, ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Mic, MicOff } from "lucide-react";
+import { Bot, Send, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash, Coins, Zap, Wallet, Briefcase, Users, LayoutDashboard, Calendar, ClipboardList, MapPin, Phone, Mail, FileText, IndianRupee, Activity, ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Mic, MicOff, Paperclip, FileImage, X } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import dayjs from "dayjs";
@@ -673,7 +673,8 @@ const SuggestionChips = ({ suggestions, onSelect }: { suggestions: string[]; onS
 // ─── Main AIAssistant ─────────────────────────────────────────────────────────
 
 const AIAssistant = () => {
-  const { messages, input, setInput, isPending, sendMessage, sendFeedback, remainingCredits } = useChat();
+  const { messages, input, setInput, isPending, sendMessage, sendFeedback, remainingCredits, selectedFile, setSelectedFile } = useChat();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [correctionMode, setCorrectionMode] = useState<string | null>(null);
   const [correctionText, setCorrectionText] = useState("");
@@ -722,8 +723,15 @@ const AIAssistant = () => {
   }, [messages, isPending]);
 
   const handleSend = () => {
-    if (!input.trim()) return;
-    sendMessage(input);
+    if (!input.trim() && !selectedFile) return;
+    sendMessage(input, selectedFile || undefined);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
   };
 
   const handleFeedback = (msgId: string, isGood: boolean) => {
@@ -979,34 +987,66 @@ const AIAssistant = () => {
 
       {/* INPUT AREA */}
       <div className="pb-8 px-6 bg-white shrink-0 border-t border-slate-100 pt-6">
-        <div className="max-w-5xl mx-auto flex gap-3">
-          <Button
-            onClick={toggleListening}
-            variant="outline"
-            className={cn(
-              "h-12 w-12 rounded-2xl flex items-center justify-center transition-all",
-              isListening ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse" : "bg-slate-50 border-slate-200 text-slate-400 hover:text-emerald-600"
-            )}
-            title={isListening ? "Stop listening" : "Start voice input"}
-          >
-            {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-          </Button>
-          <Input
-            placeholder={isListening ? "Listening..." : "Type your message here..."}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            disabled={isPending}
-            maxLength={800}
-            className="flex-1 h-12 bg-slate-50 border-slate-200 focus-visible:ring-emerald-500 shadow-sm text-base px-5 rounded-2xl"
-          />
-          <Button
-            onClick={handleSend}
-            disabled={isPending || !input.trim()}
-            className="h-12 w-12 bg-slate-800 hover:bg-slate-700 shadow-md rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 text-white"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
+        <div className="max-w-5xl mx-auto">
+          {selectedFile && (
+            <div className="mb-2 flex items-center justify-between bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 animate-slideUp">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <FileImage className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                <span className="text-[10px] font-bold text-emerald-700 truncate">{selectedFile.name}</span>
+              </div>
+              <button 
+                onClick={() => setSelectedFile(null)}
+                className="text-emerald-400 hover:text-emerald-600 transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+          <div className="flex gap-3">
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*,.pdf"
+              onChange={handleFileChange}
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-12 w-12 rounded-2xl bg-slate-50 border-slate-200 text-slate-400 hover:text-emerald-600 shrink-0"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isPending}
+            >
+              <Paperclip className="h-5 w-5" />
+            </Button>
+            <Button
+              onClick={toggleListening}
+              variant="outline"
+              className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center transition-all shrink-0",
+                isListening ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse" : "bg-slate-50 border-slate-200 text-slate-400 hover:text-emerald-600"
+              )}
+              title={isListening ? "Stop listening" : "Start voice input"}
+            >
+              {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            </Button>
+            <Input
+              placeholder={isListening ? "Listening..." : "Type your message here..."}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              disabled={isPending}
+              maxLength={800}
+              className="flex-1 h-12 bg-slate-50 border-slate-200 focus-visible:ring-emerald-500 shadow-sm text-base px-5 rounded-2xl"
+            />
+            <Button
+              onClick={handleSend}
+              disabled={isPending || (!input.trim() && !selectedFile)}
+              className="h-12 w-12 bg-slate-800 hover:bg-slate-700 shadow-md rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 text-white"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         
         {/* Remaining Credits Info */}

@@ -48,7 +48,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
         expenseType: "",
         amount: "" as number | string,
         description: "",
-        status: "pending",
+        status: "unpaid",
         remarks: "",
     };
 
@@ -78,7 +78,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                 expenseType: expense.expenseCategory?.categoryName ?? "",
                 amount: expense.amount ?? "",
                 description: expense.description ?? "",
-                status: expense.status ? expense.status.toLowerCase() : "pending",
+                status: expense.status ? expense.status.toLowerCase() : "unpaid",
                 remarks: expense.remarks ?? "",
             });
             
@@ -329,7 +329,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                                 value={form.status}
                                 onChange={(val) => setForm({ ...form, status: val })}
                             >
-                                <AntSelect.Option value="pending">Pending</AntSelect.Option>
+                                <AntSelect.Option value="unpaid">Unpaid</AntSelect.Option>
                                 <AntSelect.Option value="approved">Approved</AntSelect.Option>
                                 <AntSelect.Option value="rejected">Rejected</AntSelect.Option>
                                 <AntSelect.Option value="paid">Paid</AntSelect.Option>

@@ -9,11 +9,13 @@ interface ChatContextType {
   input: string;
   setInput: React.Dispatch<React.SetStateAction<string>>;
   isPending: boolean;
-  sendMessage: (content: string) => void;
+  sendMessage: (content: string, file?: File) => void;
   sendFeedback: (messageId: string, isGood: boolean, correction?: string) => Promise<void>;
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   remainingCredits: number | null;
+  selectedFile: File | null;
+  setSelectedFile: React.Dispatch<React.SetStateAction<File | null>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { mutate: mutateChat, isPending } = useAIChat();
   const { mutateAsync: mutateFeedback } = useAIFeedback();
 
@@ -137,18 +140,21 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const sendMessage = (content: string) => {
-    if (!content.trim()) return;
+  const sendMessage = (content: string, file?: File) => {
+    if (!content.trim() && !file) return;
+
+    const fileToUpload = file || selectedFile;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
-      content: content,
+      content: content || (fileToUpload ? "[Image Uploaded]" : ""),
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setSelectedFile(null);
 
     const history = messages.slice(-5).map(m => ({
       role: m.role === "ai" ? "assistant" as const : "user" as const,
@@ -156,7 +162,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }));
 
     mutateChat(
-      { message: content, history },
+      { message: content, history, receiptFile: fileToUpload || undefined },
       {
         onSuccess: (data: AIResponse) => {
           const aiMessage = parseAIResponse(data, content);
@@ -179,7 +185,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ChatContext.Provider value={{ messages, setMessages, input, setInput, isPending, sendMessage, sendFeedback, isOpen, setIsOpen, remainingCredits }}>
+    <ChatContext.Provider value={{ messages, setMessages, input, setInput, isPending, sendMessage, sendFeedback, isOpen, setIsOpen, remainingCredits, selectedFile, setSelectedFile }}>
       {children}
     </ChatContext.Provider>
   );

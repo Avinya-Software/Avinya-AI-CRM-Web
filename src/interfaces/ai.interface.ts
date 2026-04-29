@@ -6,6 +6,7 @@ export interface AIChatHistoryDto {
 export interface AIRequest {
   message: string;
   history?: AIChatHistoryDto[];
+  receiptFile?: File;
 }
 
 export interface AIResponse {
