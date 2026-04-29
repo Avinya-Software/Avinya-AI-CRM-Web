@@ -646,6 +646,7 @@ export const ChatPanel = () => {
               className="border-slate-200 hover:bg-slate-50 rounded-xl h-11 w-11 shrink-0 text-slate-400 hover:text-emerald-600"
               onClick={() => fileInputRef.current?.click()}
               disabled={isPending}
+              title="Upload receipt for expense creation"
             >
               <Paperclip className="h-4 w-4" />
             </Button>

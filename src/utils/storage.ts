@@ -17,4 +17,9 @@ export const storage = {
   getUserId: (): string | null => localStorage.getItem(`${storagePrefix}userId`),
   setUserId: (v: string): void => localStorage.setItem(`${storagePrefix}userId`, v),
   clearUserId: (): void => localStorage.removeItem(`${storagePrefix}userId`),
+
+  clearAll: (): void => {
+    localStorage.clear();
+    sessionStorage.clear();
+  }
 };

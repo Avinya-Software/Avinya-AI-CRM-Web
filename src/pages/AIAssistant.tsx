@@ -1016,6 +1016,7 @@ const AIAssistant = () => {
               className="h-12 w-12 rounded-2xl bg-slate-50 border-slate-200 text-slate-400 hover:text-emerald-600 shrink-0"
               onClick={() => fileInputRef.current?.click()}
               disabled={isPending}
+              title="Upload receipt for expense creation"
             >
               <Paperclip className="h-5 w-5" />
             </Button>

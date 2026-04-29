@@ -7,6 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useTheme } from "../../context/ThemeContext";
 import { registerAdvisorApi } from "../../api/advisor.api";
 import SEO from "../../components/common/SEO.tsx";
+import { storage } from "../../utils/storage";
 
 export default function Signup() {
   const { theme } = useTheme();
@@ -95,6 +96,9 @@ export default function Signup() {
     }
 
     setLoading(true);
+
+    // Clear existing storage to ensure no stale data interferes with the registration/session
+    storage.clearAll();
 
     try {
       const response = await registerAdvisorApi({

@@ -25,7 +25,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     {
       id: "1",
       role: "ai",
-      content: "Hello! I'm your Avinya AI CRM assistant. I can provide you with information and insights across all your data. You get 30 credits as free daily, for more please purchase. How can I help you today?",
+      content: "Hello! I'm your Avinya AI CRM assistant. I can provide you with information and insights across all your data. You get 30 credits as free daily, for more please purchase. How can I help you today?\n\nYou can create Leads, Tasks, and Expenses using AI. You can also give feedback if the AI gives a wrong response.",
       suggestions: [
         "Show my leads",
         "How is my business doing?",

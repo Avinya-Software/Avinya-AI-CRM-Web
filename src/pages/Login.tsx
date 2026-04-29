@@ -38,10 +38,7 @@ const Login = () => {
     if (!validate() || adminLoading) return;
 
     // Clear existing storage to ensure no stale data interferes with the login
-    storage.clearToken();
-    storage.clearUserId();
-    localStorage.removeItem("advisor");
-    localStorage.removeItem("isSuperAdmin");
+    storage.clearAll();
 
     loginAdmin(
       { email, password },
