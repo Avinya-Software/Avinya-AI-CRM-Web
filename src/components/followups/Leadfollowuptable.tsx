@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Eye, Plus, X } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import TableSkeleton from "../common/TableSkeleton";
 
@@ -43,6 +44,7 @@ const LeadFollowUpTable = ({
     onDelete,
 }: LeadFollowUpTableProps) => {
     const [openActionId, setOpenActionId] = useState<string | null>(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [style, setStyle] = useState({ top: 0, left: 0 });
 
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -73,6 +75,13 @@ const LeadFollowUpTable = ({
     const handleAction = (cb: () => void) => {
         setOpenActionId(null);
         setTimeout(cb, 0);
+    };
+
+    const handleDelete = () => {
+        if (confirmDeleteId) {
+            onDelete(confirmDeleteId);
+            setConfirmDeleteId(null);
+        }
     };
 
     return (
@@ -157,21 +166,70 @@ const LeadFollowUpTable = ({
                     className="fixed z-50 w-[200px] bg-white border rounded-lg shadow-lg overflow-hidden"
                     style={{ top: style.top, left: style.left }}
                 >
-                    <MenuItem
-                        label="Edit"
-                        onClick={() => handleAction(() => onEdit(openActionId))}
-                    />
+                    {(() => {
+                        const followUp = data.find(f => f.followUpID === openActionId);
+                        const isCompleted = followUp?.statusName === "Completed";
+                        return (
+                            <>
+                                {!isCompleted && (
+                                    <MenuItem
+                                        label="Edit"
+                                        onClick={() => handleAction(() => onEdit(openActionId))}
+                                    />
+                                )}
 
-                    <MenuItem
-                        label="View Details"
-                        onClick={() => handleAction(() => onView(openActionId))}
-                    />
+                                <MenuItem
+                                    label="View Details"
+                                    onClick={() => handleAction(() => onView(openActionId))}
+                                />
 
-                    <MenuItem
-                        label="Delete Lead Followup"
-                        danger
-                        onClick={() => handleAction(() => onDelete(openActionId))}
-                    />
+                                <MenuItem
+                                    label="Delete Lead Followup"
+                                    danger
+                                    onClick={() => handleAction(() => setConfirmDeleteId(openActionId))}
+                                />
+                            </>
+                        );
+                    })()}
+                </div>
+            )}
+            {/* DELETE CONFIRMATION MODAL */}
+            {confirmDeleteId && (
+                <div className="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center">
+                    <div className="bg-white rounded-lg w-[420px] p-6 shadow-xl">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-slate-900">Delete Follow-Up</h3>
+                            <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="p-1 hover:bg-slate-100 rounded-full transition"
+                            >
+                                <X size={18} className="text-slate-500" />
+                            </button>
+                        </div>
+
+                        <p className="text-sm text-slate-600 mb-6">
+                            Are you sure you want to delete this follow-up?
+                            <br />
+                            <span className="text-red-600 font-medium mt-1 inline-block">
+                                This action cannot be undone.
+                            </span>
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
@@ -191,22 +249,36 @@ const Td = ({ children }: any) => (
 );
 
 const MenuItem = ({
-    label,
-    onClick,
-    danger = false,
+  label,
+  onClick,
+  danger = false,
+  icon,
 }: {
-    label: string;
-    onClick: () => void;
-    danger?: boolean;
-}) => (
+  label: string;
+  onClick: () => void;
+  danger?: boolean;
+  icon?: React.ReactNode;
+}) => {
+  let displayIcon = icon;
+  if (!displayIcon) {
+    if (danger) displayIcon = <Trash2 size={14} />;
+    else if (label.toLowerCase().includes("edit")) displayIcon = <Edit2 size={14} className="text-slate-400" />;
+    else if (label.toLowerCase().includes("view")) displayIcon = <Eye size={14} className="text-slate-400" />;
+    else if (label.toLowerCase().includes("add") || label.toLowerCase().includes("create")) displayIcon = <Plus size={14} className="text-slate-400" />;
+  }
+
+  return (
     <button
-        onClick={(e) => {
-            e.stopPropagation();
-            onClick();
-        }}
-        className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50" : ""
-            }`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${
+        danger ? "text-red-600 hover:bg-red-50 font-medium" : "text-slate-700"
+      }`}
     >
-        {label}
+      {displayIcon}
+      <span className="flex-1">{label}</span>
     </button>
-);
+  );
+};

@@ -98,7 +98,11 @@ const Orders = () => {
 
   const handleDeleteOrder = (order: Order) => {
     if (!canDeleteOrder) return; // ✅ protection
-    deleteMutation.mutate(order.orderID);
+    deleteMutation.mutate(order.orderID, {
+      onSuccess: () => {
+        ordersMutation.mutate(filters);
+      }
+    });
   };
 
   const handleCreateInvoice = (order: Order) => {
@@ -287,6 +291,7 @@ const Orders = () => {
           setSelectedOrder(null);
         }}
         order={selectedOrder}
+        onSuccess={() => ordersMutation.mutate(filters)}
       />
 
       {/* INVOICE UPSERT SHEET */}

@@ -25,20 +25,6 @@ const STATUS_STYLE: Record<number, string> = {
   5: "bg-purple-100 text-red-700"
 };
 
-const DESIGN_STATUS_LABEL: Record<number, string> = {
-  0: "Pending",
-  1: "In Progress",
-  2: "Approved by Customer",
-  3: "Rejected",
-};
-
-const DESIGN_STATUS_STYLE: Record<number, string> = {
-  1: "bg-yellow-100 text-yellow-700",
-  2: "bg-blue-100 text-blue-700",
-  3: "bg-green-100 text-green-700",
-  4: "bg-red-100 text-red-700",
-};
-
 const Field = ({ label, value }: { label: string; value?: React.ReactNode }) => (
   <div>
     <p className="text-xs text-slate-500 mb-0.5">{label}</p>
@@ -88,10 +74,7 @@ const OrderViewSheet = ({ open, onClose, order, onEdit }: Props) => {
                   <h3 className="text-xl font-bold text-slate-800">{order.orderNo ?? "—"}</h3>
                   <div className="flex flex-col gap-1 items-end">
                     <span className={`px-3 py-0.5 rounded text-xs font-medium ${STATUS_STYLE[order.status ?? 0]}`}>
-                      Order: {order.statusName}
-                    </span>
-                    <span className={`px-3 py-0.5 rounded text-xs font-medium ${DESIGN_STATUS_STYLE[order.designStatus ?? 0]}`}>
-                      Design: {order.designStatusName}
+                       {order.statusName}
                     </span>
                   </div>
                 </div>
@@ -115,7 +98,6 @@ const OrderViewSheet = ({ open, onClose, order, onEdit }: Props) => {
                         ? new Date(order.expectedDeliveryDate).toLocaleDateString("en-IN")
                         : "—"}
                     />
-                    <Field label="Design By Us" value={order.isDesignByUs ? "Yes" : "No"} />
                     <Field label="Created By" value={order.createdByName} />
                     <Field label="Billing Address" value={order.billAddress ?? "-"} />
                     {!order.isUseBillingAddress && (

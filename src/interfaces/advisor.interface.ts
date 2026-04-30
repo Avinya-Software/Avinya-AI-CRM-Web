@@ -3,7 +3,7 @@
 export interface AdvisorRegisterRequest {
   fullName: string; 
   companyName: string;
-  mobileNumber: string;
+  companyPhone: string;
   email: string;
   password: string;
 }
@@ -18,7 +18,7 @@ export interface AdvisorLoginRequest {
 export interface AdvisorLoginResponse {
   advisorId: string;
   fullName: string;
-  mobileNumber: string;
+  companyPhone: string;
   email: string;
   token: string;
   expiresAt: string;

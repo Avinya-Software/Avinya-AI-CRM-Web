@@ -20,7 +20,7 @@ import { Settings } from "../../interfaces/setting.interface";
 import { Tenant } from "../../interfaces/tenant.interface";
 import { BankDetails } from "../../interfaces/bankDetail.interface";
 import { cn } from "../../lib/utils";
-import { Trash2, Plus, RefreshCw, X } from "lucide-react";
+import { Trash2, Plus, RefreshCw, X, Info } from "lucide-react";
 
 interface SettingsModalProps {
   open: boolean;
@@ -186,7 +186,7 @@ export const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                           <CardContent className="p-6 flex items-center justify-between">
                             <div className="space-y-1">
                               <h3 className="text-base font-bold text-slate-800">Enable Payment QR</h3>
-                              <p className="text-sm text-slate-500 font-medium">Enable QR payments for all firms</p>
+                              <p className="text-sm text-slate-500 font-medium">Enable QR payments will show in invoice pdf</p>
                             </div>
                             <Switch 
                               checked={isQrEnabled}
@@ -639,6 +639,19 @@ const BankDetailsTab = ({ enabled }: { enabled: boolean }) => {
     )}
 
     <div className="space-y-8 max-w-4xl mx-auto pb-20">
+      {/* Policy Notice */}
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+          <Info className="w-6 h-6 text-blue-600" />
+        </div>
+        <div>
+          <h4 className="text-sm font-bold text-blue-900">Invoice Display Policy</h4>
+          <p className="text-xs text-blue-700 mt-1 leading-relaxed font-medium">
+            To maintain a professional layout, only the first <span className="font-bold underline">two active bank accounts</span> will be automatically included in your generated invoice PDFs.
+          </p>
+        </div>
+      </div>
+
       <div className="flex justify-end">
         <Button
           onClick={handleAddBank}

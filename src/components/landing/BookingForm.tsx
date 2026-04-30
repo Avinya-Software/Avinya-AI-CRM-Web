@@ -13,7 +13,7 @@ const schema = z.object({
   fullName: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email address"),
   company: z.string().min(2, "Company name is required"),
-  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits").max(10, "Phone number cannot exceed 10 digits"),
   message: z.string().optional(),
 });
 

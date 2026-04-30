@@ -226,30 +226,34 @@ const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
           <Field label="Default Rate" required error={errors.defaultRate}>
             <input
               type="number"
+              step="any"
               placeholder="0.00"
               className={`input w-full ${errors.defaultRate ? "border-red-500" : ""}`}
               value={form.defaultRate}
-              onChange={(e) =>
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
                 setForm({
                   ...form,
-                  defaultRate: e.target.value === "" ? "" : Number(e.target.value),
-                })
-              }
+                  defaultRate: isNaN(val) ? "" : Number(val.toFixed(2)),
+                });
+              }}
             />
           </Field>
 
           <Field label="Purchase Price" required error={errors.purchasePrice}>
             <input
               type="number"
+              step="any"
               placeholder="0.00"
               className={`input w-full ${errors.purchasePrice ? "border-red-500" : ""}`}
               value={form.purchasePrice}
-              onChange={(e) =>
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
                 setForm({
                   ...form,
-                  purchasePrice: e.target.value === "" ? "" : Number(e.target.value),
-                })
-              }
+                  purchasePrice: isNaN(val) ? "" : Number(val.toFixed(2)),
+                });
+              }}
             />
           </Field>
         </div>

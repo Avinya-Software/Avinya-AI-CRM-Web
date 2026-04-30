@@ -51,9 +51,7 @@ const LeadFollowUpBottomSheet = ({
   });
 
   const handleDelete = (followUpId: string) => {
-    if (confirm("Are you sure you want to delete this follow-up?")) {
-      deleteFollowUp(followUpId);
-    }
+    deleteFollowUp(followUpId);
   };
 
   const handleMarkComplete = (followUpId: string) => {

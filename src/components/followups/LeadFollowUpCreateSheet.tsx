@@ -72,9 +72,9 @@ const LeadFollowUpCreateSheet = ({
           status: followUpData.status || 1,
         });
       } else {
-        const today = dayjs().format("YYYY-MM-DD");
+        const now = dayjs().format("YYYY-MM-DDTHH:mm");
         setFormData({
-          followUpDate: today,
+          followUpDate: now,
           notes: "",
           nextFollowupDate: "",
           followUpBy: "",
@@ -103,6 +103,9 @@ const LeadFollowUpCreateSheet = ({
 
     if (!formData.followUpBy)
       newErrors.followUpBy = "Follow-up by is required";
+
+    if (!formData.nextFollowupDate)
+      newErrors.nextFollowupDate = "Next follow-up date is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -183,25 +186,7 @@ const LeadFollowUpCreateSheet = ({
             </div>
           )}
 
-          {!isEditMode && (
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Follow-Up Date <span className="text-red-500">*</span>
-              </label>
-              <DatePicker
-                className={`w-full h-10 rounded-lg ${errors.followUpDate ? "border-red-500" : "border-slate-300"}`}
-                format="YYYY-MM-DD"
-                placeholder="Select follow-up date"
-                value={formData.followUpDate ? dayjs(formData.followUpDate) : null}
-                onChange={(date, dateString) =>
-                  setFormData({ ...formData, followUpDate: Array.isArray(dateString) ? dateString[0] : dateString })
-                }
-              />
-              {errors.followUpDate && (
-                <p className="text-red-500 text-xs mt-1">{errors.followUpDate}</p>
-              )}
-            </div>
-          )}
+
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -224,18 +209,22 @@ const LeadFollowUpCreateSheet = ({
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Next Follow-Up Date
+              Next Follow-Up Date <span className="text-red-500">*</span>
             </label>
             <DatePicker
-              className="w-full h-10 border-slate-300 rounded-lg"
-              format="YYYY-MM-DD"
-              placeholder="Select next follow-up date"
+              showTime
+              className={`w-full h-10 rounded-lg ${errors.nextFollowupDate ? "border-red-500" : "border-slate-300"}`}
+              format="YYYY-MM-DD HH:mm"
+              placeholder="Select next follow-up date & time"
               value={formData.nextFollowupDate ? dayjs(formData.nextFollowupDate) : null}
-              onChange={(date, dateString) =>
-                setFormData({ ...formData, nextFollowupDate: Array.isArray(dateString) ? dateString[0] : dateString })
+              onChange={(date) =>
+                setFormData({ ...formData, nextFollowupDate: date ? date.format("YYYY-MM-DDTHH:mm") : "" })
               }
               disabledDate={(current) => current && current < dayjs().startOf('day')}
             />
+            {errors.nextFollowupDate && (
+              <p className="text-red-500 text-xs mt-1">{errors.nextFollowupDate}</p>
+            )}
           </div>
 
           {isEditMode && (
@@ -268,11 +257,13 @@ const LeadFollowUpCreateSheet = ({
             </label>
             <AntSelect
               showSearch
-              value={formData.followUpBy || undefined}
+              value={usersDropdownMutation.isPending ? undefined : (formData.followUpBy || undefined)}
               onChange={(val) => setFormData({ ...formData, followUpBy: val })}
-              className={`w-full h-10 ${errors.followUpBy ? "ant-select-error" : ""}`}
-              placeholder="Select employee"
+              className={`w-full h-10 rounded-lg ${errors.followUpBy ? "border-red-500" : "border-slate-300"}`}
+              placeholder={usersDropdownMutation.isPending ? "Loading employees..." : "Select employee"}
               optionFilterProp="children"
+              loading={usersDropdownMutation.isPending}
+              disabled={usersDropdownMutation.isPending}
             >
               {employees?.map((emp: any) => (
                 <AntSelect.Option key={emp.id} value={emp.id}>

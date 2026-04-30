@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { MoreVertical, X } from "lucide-react";
+import { MoreVertical, X, Eye, Plus } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 import type { Project } from "../../interfaces/project.interface";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import TableSkeleton from "../common/TableSkeleton";
@@ -277,18 +278,33 @@ const MenuItem = ({
   label,
   onClick,
   danger = false,
+  icon,
 }: {
   label: string;
   onClick: () => void;
   danger?: boolean;
-}) => (
-  <button
-    onClick={onClick}
-    className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-slate-100 ${
-      danger ? "text-red-600 hover:bg-red-50" : ""
-    }`}
-  >
-    {danger && <X size={14} />}
-    {label}
-  </button>
-);
+  icon?: React.ReactNode;
+}) => {
+  let displayIcon = icon;
+  if (!displayIcon) {
+    if (danger) displayIcon = <Trash2 size={14} />;
+    else if (label.toLowerCase().includes("edit")) displayIcon = <Edit2 size={14} className="text-slate-400" />;
+    else if (label.toLowerCase().includes("view")) displayIcon = <Eye size={14} className="text-slate-400" />;
+    else if (label.toLowerCase().includes("add") || label.toLowerCase().includes("create")) displayIcon = <Plus size={14} className="text-slate-400" />;
+  }
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${
+        danger ? "text-red-600 hover:bg-red-50 font-medium" : "text-slate-700"
+      }`}
+    >
+      {displayIcon}
+      <span className="flex-1">{label}</span>
+    </button>
+  );
+};

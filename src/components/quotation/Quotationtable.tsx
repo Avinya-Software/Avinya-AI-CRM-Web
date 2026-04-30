@@ -1,7 +1,8 @@
 // src/components/quotations/QuotationTable.tsx
 import { useState, useRef } from "react";
 import dayjs from "dayjs";
-import { MoreVertical, X, Eye, FileText, Loader2 } from "lucide-react";
+import { MoreVertical, X, Eye, FileText, Loader2, Plus, CheckCircle2, XCircle } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import TableSkeleton from "../common/TableSkeleton";
 import type { Quotation } from "../../interfaces/quotation.interface";
@@ -9,6 +10,9 @@ import { useDeleteQuotation } from "../../hooks/quotation/Usequotationmutations 
 import { usePermissions } from "../../context/PermissionContext";
 import { downloadQuotationPdf } from "../../api/Quotation.api";
 import { toast } from "react-hot-toast";
+import { useUpdateQuotation } from "../../hooks/quotation/Usequotationmutations ";
+import { useQuotationStatusDropdown } from "../../hooks/quotation/useQuotations";
+import { QuotationStatusDropdownItem } from "../../interfaces/quotation.interface";
 
 // Re-calculate based on fewer items (4 items + divider)
 const DROPDOWN_HEIGHT = 180;
@@ -53,6 +57,8 @@ const QuotationTable = ({
   useOutsideClick(dropdownRef, () => setOpenQuotation(null));
 
   const { mutate: deleteQuotation, isPending: isDeleting } = useDeleteQuotation();
+  const { mutate: updateQuotation } = useUpdateQuotation();
+  const { data: statusData = [] } = useQuotationStatusDropdown();
 
   const openDropdown = (e: React.MouseEvent<HTMLButtonElement>, quotation: Quotation) => {
     e.stopPropagation();
@@ -110,12 +116,38 @@ const QuotationTable = ({
     }
   };
 
+  const handleStatusUpdate = (quotation: Quotation, statusName: string) => {
+    const status = (statusData as QuotationStatusDropdownItem[]).find(
+      (s) => s.statusName === statusName
+    );
+
+    if (!status) {
+      toast.error(`Status "${statusName}" not found`);
+      return;
+    }
+
+    const payload = {
+      ...quotation,
+      status: status.quotationStatusID,
+      items: quotation.items.map(item => ({
+          ...item,
+          taxCategoryID: item.taxCategoryID || null
+      }))
+    };
+
+    updateQuotation({
+      id: quotation.quotationID,
+      data: payload as any
+    });
+  };
+
   return (
     <div className="relative overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead className="bg-slate-100 sticky top-0 z-10">
           <tr>
             <Th>Quotation No</Th>
+            <Th>Lead No</Th>
             <Th>Company Name</Th>
             <Th>Quotation Date</Th>
             <Th>Valid Till</Th>
@@ -127,12 +159,12 @@ const QuotationTable = ({
         </thead>
 
         {loading ? (
-          <TableSkeleton rows={6} columns={8} />
+          <TableSkeleton rows={6} columns={9} />
         ) : (
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-slate-500">
+                <td colSpan={9} className="text-center py-12 text-slate-500">
                   No quotations found
                 </td>
               </tr>
@@ -144,6 +176,13 @@ const QuotationTable = ({
                   onClick={() => onView(quotation)}
                 >
                   <Td>{quotation.quotationNo || "-"}</Td>
+                  <Td>
+                    {quotation.leadNo ? (
+                      <span>{quotation.leadNo}</span>
+                    ) : (
+                      <span>-</span>
+                    )}
+                  </Td>
                   <Td>{quotation.companyName || "-"}</Td>
                   <Td>{dayjs(quotation.quotationDate).format("DD/MM/YYYY")}</Td>
                   <Td>{dayjs(quotation.validTill).format("DD/MM/YYYY")}</Td>
@@ -219,9 +258,24 @@ const QuotationTable = ({
               />
             )}
 
+          {openQuotation.statusName === "Sent" && (
+            <>
+              <MenuItem
+                label="Accept"
+                icon={<CheckCircle2 size={14} className="text-emerald-500" />}
+                onClick={() => handleAction(() => handleStatusUpdate(openQuotation, "Accepted"))}
+              />
+              <MenuItem
+                label="Reject"
+                icon={<XCircle size={14} className="text-red-500" />}
+                onClick={() => handleAction(() => handleStatusUpdate(openQuotation, "Rejected"))}
+              />
+            </>
+          )}
+
           <MenuItem
-            label="Reject"
-            onClick={() => handleAction(() => console.log("Reject"))}
+            label="View"
+            onClick={() => handleAction(() => onView(openQuotation))}
           />
 
           {canDelete && (
@@ -300,20 +354,33 @@ const MenuItem = ({
   label,
   onClick,
   danger = false,
+  icon,
 }: {
   label: string;
   onClick: () => void;
   danger?: boolean;
-}) => (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      onClick();
-    }}
-    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${danger ? "text-red-600 hover:bg-red-50 font-medium" : ""
+  icon?: React.ReactNode;
+}) => {
+  let displayIcon = icon;
+  if (!displayIcon) {
+    if (danger) displayIcon = <Trash2 size={14} />;
+    else if (label.toLowerCase().includes("edit")) displayIcon = <Edit2 size={14} className="text-slate-400" />;
+    else if (label.toLowerCase().includes("view")) displayIcon = <Eye size={14} className="text-slate-400" />;
+    else if (label.toLowerCase().includes("add") || label.toLowerCase().includes("create")) displayIcon = <Plus size={14} className="text-slate-400" />;
+  }
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-100 ${
+        danger ? "text-red-600 hover:bg-red-50 font-medium" : "text-slate-700"
       }`}
-  >
-    {danger && <X size={14} />}
-    {label}
-  </button>
-);
+    >
+      {displayIcon}
+      <span className="flex-1">{label}</span>
+    </button>
+  );
+};

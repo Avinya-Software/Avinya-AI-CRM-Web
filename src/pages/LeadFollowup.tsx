@@ -64,11 +64,9 @@ const LeadFollowup = () => {
     };
 
     const handleDelete = (id: string) => {
-        if (confirm("Delete this follow-up?")) {
-            deleteFollowUp(id, {
-                onSuccess: () => { if (leadId) followUpsMutation.mutate(leadId); },
-            });
-        }
+        deleteFollowUp(id, {
+            onSuccess: () => { if (leadId) followUpsMutation.mutate(leadId); },
+        });
     };
 
     return (

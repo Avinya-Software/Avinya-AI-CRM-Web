@@ -1,8 +1,6 @@
 // src/App.tsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
 import Admin from "./pages/Admin";
-import Register from "./pages/Register";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import AppLayout from "./layout/AppLayout";
 import { Toaster } from "react-hot-toast";
@@ -63,7 +61,6 @@ function App() {
             {/* <Route path="/pricing" element={<Pricing />} /> */}
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Loginai />} />
-            <Route path="/register" element={<Register />} />
           </Route>
 
 

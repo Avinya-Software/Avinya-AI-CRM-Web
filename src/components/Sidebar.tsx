@@ -224,15 +224,10 @@ const Sidebar = () => {
         }`}
     >
       {/* HEADER */}
-      <div className="px-6 py-5 border-b border-slate-800 flex justify-between">
+      <div className="px-6 py-3 border-b border-slate-800 flex justify-between items-center overflow-visible">
         {!isCollapsed && (
-          <div className="transition-all duration-300">
-            <p className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-              Avinya
-            </p>
-            <p className="text-[10px] text-emerald-500 font-bold tracking-widest uppercase">
-              AI CRM
-            </p>
+          <div className="transition-all duration-300 flex items-center">
+            <img src="/Images/dark-logo.png" alt="Avinya Logo" className="h-10 w-auto object-contain scale-[2.2] origin-left" />
           </div>
         )}
 
@@ -245,7 +240,7 @@ const Sidebar = () => {
       </div>
 
       {/* NAV */}
-      <nav className="flex-1 px-4 py-6 overflow-y-auto sidebar-scroll">
+      <nav className="flex-1 px-4 py-2 pb-6 overflow-y-auto sidebar-scroll">
         <style>{`
           .sidebar-scroll::-webkit-scrollbar {
             width: 5px;
@@ -326,13 +321,14 @@ const Sidebar = () => {
                             <NavItem
                               key={item.moduleKey}
                               to={`/${item.moduleKey}s`}
-                              icon={<Icon size={18} />}
+                              icon={<Icon size={16} />}
                               label={
                                 item.moduleKey === "client"
                                   ? "Customers"
                                   : item.moduleName
                               }
                               isCollapsed={isCollapsed}
+                              isSubItem={true}
                             />
                           );
                         })}
@@ -425,11 +421,12 @@ const Sidebar = () => {
 };
 
 
-const NavItem = ({ to, icon, label, isCollapsed }: any) => (
+const NavItem = ({ to, icon, label, isCollapsed, isSubItem = false }: any) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
-      `relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-300 ${isCollapsed ? "justify-center" : ""
+      `relative flex items-center gap-3 py-2.5 rounded-lg text-sm transition-all duration-300 ${
+        isCollapsed ? "justify-center px-4" : (isSubItem ? "pl-11 pr-4" : "px-4")
       } ${isActive
         ? "bg-slate-800/60 text-emerald-400 font-semibold shadow-sm"
         : "text-slate-400 hover:text-emerald-500 hover:bg-slate-800/30"
@@ -444,7 +441,7 @@ const NavItem = ({ to, icon, label, isCollapsed }: any) => (
         <div className={`transition-colors duration-300 ${isActive ? "text-emerald-400" : ""}`}>
           {icon}
         </div>
-        {!isCollapsed && <span>{label}</span>}
+        {!isCollapsed && <span className={isSubItem ? "text-[13px]" : ""}>{label}</span>}
       </>
     )}
   </NavLink>

@@ -42,7 +42,7 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
     const [formData, setFormData] = useState<UserUpsertRequest>({
         fullName: "",
         email: "",
-        role: "User",
+        role: "",
         tenantId: isSuperAdmin ? "" : (currentUser?.tenantId || ""),
         isActive: true,
         password: "Default@123",
@@ -55,7 +55,6 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
     const rolesMutation = useRoles();
     const allRoles = rolesMutation.data ?? [];
 
-    // Filter roles: Admins cannot add SuperAdmins
     const availableRoles = allRoles.filter(role => {
         if (isAdmin && !isSuperAdmin) {
             return role.id !== "ROLE_SUPERADMIN" && role.name !== "SuperAdmin";
@@ -89,7 +88,7 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
             setFormData({
                 fullName: "",
                 email: "",
-                role: "User",
+                role: "",
                 tenantId: isSuperAdmin ? "" : (currentUser?.tenantId || ""),
                 isActive: true,
                 password: "Default@123",
@@ -153,7 +152,7 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
         setFormData({
             fullName: "",
             email: "",
-            role: "User",
+            role: "",
             tenantId: isSuperAdmin ? "" : (currentUser?.tenantId || ""),
             isActive: true,
             password: "Default@123",

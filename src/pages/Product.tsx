@@ -127,6 +127,7 @@ const Products = () => {
           data={products}
           loading={isLoading}
           onEdit={canUpdate ? handleEdit : () => { }} // ✅ Protected
+          onSuccess={handleSuccess}
         />
 
         {/* PAGINATION */}

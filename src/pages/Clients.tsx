@@ -54,10 +54,10 @@ const Clients = () => {
         setOpenClientSheet(true);
     };
 
-    const handleClientSuccess = () => {
+    const handleClientSuccess = (message?: string) => {
         setOpenClientSheet(false);
         clientsMutation.mutate({ page: pageNumber, pageSize, search: debouncedSearchTerm });
-        toast.success("Customer saved successfully!");
+        toast.success(message || "Customer saved successfully!");
     };
 
     return (

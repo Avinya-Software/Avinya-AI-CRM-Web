@@ -178,14 +178,14 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
         setForm((prev) => ({
           ...prev,
           customerId: customerId,
-          companyName:customer.companyName||"",
+          companyName: customer.companyName || "",
           fullName: customer.contactPerson || "",
           email: customer.email || "",
           mobile: customer.mobileNumber || "",
           gstNo: customer.gstNo || "",
           address: customer.billAddress || "",
           cityId: customer.cityID?.toString() ?? "",
-          StateID:customer.stateID?.toString()??"",
+          StateID: customer.stateID?.toString() ?? "",
 
         }));
 
@@ -375,7 +375,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
               required
               value={form.mobile}
               error={errors.mobile}
-              onChange={(v: any) => setForm({ ...form, mobile: v })}
+              onChange={(v: any) => setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })}
               disabled={isReadOnly}
             />
             <Input
@@ -426,19 +426,19 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
             </div>
 
             {/* Conditionally show Other Sources text area */}
-            {Array.isArray(sources) && 
-             sources.find(s => String(s.id) === form.leadSourceId)?.name?.toLowerCase() === "other sources" && (
-              <div className="col-span-2">
-                <Textarea
-                  label="Other Source Details"
-                  required
-                  value={form.otherSources}
-                  onChange={(v: any) => setForm({ ...form, otherSources: v })}
-                  disabled={isReadOnly}
-                  placeholder="Please specify the source details..."
-                />
-              </div>
-            )}
+            {Array.isArray(sources) &&
+              sources.find(s => String(s.id) === form.leadSourceId)?.name?.toLowerCase() === "other sources" && (
+                <div className="col-span-2">
+                  <Textarea
+                    label="Other Source Details"
+                    required
+                    value={form.otherSources}
+                    onChange={(v: any) => setForm({ ...form, otherSources: v })}
+                    disabled={isReadOnly}
+                    placeholder="Please specify the source details..."
+                  />
+                </div>
+              )}
 
             {/* Assigned To — full width */}
             <div className="col-span-2">
@@ -480,14 +480,14 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
               onChange={(v: any) => setForm({ ...form, links: v })}
               disabled={isReadOnly}
             />
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-slate-600 mb-1">
+            <div>
+              <label className="text-xs font-semibold text-slate-600 mb-1 block">
                 Next Follow-up Date {!isEdit && <span className="text-red-500">*</span>}
               </label>
               <DatePicker
                 showTime
                 format="YYYY-MM-DD HH:mm"
-                className={`w-full h-10 rounded-lg border-slate-200 ${errors.nextFollowupDate ? "border-red-400" : ""}`}
+                className={`input w-full rounded-lg border-slate-200 ${errors.nextFollowupDate ? "border-red-400" : ""}`}
                 placeholder="Select date & time"
                 value={form.nextFollowupDate ? dayjs(form.nextFollowupDate) : null}
                 onChange={(date, dateString) =>

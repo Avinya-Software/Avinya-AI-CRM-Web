@@ -152,7 +152,6 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
         },
         {
           onSuccess: (res) => {
-            toast.success(res?.statusMessage || "Follow-up added successfully");
             queryClient.invalidateQueries({ queryKey: ["lead-detail", leadID] });
             queryClient.invalidateQueries({ queryKey: ["leads"] });
             onSuccess();
@@ -257,7 +256,10 @@ const AddFollowUpForm = ({ leadID, onSuccess, onCancel, editData, }: AddFollowUp
               {editData ? "Updating..." : "Saving..."}
             </>
           ) : (
-            editData ? "Update Follow-up" : "Save Follow-up"
+            <>
+            <Save size={16} />
+            {editData ? "Update Follow-up" : "Save Follow-up"}
+            </>
           )}
         </button>
       </div>
@@ -456,8 +458,19 @@ const LeadDetailSheet = ({
                         Requirement
                       </p>
                       {data.requirementDetails && (
-                        <div className="border border-slate-100 rounded-xl px-4 py-3 bg-slate-50 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-                          {data.requirementDetails}
+                        <div className="mb-4">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Requirement Details</p>
+                          <div className="border border-slate-100 rounded-xl px-4 py-3 bg-slate-50 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                            {data.requirementDetails}
+                          </div>
+                        </div>
+                      )}
+                      {data.notes && (
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Notes</p>
+                          <div className="border border-blue-50 border-dashed rounded-xl px-4 py-3 bg-blue-50/30 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                            {data.notes}
+                          </div>
                         </div>
                       )}
                     </div>

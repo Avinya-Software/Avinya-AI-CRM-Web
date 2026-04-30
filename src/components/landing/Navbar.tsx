@@ -37,13 +37,13 @@ export default function Navbar() {
     <motion.nav 
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-20 md:px-12 backdrop-blur-md border-b border-black/5 dark:border-white/5 bg-white/20 dark:bg-black/20 transition-colors duration-500"
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-20 md:px-12 backdrop-blur-md bg-white/20 dark:bg-black/20 transition-colors duration-500"
     >
-      <Link to="/" className="flex items-center gap-2">
+      <Link to="/" className="flex items-center gap-2 relative h-full w-48">
         <img 
           src={theme === 'dark' ? '/Images/dark-logo.png' : '/Images/light-logo.png'} 
           alt="Avinya Logo" 
-          className="h-20 w-auto"
+          className="h-32 w-auto absolute top-1/2 -translate-y-1/2 left-0 object-contain"
         />
       </Link>
 

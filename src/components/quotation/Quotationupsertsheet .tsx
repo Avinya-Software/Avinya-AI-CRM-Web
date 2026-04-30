@@ -156,7 +156,7 @@ const QuotationUpsertSheet = ({
                             quantity: item.quantity || 1,
                             unitPrice: item.unitPrice || 0,
                             taxCategoryID: item.taxCategoryID || "",
-                            unitType: matchedProduct?.unitName || "", // ✅ FIX HERE
+                            unitType: matchedProduct?.unitName || "",
                         };
                     })
                 );
@@ -166,13 +166,15 @@ const QuotationUpsertSheet = ({
             const validTill = new Date();
             validTill.setDate(validTill.getDate() + 15);
 
+            const sentStatus = (statusData as QuotationStatusDropdownItem[]).find(s => s.statusName === "Sent");
+
             setFormData(prev => ({
                 ...prev,
                 clientID: clientID || "",
                 leadID: leadID || null,
                 quotationDate: dayjs().format("YYYY-MM-DD"),
                 validTill: dayjs(validTill).format("YYYY-MM-DD"),
-                status: "",
+                status: sentStatus?.quotationStatusID || "",
                 firmID: 1,
                 rejectedNotes: "",
                 enableTax: true,
@@ -191,14 +193,14 @@ const QuotationUpsertSheet = ({
         }
 
         setErrors({});
-    }, [quotation, open, leadID, clientID]);
+    }, [quotation, open, leadID, clientID, statusData]);
 
     // ---------- Validation ----------
     const validate = () => {
         const newErrors: Record<string, string> = {};
         if (!formData.clientID) newErrors.clientID = "Company is required";
         if (!formData.validTill) newErrors.validTill = "Valid till is required";
-        
+
         const hasEmptyProduct = productItems.some(i => !i.productID);
         if (hasEmptyProduct) newErrors.items = "All product rows must have a product selected";
 
@@ -321,7 +323,7 @@ const QuotationUpsertSheet = ({
                     ? {
                         ...item,
                         productID: selected.productID,
-                        description: selected.description || selected.productName || "",
+                        description: selected.description || "",
                         unitType: selected.unitName != null ? String(selected.unitName) : "",
                         unitPrice: selected.defaultRate || 0,
                         taxCategoryID: selected.taxCategoryID || "",
@@ -340,9 +342,9 @@ const QuotationUpsertSheet = ({
                         ? {
                             ...item,
                             productID: newProduct.productID,
-                            description: newProduct.description || newProduct.productName || "",
+                            description: "",
                             unitType: newProduct.unitName != null ? String(newProduct.unitName) : "",
-                            unitPrice: newProduct.defaultRate || 0,
+                            unitPrice: 0,
                             taxCategoryID: newProduct.taxCategoryID || "",
                         }
                         : item
@@ -394,7 +396,7 @@ const QuotationUpsertSheet = ({
                                 showSearch
                                 value={formData.clientID || undefined}
                                 onChange={(val) => setFormData({ ...formData, clientID: val })}
-                                disabled={isEdit}
+                                disabled={!!formData.leadID}
                                 className={`w-full h-10 ${errors.clientID ? "ant-select-error" : ""}`}
                                 placeholder="Select Company"
                                 optionFilterProp="children"
@@ -412,33 +414,56 @@ const QuotationUpsertSheet = ({
                             <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Quotation Date
                             </label>
-                            <DatePicker
-                                className="w-full h-10 border-slate-300 rounded-lg"
-                                format="YYYY-MM-DD"
-                                placeholder="Select quotation date"
-                                value={formData.quotationDate ? dayjs(formData.quotationDate) : null}
-                                onChange={(date, dateString) =>
-                                    setFormData({ ...formData, quotationDate: Array.isArray(dateString) ? dateString[0] : dateString })
-                                }
+                            <input
+                                type="text"
+                                readOnly
+                                value={formData.quotationDate ? dayjs(formData.quotationDate).format("DD/MM/YYYY") : "-"}
+                                className="w-full h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-500 text-sm cursor-not-allowed focus:outline-none"
                             />
                         </div>
                     </div>
 
-                    {/* Valid Till */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                            Valid Till
-                        </label>
-                        <DatePicker
-                            className={`w-full h-10 rounded-lg ${errors.validTill ? "border-red-500" : "border-slate-300"}`}
-                            format="YYYY-MM-DD"
-                            placeholder="Select valid till date"
-                            value={formData.validTill ? dayjs(formData.validTill) : null}
-                            onChange={(date, dateString) =>
-                                setFormData({ ...formData, validTill: Array.isArray(dateString) ? dateString[0] : dateString })
-                            }
-                        />
-                        {errors.validTill && <p className="text-red-500 text-xs mt-1">{errors.validTill}</p>}
+                    {/* Row: Valid Till + Status (Status edit only) */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Valid Till
+                            </label>
+                            <DatePicker
+                                className={`w-full h-10 rounded-lg ${errors.validTill ? "border-red-500" : "border-slate-300"}`}
+                                format="YYYY-MM-DD"
+                                placeholder="Select valid till date"
+                                value={formData.validTill ? dayjs(formData.validTill) : null}
+                                onChange={(date, dateString) =>
+                                    setFormData({ ...formData, validTill: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
+                                disabledDate={(current) => {
+                                    return current && current < dayjs(formData.quotationDate).startOf("day");
+                                }}
+                            />
+                            {errors.validTill && <p className="text-red-500 text-xs mt-1">{errors.validTill}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Status
+                            </label>
+                            <AntSelect
+                                showSearch
+                                value={formData.status || undefined}
+                                onChange={(val) => setFormData({ ...formData, status: val })}
+                                className="w-full h-10"
+                                placeholder={isEdit ? "Select Status" : "Sent"}
+                                optionFilterProp="children"
+                                disabled={!isEdit}
+                            >
+                                {(statusData as QuotationStatusDropdownItem[]).map((o) => (
+                                    <AntSelect.Option key={o.quotationStatusID} value={o.quotationStatusID}>
+                                        {o.statusName}
+                                    </AntSelect.Option>
+                                ))}
+                            </AntSelect>
+                        </div>
                     </div>
 
                     {/* Terms and Conditions */}
@@ -566,8 +591,12 @@ const QuotationUpsertSheet = ({
                                                 <input
                                                     type="number"
                                                     min={0}
+                                                    step="any"
                                                     value={item.unitPrice || ""}
-                                                    onChange={(e) => updateItem(item.id, "unitPrice", parseFloat(e.target.value) || 0 as number)}
+                                                    onChange={(e) => {
+                                                        const val = parseFloat(e.target.value) || 0;
+                                                        updateItem(item.id, "unitPrice", Number(val.toFixed(2)));
+                                                    }}
                                                     placeholder="0.00"
                                                     className="w-24 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 />
@@ -578,8 +607,9 @@ const QuotationUpsertSheet = ({
                                                 <input
                                                     type="number"
                                                     min={1}
+                                                    step="any"
                                                     value={item.quantity || ""}
-                                                    onChange={(e) => updateItem(item.id, "quantity", parseFloat(e.target.value) || 1 as number)}
+                                                    onChange={(e) => updateItem(item.id, "quantity", parseFloat(e.target.value) || 1)}
                                                     placeholder="1"
                                                     className="w-16 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 />
@@ -642,28 +672,6 @@ const QuotationUpsertSheet = ({
                         </div>
                     </div>
 
-                    {/* Status — Edit only */}
-                    {isEdit && (
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                                Status
-                            </label>
-                            <AntSelect
-                                showSearch
-                                value={formData.status || undefined}
-                                onChange={(val) => setFormData({ ...formData, status: val })}
-                                className="w-full h-10"
-                                placeholder="Select Status"
-                                optionFilterProp="children"
-                            >
-                                {(statusData as QuotationStatusDropdownItem[]).map((o) => (
-                                    <AntSelect.Option key={o.quotationStatusID} value={o.quotationStatusID}>
-                                        {o.statusName}
-                                    </AntSelect.Option>
-                                ))}
-                            </AntSelect>
-                        </div>
-                    )}
 
                     {/* Rejected Notes — shown only when status is Rejected */}
                     {isEdit && formData.status === (statusData as QuotationStatusDropdownItem[]).find(s => s.statusName === "Rejected")?.quotationStatusID && (
@@ -682,7 +690,7 @@ const QuotationUpsertSheet = ({
                     )}
 
                     {/* Submit */}
-                    <div className="flex gap-3 pt-4 border-t border-slate-200">
+                    <div className="flex gap-3 pt-4 border-t border-slate-200 sticky bottom-0 bg-white z-10 pb-4">
                         <button
                             type="button"
                             onClick={onClose}

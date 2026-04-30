@@ -76,7 +76,7 @@ const Login = () => {
   const errorMessage = (adminErr as any)?.response?.data?.statusMessage || (adminErr as any)?.response?.data?.message;
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-6 py-6">
+    <div className="min-h-screen pb-16 px-4 relative overflow-hidden flex items-center justify-center">
       <SEO
         title="Login - Secure Access to Your Intelligent CRM"
         description="Log in to Avinya AI CRM to manage your leads, automate your tasks, and view your sales performance analytics."
@@ -100,10 +100,10 @@ const Login = () => {
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               className="inline-flex items-center justify-center mb-6"
             >
-              <img 
-                src={theme === 'dark' ? '/Images/dark-logo.png' : '/Images/light-logo.png'} 
-                alt="Avinya Logo" 
-                className="h-20 w-auto object-contain"
+              <img
+                src={theme === 'dark' ? '/Images/dark-logo.png' : '/Images/light-logo.png'}
+                alt="Avinya Logo"
+                className="h-32 w-auto object-contain"
               />
             </motion.div>
             <h1 className={`text-[32px] font-bold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>Welcome Back</h1>

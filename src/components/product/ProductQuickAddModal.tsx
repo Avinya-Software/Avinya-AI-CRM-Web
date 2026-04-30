@@ -36,6 +36,7 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
         defaultRate: values.defaultRate,
         purchasePrice: values.purchasePrice,
         taxCategoryID: values.taxCategoryID || null,
+        description: values.description || "",
         status: 1, // Default to Active
       };
 
@@ -50,7 +51,7 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
 
   return (
     <Modal
-      title={<span className="text-lg font-semibold text-slate-800">Quick Add Product</span>}
+      title={<h2 className="text-xl font-semibold text-slate-900">Quick Add Product</h2>}
       open={open}
       onCancel={onClose}
       width={450}
@@ -63,7 +64,7 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
             key="cancel"
             onClick={onClose}
             disabled={isSaving}
-            className="flex-1 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm font-medium text-slate-700"
+            className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm font-medium text-slate-700"
           >
             Cancel
           </button>
@@ -71,7 +72,7 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
             key="submit"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition text-sm font-medium flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 btn-primary rounded-lg transition disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
           >
             {isSaving ? (
               <>
@@ -90,9 +91,10 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
         layout="vertical"
         initialValues={{ status: 1 }}
         className="p-6 space-y-4"
+        requiredMark={"optional"}
       >
         <Form.Item
-          label={<span className="text-sm font-medium text-slate-700">Product Name <span className="text-red-500">*</span></span>}
+          label={<label className="block text-sm font-medium text-slate-700 mb-0">Product Name <span className="text-red-500">*</span></label>}
           name="productName"
           rules={[{ required: true, message: "Required" }, { min: 2, message: "Min 2 characters" }]}
           className="mb-0"
@@ -102,10 +104,20 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
             className="h-10 border-slate-300 rounded-lg"
           />
         </Form.Item>
+        <Form.Item
+          label={<label className="block text-sm font-medium text-slate-700 mb-0">Description</label>}
+          name="description"
+          className="mb-0"
+        >
+          <Input 
+            placeholder="Enter product description" 
+            className="h-10 border-slate-300 rounded-lg"
+          />
+        </Form.Item>
 
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
-            label={<span className="text-sm font-medium text-slate-700">Unit Type <span className="text-red-500">*</span></span>}
+            label={<label className="block text-sm font-medium text-slate-700 mb-0">Unit Type <span className="text-red-500">*</span></label>}
             name="unitType"
             rules={[{ required: true, message: "Required" }]}
             className="mb-0"
@@ -126,7 +138,7 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
           </Form.Item>
 
           <Form.Item
-            label={<span className="text-sm font-medium text-slate-700">Tax Category</span>}
+            label={<label className="block text-sm font-medium text-slate-700 mb-0">Tax Category</label>}
             name="taxCategoryID"
             className="mb-0"
           >
@@ -149,7 +161,7 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
 
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
-            label={<span className="text-sm font-medium text-slate-700">Default Rate <span className="text-red-500">*</span></span>}
+            label={<label className="block text-sm font-medium text-slate-700 mb-0">Default Rate <span className="text-red-500">*</span></label>}
             name="defaultRate"
             rules={[{ required: true, message: "Required" }]}
             className="mb-0"
@@ -159,11 +171,12 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
               min={0.01}
               placeholder="0.00"
               precision={2}
+              step={0.01}
             />
           </Form.Item>
 
           <Form.Item
-            label={<span className="text-sm font-medium text-slate-700">Purchase Price <span className="text-red-500">*</span></span>}
+            label={<label className="block text-sm font-medium text-slate-700 mb-0">Purchase Price <span className="text-red-500">*</span></label>}
             name="purchasePrice"
             rules={[{ required: true, message: "Required" }]}
             className="mb-0"
@@ -173,6 +186,7 @@ const ProductQuickAddModal: React.FC<Props> = ({ open, onClose, onSuccess }) => 
               min={0.01}
               placeholder="0.00"
               precision={2}
+              step={0.01}
             />
           </Form.Item>
         </div>

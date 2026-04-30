@@ -14,7 +14,7 @@ interface Props {
     open: boolean;
     onClose: () => void;
     client?: Client | null;
-    onSuccess: () => void;
+    onSuccess: (message?: string) => void;
 }
 
 const CLIENT_TYPES = [
@@ -143,16 +143,18 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                 cityID: form.cityID ? Number(form.cityID) : null,
             };
 
+            let res;
             if (client?.clientID) {
-                await updateClientApi(client.clientID, payload as any);
+                res = await updateClientApi(client.clientID, payload as any);
             } else {
                 const { clientID, ...rest } = payload;
-                await createClientApi(rest as Omit<Client, "clientID">);
+                res = await createClientApi(rest as Omit<Client, "clientID">);
             }
 
-            onSuccess();
+            onSuccess(res?.statusMessage);
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Something went wrong");
+            const respData = error.response?.data;
+            toast.error(respData?.statusMessage || respData?.message || "Something went wrong");
         } finally {
             setSaving(false);
         }

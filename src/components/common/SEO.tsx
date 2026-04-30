@@ -36,7 +36,6 @@ const routeNames: Record<string, string> = {
   '/booking': 'Book Demo',
   '/login': 'Login',
   '/signup': 'Sign up',
-  '/register': 'Register',
 };
 
 const getRouteName = (pathname: string) => {

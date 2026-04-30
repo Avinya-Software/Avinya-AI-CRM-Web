@@ -128,7 +128,8 @@ const UserFilterSheet = ({
                             {isSuperAdmin && <AntSelect.Option value="SuperAdmin">SuperAdmin</AntSelect.Option>}
                             <AntSelect.Option value="Admin">Admin</AntSelect.Option>
                             <AntSelect.Option value="Manager">Manager</AntSelect.Option>
-                            <AntSelect.Option value="User">User</AntSelect.Option>
+                            <AntSelect.Option value="Staff">Staff</AntSelect.Option>
+                            <AntSelect.Option value="Supervisor">Supervisor</AntSelect.Option>
                         </AntSelect>
                     </div>
 

@@ -41,15 +41,10 @@ const SuperAdminSidebar = () => {
       }`}
     >
       {/* HEADER */}
-      <div className="px-6 py-5 border-b border-slate-800 flex justify-between">
+      <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center overflow-visible">
         {!isCollapsed && (
-          <div className="transition-all duration-300">
-            <p className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-              Avinya
-            </p>
-            <p className="text-[10px] text-emerald-500 font-bold tracking-widest uppercase">
-              Super Admin
-            </p>
+          <div className="transition-all duration-300 flex items-center">
+            <img src="/Images/dark-logo.png" alt="Avinya Logo" className="h-10 w-auto object-contain scale-[2.2] origin-left" />
           </div>
         )}
 
@@ -62,7 +57,7 @@ const SuperAdminSidebar = () => {
       </div>
 
       {/* NAV */}
-      <nav className="flex-1 px-4 py-6 overflow-y-auto sidebar-scroll">
+      <nav className="flex-1 px-4 pt-2 pb-6 overflow-y-auto sidebar-scroll">
         <style>{`
           .sidebar-scroll::-webkit-scrollbar {
             width: 5px;

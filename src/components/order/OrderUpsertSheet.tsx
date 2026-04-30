@@ -60,7 +60,6 @@ const OrderUpsertSheet = ({
         stateID: "" as string,
         cityID: "" as string,
         orderStatusID: "",
-        designStatusID: "",
         enableTax: false,
         taxCategoryID: "" as string,
     });
@@ -139,7 +138,6 @@ const OrderUpsertSheet = ({
                 stateID: order.stateID != null ? String(order.stateID) : "",
                 cityID: order.cityID != null ? String(order.cityID) : "",
                 orderStatusID: order.status ? String(order.status) : "",
-                designStatusID: order.status ? String(order.status) : "",
                 enableTax: order.enableTax ?? false,
                 taxCategoryID: order.taxCategoryID || "",
             });
@@ -187,7 +185,6 @@ const OrderUpsertSheet = ({
                 shippingAddress: "",
                 stateID: "",
                 cityID: "",
-                designStatusID: "",
                 orderStatusID: "",
                 enableTax: sourceQuotation.enableTax ?? false,
                 taxCategoryID: sourceQuotation.taxCategoryID || "",
@@ -227,7 +224,6 @@ const OrderUpsertSheet = ({
                 shippingAddress: "",
                 stateID: "",
                 cityID: "",
-                designStatusID: "",
                 orderStatusID: "",
                 enableTax: false,
                 taxCategoryID: "",
@@ -278,7 +274,7 @@ const OrderUpsertSheet = ({
         designingCharge: 0,
         status: Number(formData.orderStatusID != "" ? formData.orderStatusID : (isEdit ? order!.status : 1) ?? 1),
         firmID: sourceQuotation?.firmID ?? 1,
-        designStatus: Number(formData.designStatusID),
+        designStatus: 0,
         assignedDesignTo: null,
         enableTax: formData.enableTax,
         taxCategoryID: formData.taxCategoryID || null,
@@ -469,22 +465,47 @@ const OrderUpsertSheet = ({
                         </div>
                     </div>
 
-                    {/* Expected Delivery Date */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                            Expected Delivery Date <span className="text-red-500">*</span>
-                        </label>
-                        <DatePicker
-                            className={`w-full h-10 rounded-lg ${errors.expectedDeliveryDate ? "border-red-500" : "border-slate-300"} disabled:bg-slate-50 disabled:text-slate-500`}
-                            format="YYYY-MM-DD"
-                            placeholder="Select delivery date"
-                            value={formData.expectedDeliveryDate ? dayjs(formData.expectedDeliveryDate) : null}
-                            onChange={(date, dateString) =>
-                                setFormData({ ...formData, expectedDeliveryDate: Array.isArray(dateString) ? dateString[0] : dateString })
-                            }
-                            disabled={isFormReadOnly}
-                        />
-                        {errors.expectedDeliveryDate && <p className="text-red-500 text-xs mt-1">{errors.expectedDeliveryDate}</p>}
+                    {/* Row: Expected Delivery Date + Order Status (Edit only) */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Expected Delivery Date <span className="text-red-500">*</span>
+                            </label>
+                            <DatePicker
+                                className={`w-full h-10 rounded-lg ${errors.expectedDeliveryDate ? "border-red-500" : "border-slate-300"} disabled:bg-slate-50 disabled:text-slate-500`}
+                                format="YYYY-MM-DD"
+                                placeholder="Select delivery date"
+                                value={formData.expectedDeliveryDate ? dayjs(formData.expectedDeliveryDate) : null}
+                                onChange={(date, dateString) =>
+                                    setFormData({ ...formData, expectedDeliveryDate: Array.isArray(dateString) ? dateString[0] : dateString })
+                                }
+                                disabled={isFormReadOnly}
+                            />
+                            {errors.expectedDeliveryDate && <p className="text-red-500 text-xs mt-1">{errors.expectedDeliveryDate}</p>}
+                        </div>
+
+                        {isEdit && (
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                    Order Status <span className="text-red-500">*</span>
+                                </label>
+                                <AntSelect
+                                    showSearch
+                                    value={formData.orderStatusID || undefined}
+                                    onChange={(val) => setFormData({ ...formData, orderStatusID: val })}
+                                    className={`w-full h-10 ${errors.orderStatusID ? "ant-select-error" : ""}`}
+                                    placeholder="Select Order Status"
+                                    optionFilterProp="children"
+                                >
+                                    {(orderStatusData as any[]).map((o) => (
+                                        <AntSelect.Option key={o.statusID} value={String(o.statusID)}>
+                                            {o.statusName || "Unknown"}
+                                        </AntSelect.Option>
+                                    ))}
+                                </AntSelect>
+                                {errors.orderStatusID && <p className="text-red-500 text-xs mt-1">{errors.orderStatusID}</p>}
+                            </div>
+                        )}
                     </div>
 
                     {/* Enable Tax Toggle */}
@@ -668,8 +689,12 @@ const OrderUpsertSheet = ({
                                                 <input
                                                     type="number"
                                                     min={0}
+                                                    step="any"
                                                     value={item.unitPrice || ""}
-                                                    onChange={(e) => updateItem(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
+                                                    onChange={(e) => {
+                                                        const val = parseFloat(e.target.value) || 0;
+                                                        updateItem(item.id, "unitPrice", Number(val.toFixed(2)));
+                                                    }}
                                                     placeholder="0.00"
                                                     readOnly={isFormReadOnly}
                                                     className="w-24 px-2 py-1.5 border border-slate-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 read-only:bg-slate-50 read-only:text-slate-500"
@@ -729,52 +754,7 @@ const OrderUpsertSheet = ({
                         </div>
                     </div>
 
-                    {isEdit && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                                    Order Status <span className="text-red-500">*</span>
-                                </label>
-                                <AntSelect
-                                    showSearch
-                                    value={formData.orderStatusID || undefined}
-                                    onChange={(val) => setFormData({ ...formData, orderStatusID: val })}
-                                    className={`w-full h-10 ${errors.orderStatusID ? "ant-select-error" : ""}`}
-                                    placeholder="Select Order Status"
-                                    optionFilterProp="children"
-                                >
-                                    {(orderStatusData as any[]).map((o) => (
-                                        <AntSelect.Option key={o.statusID} value={String(o.statusID)}>
-                                            {o.statusName || "Unknown"}
-                                        </AntSelect.Option>
-                                    ))}
-                                </AntSelect>
-                                {errors.designStatusID && <p className="text-red-500 text-xs mt-1">{errors.designStatusID}</p>}
-                            </div>
 
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                                    Design Status <span className="text-red-500">*</span>
-                                </label>
-                                <AntSelect
-                                    showSearch
-                                    value={formData.designStatusID || undefined}
-                                    onChange={(val) => setFormData({ ...formData, designStatusID: val })}
-                                    className={`w-full h-10 ${errors.designStatusID ? "ant-select-error" : ""}`}
-                                    placeholder="Select Design Status"
-                                    optionFilterProp="children"
-                                >
-                                    {(designStatusData as any[]).map((o) => (
-                                        <AntSelect.Option key={o.designStatusID} value={String(o.designStatusID)}>
-                                            {o.designStatusName || "Unknown"}
-                                        </AntSelect.Option>
-                                    ))}
-                                </AntSelect>
-                                {errors.designStatusID && <p className="text-red-500 text-xs mt-1">{errors.designStatusID}</p>}
-                            </div>
-                        </div>
-                    )}
 
                     {/* Totals */}
                     <div className="bg-slate-50 rounded-lg p-4 space-y-2">
@@ -796,7 +776,7 @@ const OrderUpsertSheet = ({
                     </div>
 
                     {/* Submit */}
-                    <div className="flex gap-3 pt-4 border-t border-slate-200">
+                    <div className="flex gap-3 pt-4 border-t border-slate-200 sticky bottom-0 bg-white z-10 pb-4">
                         <button
                             type="button"
                             onClick={onClose}

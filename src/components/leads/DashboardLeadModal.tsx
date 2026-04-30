@@ -313,7 +313,7 @@ const DashboardLeadModal = ({ open, onClose, lead, advisorId }: Props) => {
                   required
                   value={form.mobile}
                   error={errors.mobile}
-                  onChange={(v: any) => setForm({ ...form, mobile: v })}
+                  onChange={(v: any) => setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })}
                   disabled={isReadOnly}
                 />
 
