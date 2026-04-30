@@ -3,9 +3,12 @@ import { useState } from "react";
 import { Check, Edit, Repeat, Loader2, Calendar } from "lucide-react";
 import { Task, TaskStatus } from "../../interfaces/task.interface";
 import { useUpdateTask } from "../../hooks/task/useTaskMutations";
-import { format, isPast } from "date-fns";
 import TaskDetailModal from "./TaskDetailModal";
 import { usePermissions } from "../../context/PermissionContext";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 interface TaskListProps {
   tasks: Task[];
@@ -70,9 +73,9 @@ const TaskList = ({ tasks, loading, onEdit }: TaskListProps) => {
     <>
       <div className="space-y-2 max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
         {tasks.map((task) => {
-          const dueDate = new Date(task.dueDateTime);
+          const dueDate = dayjs.utc(task.dueDateTime).local();
           const isOverdue =
-            isPast(dueDate) && task.status !== TaskStatus.Completed;
+            dueDate.isBefore(dayjs()) && task.status !== TaskStatus.Completed;
 
           return (
             <div
@@ -115,7 +118,7 @@ const TaskList = ({ tasks, loading, onEdit }: TaskListProps) => {
                         }`}
                     >
                       <Calendar size={12} />
-                      {format(dueDate, "MMM dd, h:mm a")}
+                      {dueDate.format("MMM dd, h:mm a")}
                     </div>
 
                     {task.isRecurring && (

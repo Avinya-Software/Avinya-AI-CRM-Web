@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 const { RangePicker } = DatePicker;
 
@@ -750,12 +753,7 @@ const TaskRow = ({
 }) => {
   const formatDue = (dt: string | null) => {
     if (!dt) return null;
-    return new Date(dt).toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return dayjs.utc(dt).local().format("DD MMM, HH:mm");
   };
 
   return (

@@ -9,7 +9,10 @@ import TaskUpsertSheet from "../components/tasks/TaskUpsertSheet";
 import TaskFilterSheet from "../components/tasks/TaskFilterSheet";
 import { Task, TaskFilters, TaskStatus } from "../interfaces/task.interface";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import VoiceTaskModal from "../components/voice/VoiceTaskModal";
+
+dayjs.extend(utc);
 import { useIsMutating } from "@tanstack/react-query";
 import { usePermissions } from "../context/PermissionContext";
 
@@ -47,14 +50,14 @@ const Tasks = () => {
     switch (view) {
       case "today":
         return {
-          from: dayjs().startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
-          to: dayjs().endOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+          from: dayjs().startOf("day").utc().format("YYYY-MM-DDTHH:mm:ss"),
+          to: dayjs().endOf("day").utc().format("YYYY-MM-DDTHH:mm:ss"),
         };
 
       case "week":
         return {
-          from: dayjs().startOf("week").add(1, "day").format("YYYY-MM-DDTHH:mm:ss"), // Monday
-          to: dayjs().endOf("week").add(1, "day").format("YYYY-MM-DDTHH:mm:ss"), // Sunday
+          from: dayjs().startOf("week").add(1, "day").utc().format("YYYY-MM-DDTHH:mm:ss"), // Monday
+          to: dayjs().endOf("week").add(1, "day").utc().format("YYYY-MM-DDTHH:mm:ss"), // Sunday
         };
 
       default:
@@ -93,7 +96,7 @@ const Tasks = () => {
       return false;
 
     if (filters.from || filters.to) {
-      const taskDate = dayjs(task.dueDateTime);
+      const taskDate = dayjs.utc(task.dueDateTime).local();
       if (filters.from) {
         const fromDate = dayjs(filters.from).startOf("day");
         if (taskDate.isBefore(fromDate)) return false;

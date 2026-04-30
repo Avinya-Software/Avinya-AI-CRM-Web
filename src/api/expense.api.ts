@@ -13,6 +13,7 @@ export const createExpenseApi = async (payload: ExpenseUpsertPayload) => {
   formData.append("PaymentMode", "UPI");
   formData.append("Amount", String(payload.amount));
   formData.append("Description", payload.description || "");
+  formData.append("Status", payload.status || "Unpaid");
 
   if (payload.receiptFile instanceof File) {
     formData.append("ReceiptFile", payload.receiptFile, payload.receiptFile.name);
@@ -36,6 +37,7 @@ export const updateExpenseApi = async (id: string, payload: ExpenseUpsertPayload
 
   formData.append("Amount", String(payload.amount));
   formData.append("Description", payload.description || "");
+  formData.append("Status", payload.status || "Unpaid");
 
   if (payload.receiptFile instanceof File) {
     formData.append("ReceiptFile", payload.receiptFile, payload.receiptFile.name);

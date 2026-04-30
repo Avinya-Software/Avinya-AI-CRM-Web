@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 import { X, Save, Loader2, Calendar, Users } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCreateTask } from "../../hooks/task/useTaskMutations";
@@ -73,7 +76,7 @@ const ProjectTaskUpsertModal = ({
             {
                 title: formData.taskName,
                 description: formData.description,
-                dueDateTime: dayjs(formData.dueDate).format("YYYY-MM-DDTHH:mm:ss"),
+                dueDateTime: dayjs(formData.dueDate).utc().format("YYYY-MM-DDTHH:mm:ss"),
                 isRecurring: false,
                 scope: projectTeamId ? "Team" : "Personal",
                 teamId: projectTeamId ? String(projectTeamId) : undefined,

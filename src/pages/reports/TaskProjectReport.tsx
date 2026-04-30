@@ -20,6 +20,10 @@ import {
 import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears } from "date-fns";
 import { DatePicker, Select, Progress, Tag, Table, Switch, Tooltip, Empty } from "antd";
 import * as XLSX from 'xlsx';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 const { RangePicker } = DatePicker;
 
@@ -129,7 +133,7 @@ const TaskProjectReport: React.FC = () => {
       "Project": t.projectName,
       "Scope": t.scope,
       "Priority": t.priority,
-      "Due Date": format(new Date(t.dueDateTime), "dd-MM-yyyy HH:mm"),
+      "Due Date": dayjs.utc(t.dueDateTime).local().format("DD-MM-YYYY HH:mm"),
       "Hours Overdue": t.hoursOverdue,
       "SLA Breached": t.slaBreached ? "Yes" : "No"
     }));
@@ -599,7 +603,7 @@ const TaskProjectReport: React.FC = () => {
                          </td>
                          <td className="px-6 py-4 text-center">
                             <div className="flex flex-col items-center">
-                               <span className="text-[10px] font-black text-slate-700">{project.deadline ? format(new Date(project.deadline), "dd MMM yy") : '—'}</span>
+                               <span className="text-[10px] font-black text-slate-700">{project.deadline ? dayjs.utc(project.deadline).local().format("DD MMM YY") : '—'}</span>
                                <span className={`text-[9px] font-bold uppercase ${project.daysRemaining < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
                                   {project.daysRemaining < 0 ? `${Math.abs(project.daysRemaining)}d Overdue` : `${project.daysRemaining}d Left`}
                                </span>

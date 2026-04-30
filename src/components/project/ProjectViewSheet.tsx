@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { X, Edit2, Plus, Clock, CheckSquare, Loader2 } from "lucide-react";
+
+dayjs.extend(utc);
 import toast from "react-hot-toast";
 
 import type { Project } from "../../interfaces/project.interface";
@@ -83,7 +86,7 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit, onSuccess }
       {
         title: taskForm.taskName,
         description: taskForm.description,
-        dueDateTime: dayjs(taskForm.dueDate).format("YYYY-MM-DDTHH:mm:ss"),
+        dueDateTime: dayjs(taskForm.dueDate).utc().format("YYYY-MM-DDTHH:mm:ss"),
         isRecurring: false,
         scope: project?.teamId ? "Team" : "Personal",
         teamId: project?.teamId ? String(project.teamId) : undefined,
@@ -399,7 +402,7 @@ const ProjectViewSheet = ({ projectId, initialData, onClose, onEdit, onSuccess }
                         {task.dueDateTime && (
                           <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                             <Clock size={10} />
-                            {new Date(task.dueDateTime).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                            {dayjs.utc(task.dueDateTime).local().format("DD MMM")}
                           </p>
                         )}
                       </div>

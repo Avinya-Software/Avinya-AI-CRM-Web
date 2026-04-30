@@ -13,10 +13,9 @@ import { useDeleteExpense } from "../../hooks/expense/useDeleteExpense";
 const DROPDOWN_WIDTH = 180;
 
 const statusStyles: Record<string, string> = {
-    unpaid: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    approved: "bg-green-100 text-green-700 border-green-200",
-    rejected: "bg-red-100 text-red-600 border-red-200",
-    paid: "bg-blue-100 text-blue-700 border-blue-200",
+    Unpaid: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    Paid: "bg-green-100 text-green-700 border-green-200",
+    Partial: "bg-purple-100 text-purple-700 border-purple-200",
 };
 
 interface Props {
@@ -101,7 +100,7 @@ const ExpenseTable = ({ data = [], loading = false, onEdit }: Props) => {
                             </tr>
                         ) : (
                             data.map((exp) => {
-                                const statusKey = exp.status ? exp.status.toLowerCase() : "unpaid";
+                                const statusKey = exp.status || "Unpaid";
 
                                 return (
                                     <tr

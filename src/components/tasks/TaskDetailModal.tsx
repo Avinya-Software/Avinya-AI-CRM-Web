@@ -1,8 +1,13 @@
 // src/components/tasks/TaskDetailModal.tsx
 import { X, Calendar, Clock, Repeat, CheckCircle2, Circle, Edit2, AlertCircle } from "lucide-react";
 import { Task, TaskStatus } from "../../interfaces/task.interface";
-import { format, isPast, formatDistanceToNow } from "date-fns";
 import { usePermissions } from "../../context/PermissionContext";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(utc);
+dayjs.extend(relativeTime);
 
 interface TaskDetailModalProps {
     open: boolean;
@@ -41,8 +46,8 @@ const statusConfig: Record<TaskStatus, { label: string; color: string; bg: strin
 const TaskDetailModal = ({ open, onClose, task, onEdit }: TaskDetailModalProps) => {
     if (!open || !task) return null;
 
-    const dueDate = new Date(task.dueDateTime);
-    const isOverdue = isPast(dueDate) && task.status !== TaskStatus.Completed;
+    const dueDate = dayjs.utc(task.dueDateTime).local();
+    const isOverdue = dueDate.isBefore(dayjs()) && task.status !== TaskStatus.Completed;
     const isCompleted = task.status === TaskStatus.Completed;
     const status = statusConfig[task.status] ?? statusConfig[TaskStatus.Pending];
     const { hasPermission } = usePermissions();
@@ -120,10 +125,10 @@ const TaskDetailModal = ({ open, onClose, task, onEdit }: TaskDetailModalProps) 
                                 Due Date
                             </div>
                             <p className={`text-sm font-semibold ${isOverdue ? "text-red-600" : "text-slate-700"}`}>
-                                {format(dueDate, "MMM dd, yyyy")}
+                                {dueDate.format("MMM DD, YYYY")}
                             </p>
                             <p className={`text-xs mt-0.5 ${isOverdue ? "text-red-400" : "text-slate-400"}`}>
-                                {format(dueDate, "h:mm a")}
+                                {dueDate.format("h:mm A")}
                             </p>
                         </div>
 
@@ -153,8 +158,8 @@ const TaskDetailModal = ({ open, onClose, task, onEdit }: TaskDetailModalProps) 
                             {isCompleted
                                 ? "Task completed"
                                 : isOverdue
-                                    ? `Overdue by ${formatDistanceToNow(dueDate)}`
-                                    : `Due ${formatDistanceToNow(dueDate, { addSuffix: true })}`}
+                                    ? `Overdue by ${dueDate.fromNow(true)}`
+                                    : `Due ${dueDate.fromNow()}`}
                         </span>
                     </div>
 

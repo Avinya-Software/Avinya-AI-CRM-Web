@@ -13,6 +13,9 @@ import { useUsersDropdown } from "../../hooks/users/Useusers";
 import { usePermissions } from "../../context/PermissionContext";
 import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 const TaskUpsertSheet = ({
   open,
@@ -102,7 +105,7 @@ const TaskUpsertSheet = ({
         description: (task as any).description || "",
         notes: (task as any).notes || "",
         dueDateTime: task.dueDateTime
-          ? dayjs(task.dueDateTime).format("YYYY-MM-DDTHH:mm:ss")
+          ? dayjs.utc(task.dueDateTime).local().format("YYYY-MM-DDTHH:mm:ss")
           : "",
         status: task.status,
         scope: (task as any).scope || parentScope,
@@ -169,7 +172,7 @@ const TaskUpsertSheet = ({
         {
           occurrenceId: task!.occurrenceId,
         data: {
-          dueDateTime: formData.dueDateTime ? dayjs(formData.dueDateTime).format("YYYY-MM-DDTHH:mm:ss") : null,
+          dueDateTime: formData.dueDateTime ? dayjs(formData.dueDateTime).utc().format("YYYY-MM-DDTHH:mm:ss") : null,
           status: formData.status,
           teamId: formData.teamId || undefined,
           assignToId: formData.assignToId || undefined
@@ -189,16 +192,16 @@ const TaskUpsertSheet = ({
           description: formData.description,
           notes: formData.notes,
           dueDateTime: recurring
-            ? dayjs(recurring.startsOn).format("YYYY-MM-DDTHH:mm:ss")
-            : (formData.dueDateTime ? dayjs(formData.dueDateTime).format("YYYY-MM-DDTHH:mm:ss") : null),
+            ? dayjs(recurring.startsOn).utc().format("YYYY-MM-DDTHH:mm:ss")
+            : (formData.dueDateTime ? dayjs(formData.dueDateTime).utc().format("YYYY-MM-DDTHH:mm:ss") : null),
           isRecurring: !!recurring,
           recurrenceRule: recurrenceRule || undefined,
-          recurrenceStartDate: recurring ? dayjs(recurring.startsOn).format("YYYY-MM-DDTHH:mm:ss") : null,
+          recurrenceStartDate: recurring ? dayjs(recurring.startsOn).utc().format("YYYY-MM-DDTHH:mm:ss") : null,
           recurrenceEndDate: (recurring && !recurring.neverEnds && recurring.endsOn) 
-            ? dayjs(recurring.endsOn).format("YYYY-MM-DDTHH:mm:ss") 
+            ? dayjs(recurring.endsOn).utc().format("YYYY-MM-DDTHH:mm:ss") 
             : null,
           reminderAt: reminder
-            ? dayjs(`${reminder.date}T${reminder.time}`).format("YYYY-MM-DDTHH:mm:ss")
+            ? dayjs(`${reminder.date}T${reminder.time}`).utc().format("YYYY-MM-DDTHH:mm:ss")
             : undefined,
           reminderChannel: reminder ? "in-app" : "",
           scope: formData.scope,

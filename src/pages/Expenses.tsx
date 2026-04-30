@@ -112,10 +112,9 @@ const Expenses = () => {
                                 placeholder="All Status"
                                 allowClear
                             >
-                                <AntSelect.Option value="unpaid">Unpaid</AntSelect.Option>
-                                <AntSelect.Option value="approved">Approved</AntSelect.Option>
-                                <AntSelect.Option value="rejected">Rejected</AntSelect.Option>
-                                <AntSelect.Option value="paid">Paid</AntSelect.Option>
+                                <AntSelect.Option value="Unpaid">Unpaid</AntSelect.Option>
+                                <AntSelect.Option value="Paid">Paid</AntSelect.Option>
+                                <AntSelect.Option value="Partial">Partial</AntSelect.Option>
                             </AntSelect>
                         </div>
                         <div />
