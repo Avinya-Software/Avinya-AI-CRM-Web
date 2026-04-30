@@ -129,50 +129,74 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen pb-20 px-6 relative overflow-hidden flex items-center justify-center">
+    <div className="min-h-screen pb-16 px-4 relative overflow-hidden flex items-center justify-center">
       <Toaster position="top-right" />
+
       <SEO
         title="Get Started - Join 5,000+ Teams Scaling with AI"
         description="Sign up for Avinya AI CRM and start automating your sales workflows today. Free 14-day trial included."
         keywords="Sign up AI CRM, Avinya AI Registration, CRM Free Trial"
       />
+
       <div className="bg-mesh absolute inset-0 opacity-50 dark:opacity-100" />
 
-      <div className="container max-w-md relative z-10">
+      {/* 🔥 SMALLER CONTAINER */}
+      <div className="w-full max-w-2xl relative z-10">
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`glass-card p-8 md:p-12 rounded-[2.5rem] ${isDark ? "bg-slate-950/95 border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.25)]" : "bg-white/95 border border-slate-200/70 shadow-2xl backdrop-blur-xl"}`}
+          className={`glass-card p-6 md:p-8 rounded-3xl ${isDark
+            ? "bg-slate-950/95 border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.25)]"
+            : "bg-white/95 border border-slate-200/70 shadow-xl backdrop-blur-xl"
+            }`}
         >
-          <div className="text-center mb-10">
-            <Link to="/" className="inline-flex items-center gap-2 mb-6">
+
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link to="/" className="inline-flex items-center gap-2 mb-4">
               <img
                 src={theme === 'dark' ? '/Images/dark-logo.png' : '/Images/light-logo.png'}
                 alt="Avinya Logo"
                 className="h-20 w-auto object-contain"
               />
             </Link>
-            <h1 className={`text-3xl font-display font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Get Started</h1>
-            <p className={`mt-2 ${isDark ? "text-slate-400" : "text-slate-600"}`}>Join 5,000+ teams scaling with Avinya</p>
+
+            <h1 className={`text-2xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+              Get Started
+            </h1>
+            <p className={`mt-1 text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+              You’re getting 7 days of free access as part of our beta program. After you sign up, our team will review and approve your account within 2 hours so you can start using it.            </p>
           </div>
 
+          {/* Success Message */}
           {success && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`mb-6 p-4 rounded-2xl flex items-start gap-3 ${isDark ? "bg-emerald-500/10 border border-emerald-500/30" : "bg-emerald-50 border border-emerald-200"}`}
+              className={`mb-5 p-3 rounded-xl flex items-start gap-3 ${isDark
+                ? "bg-emerald-500/10 border border-emerald-500/30"
+                : "bg-emerald-50 border border-emerald-200"
+                }`}
             >
-              <CheckCircle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+              <CheckCircle className={`w-4 h-4 mt-0.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
               <div>
-                <p className={`font-semibold ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>Account Created!</p>
-                <p className={`text-sm ${isDark ? "text-emerald-300" : "text-emerald-600"}`}>Redirecting you to login...</p>
+                <p className={`font-semibold text-sm ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
+                  Account Created!
+                </p>
+                <p className={`text-xs ${isDark ? "text-emerald-300" : "text-emerald-600"}`}>
+                  Redirecting you to login...
+                </p>
               </div>
             </motion.div>
           )}
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <label className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
+          {/* FORM */}
+          <form className="w-full space-y-5" onSubmit={handleSubmit}>
+
+            {/* Full Name */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold flex items-center gap-2">
                 <User className="w-4 h-4" /> Full Name
               </label>
               <input
@@ -191,8 +215,9 @@ export default function Signup() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <label className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
+            {/* Company */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold flex items-center gap-2">
                 <Building className="w-4 h-4" /> Company Name
               </label>
               <input
@@ -211,108 +236,152 @@ export default function Signup() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <label className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
-                <Phone className="w-4 h-4" /> Mobile Number
-              </label>
-              <input
-                type="tel"
-                name="mobileNumber"
-                value={formData.mobileNumber}
-                onChange={handleInputChange}
-                placeholder="+1 (555) 000-0000"
-                className={`${inputClassName} ${errors.mobileNumber ? (isDark ? 'border-red-500/50' : 'border-red-300') : ''}`}
-              />
-              {errors.mobileNumber && (
-                <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.mobileNumber}
-                </div>
-              )}
-            </div>
+            {/* Mobile + Email */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-            <div className="space-y-2">
-              <label className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
-                <Mail className="w-4 h-4" /> Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="name@company.com"
-                className={`${inputClassName} ${errors.email ? (isDark ? 'border-red-500/50' : 'border-red-300') : ''}`}
-              />
-              {errors.email && (
-                <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.email}
-                </div>
-              )}
-            </div>
+              {/* Mobile Number */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold flex items-center gap-2">
+                  <Phone className="w-4 h-4" /> Mobile Number
+                </label>
 
-            <div className="space-y-2">
-              <label className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
-                <Lock className="w-4 h-4" /> Password
-              </label>
-              <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
+                  type="tel"
+                  name="mobileNumber"
+                  value={formData.mobileNumber}
                   onChange={handleInputChange}
-                  placeholder="••••••••"
-                  className={`${inputClassName} pr-12 ${errors.password ? (isDark ? 'border-red-500/50' : 'border-red-300') : ''}`}
+                  placeholder="+1 (555) 000-0000"
+                  className={`${inputClassName} ${errors.mobileNumber
+                    ? isDark
+                      ? "border-red-500/50"
+                      : "border-red-300"
+                    : ""
+                    }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-400 hover:text-slate-600"}`}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {errors.password && (
-                <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.password}
-                </div>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <label className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
-                <Lock className="w-4 h-4" /> Confirm Password
-              </label>
-              <div className="relative">
+                {errors.mobileNumber && (
+                  <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.mobileNumber}
+                  </div>
+                )}
+              </div>
+
+              {/* Email Address */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold flex items-center gap-2">
+                  <Mail className="w-4 h-4" /> Email Address
+                </label>
+
                 <input
-                  type={showPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
+                  type="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="••••••••"
-                  className={`${inputClassName} pr-12 ${errors.confirmPassword ? (isDark ? 'border-red-500/50' : 'border-red-300') : ''}`}
+                  placeholder="name@company.com"
+                  className={`${inputClassName} ${errors.email
+                    ? isDark
+                      ? "border-red-500/50"
+                      : "border-red-300"
+                    : ""
+                    }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-400 hover:text-slate-600"}`}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+
+                {errors.email && (
+                  <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.email}
+                  </div>
+                )}
               </div>
-              {errors.confirmPassword && (
-                <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.confirmPassword}
-                </div>
-              )}
+
             </div>
 
+            {/* Password + Confirm Password */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold flex items-center gap-2">
+                  <Lock className="w-4 h-4" /> Password
+                </label>
+
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="••••••••"
+                    className={`${inputClassName} pr-12 ${errors.password ? "border-red-400" : ""
+                      }`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+
+                {errors.password && (
+                  <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.password}
+                  </div>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold flex items-center gap-2">
+                  <Lock className="w-4 h-4" /> Confirm Password
+                </label>
+
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="••••••••"
+                    className={`${inputClassName} pr-12 ${errors.confirmPassword ? "border-red-400" : ""
+                      }`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+
+                {errors.confirmPassword && (
+                  <div className="flex items-center gap-2 text-red-500 text-sm mt-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.confirmPassword}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Button */}
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-4 bg-emerald-500 text-black font-bold rounded-2xl transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 mt-4 ${loading ? 'opacity-75 cursor-not-allowed' : 'hover:bg-emerald-400'}`}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 transition rounded-xl font-bold text-white flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -320,17 +389,18 @@ export default function Signup() {
                   Creating Account...
                 </>
               ) : (
-                <>
-                  Create Account
-                  <ArrowRight className="w-5 h-5" />
-                </>
+                "Create Account"
               )}
             </button>
           </form>
 
-          <div className={`mt-8 text-center text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-            Already have an account?{' '}
-            <Link to="/login" className={`font-bold hover:underline ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+          {/* Footer */}
+          <div className={`mt-6 text-center text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className={`font-bold hover:underline ${isDark ? "text-emerald-400" : "text-emerald-600"}`}
+            >
               Sign in instead
             </Link>
           </div>
