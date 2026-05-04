@@ -111,14 +111,14 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const mobileRegex = /^[6-9]\d{9}$/;
 
-        if (!form.companyName.trim()) e.companyName = "Company name is required";
+        if (form.clientType === 1 && !form.companyName.trim()) e.companyName = "Company name is required";
         if (!form.contactPerson.trim()) e.contactPerson = "Contact person is required";
 
         if (!form.mobile.trim()) e.mobile = "Mobile is required";
         else if (!mobileRegex.test(form.mobile))
             e.mobile = "Invalid mobile number (10 digits, starting 6-9)";
 
-        if (form.email && !emailRegex.test(form.email))
+        if (!form.email || !emailRegex.test(form.email))
             e.email = "Invalid email address";
 
         setErrors(e);
@@ -204,26 +204,8 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                 <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
 
                     {/* ── SECTION: Client Info ── */}
-                    <Section title="Client Information">
-                        <Input
-                            label="Company Name"
-                            required
-                            value={form.companyName}
-                            error={errors.companyName}
-                            onChange={(v: string) => setForm({ ...form, companyName: v })}
-                            disabled={isReadOnly}
-                        />
-
-                        <Input
-                            label="Contact Person"
-                            required
-                            value={form.contactPerson}
-                            error={errors.contactPerson}
-                            onChange={(v: string) => setForm({ ...form, contactPerson: v })}
-                            disabled={isReadOnly}
-                        />
-
-                        <div className="col-span-2 sm:col-span-1">
+                    <Section title="Client Information" cols={3}>
+                        <div className="col-span-1 sm:col-span-1">
                             <label className="text-xs font-semibold text-slate-600 mb-1 block">Customer Type</label>
                             <AntSelect
                                 showSearch
@@ -241,15 +223,14 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                         </div>
 
                         <Input
-                            label="GST No"
-                            value={form.gstNo}
-                            onChange={(v: string) => setForm({ ...form, gstNo: v.toUpperCase() })}
+                            label="Contact Person"
+                            required
+                            value={form.contactPerson}
+                            error={errors.contactPerson}
+                            onChange={(v: string) => setForm({ ...form, contactPerson: v })}
                             disabled={isReadOnly}
                         />
-                    </Section>
 
-                    {/* ── SECTION: Contact Details ── */}
-                    <Section title="Contact Details">
                         <Input
                             label="Mobile"
                             required
@@ -263,12 +244,34 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
 
                         <Input
                             label="Email"
+                            required
                             value={form.email}
                             error={errors.email}
                             onChange={(v: string) => setForm({ ...form, email: v })}
                             disabled={isReadOnly}
                         />
+
+                        {form.clientType === 1 && (
+                            <>
+                                <Input
+                                    label="Company Name"
+                                    required
+                                    value={form.companyName}
+                                    error={errors.companyName}
+                                    onChange={(v: string) => setForm({ ...form, companyName: v })}
+                                    disabled={isReadOnly}
+                                />
+
+                                <Input
+                                    label="GST No"
+                                    value={form.gstNo}
+                                    onChange={(v: string) => setForm({ ...form, gstNo: v.toUpperCase() })}
+                                    disabled={isReadOnly}
+                                />
+                            </>
+                        )}
                     </Section>
+
 
                     {/* ── SECTION: Location ── */}
                     <Section title="Location">
@@ -383,13 +386,13 @@ export default ClientUpsertSheet;
 
 /* ================= HELPERS ================= */
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+const Section = ({ title, children, cols = 2 }: { title: string; children: React.ReactNode; cols?: number }) => (
     <div>
         <div className="flex items-center gap-2 mb-3">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</span>
             <div className="flex-1 h-px bg-slate-100" />
         </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <div className={`grid grid-cols-1 md:grid-cols-${cols === 3 ? '3' : '2'} gap-x-4 gap-y-3`}>
             {children}
         </div>
     </div>

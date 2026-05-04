@@ -9,7 +9,7 @@ import {
   Package,
   Briefcase,
   CheckSquare,
-  DollarSign,
+  IndianRupee,
   CreditCard,
   Settings as SettingsIcon,
 } from "lucide-react";

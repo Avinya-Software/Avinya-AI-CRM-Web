@@ -149,9 +149,9 @@ const QuotationTable = ({
             <Th>Quotation No</Th>
             <Th>Lead No</Th>
             <Th>Company Name</Th>
+            <Th>Contact Person</Th>
             <Th>Quotation Date</Th>
             <Th>Valid Till</Th>
-            <Th>Amount</Th>
             <Th>Grand Total</Th>
             <Th>Status</Th>
             <Th className="text-left">Actions</Th>
@@ -184,9 +184,9 @@ const QuotationTable = ({
                     )}
                   </Td>
                   <Td>{quotation.companyName || "-"}</Td>
+                  <Td>{quotation.clientName   || "-"}</Td>
                   <Td>{dayjs(quotation.quotationDate).format("DD/MM/YYYY")}</Td>
                   <Td>{dayjs(quotation.validTill).format("DD/MM/YYYY")}</Td>
-                  <Td>₹{(quotation.totalAmount ?? 0).toLocaleString()}</Td>
                   <Td className="font-medium">₹{(quotation.grandTotal ?? 0).toLocaleString()}</Td>
                   <Td>
                     <span

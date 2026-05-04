@@ -226,6 +226,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
 
     if (!form.fullName.trim()) e.fullName = "Full name required";
     if (!mobileRegex.test(form.mobile)) e.mobile = "Invalid mobile number";
+    if (!form.email.trim()) e.email = "Email required";
     if (!form.leadStatusId) e.leadStatusId = "Status required";
     if (!form.requirementDetails.trim()) e.requirementDetails = "Requirement details required";
     if (!isEdit && !form.nextFollowupDate) e.nextFollowupDate = "Next follow-up date required";
@@ -308,9 +309,9 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
 
           {/* ── SECTION: Client Info ── */}
-          <Section icon={<User className="w-3.5 h-3.5" />} title="Client Information">
+          <Section icon={<User className="w-3.5 h-3.5" />} title="Client Information" cols={3}>
             {/* Customer — full width */}
-            <div className="col-span-2">
+            <div className="col-span-3">
               <SearchableComboBox
                 label="Customer"
                 items={customers.map((c) => ({
@@ -326,16 +327,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
               />
             </div>
 
-            {/* Contact Person | Customer Type */}
-            <Input
-              label="Contact Person"
-              required
-              value={form.fullName}
-              error={errors.fullName}
-              onChange={(v: any) => setForm({ ...form, fullName: v })}
-              disabled={isReadOnly}
-            />
-            <div>
+            <div className="col-span-1 sm:col-span-1">
               <label className="text-xs font-semibold text-slate-600 mb-1 block">Customer Type</label>
               <AntSelect
                 showSearch
@@ -351,11 +343,38 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
               </AntSelect>
             </div>
 
-            {/* Company Name | GST No (only if type is Company) */}
+            <Input
+              label="Contact Person"
+              required
+              value={form.fullName}
+              error={errors.fullName}
+              onChange={(v: any) => setForm({ ...form, fullName: v })}
+              disabled={isReadOnly}
+            />
+
+            <Input
+              label="Mobile"
+              required
+              value={form.mobile}
+              error={errors.mobile}
+              onChange={(v: any) => setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })}
+              disabled={isReadOnly}
+            />
+
+            <Input
+              label="Email"
+              required
+              value={form.email}
+              error={errors.email}
+              onChange={(v: any) => setForm({ ...form, email: v })}
+              disabled={isReadOnly}
+            />
+
             {form.clientType === 1 && (
               <>
                 <Input
                   label="Company Name"
+                  required
                   value={form.companyName}
                   onChange={(v: any) => setForm({ ...form, companyName: v })}
                   disabled={isReadOnly}
@@ -368,22 +387,6 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
                 />
               </>
             )}
-
-            {/* Mobile | Email */}
-            <Input
-              label="Mobile"
-              required
-              value={form.mobile}
-              error={errors.mobile}
-              onChange={(v: any) => setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })}
-              disabled={isReadOnly}
-            />
-            <Input
-              label="Email"
-              value={form.email}
-              onChange={(v: any) => setForm({ ...form, email: v })}
-              disabled={isReadOnly}
-            />
           </Section>
 
           {/* ── SECTION: Lead Details ── */}
@@ -585,14 +588,14 @@ export default LeadUpsertSheet;
 
 /* ================= HELPERS ================= */
 
-const Section = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
+const Section = ({ icon, title, children, cols = 2 }: { icon: React.ReactNode; title: string; children: React.ReactNode; cols?: number }) => (
   <div>
     <div className="flex items-center gap-2 mb-3">
       <span className="text-[var(--btn-primary)]">{icon}</span>
       <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</span>
       <div className="flex-1 h-px bg-slate-100" />
     </div>
-    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+    <div className={`grid grid-cols-1 md:grid-cols-${cols === 3 ? '3' : '2'} gap-x-4 gap-y-3`}>
       {children}
     </div>
   </div>

@@ -63,6 +63,7 @@ export interface QuotationFilters {
 }
 
 export interface CreateQuotationDto {
+  quotationID?: string;
   clientID?: string;
   leadID?: string | null;
   quotationDate: string;
@@ -72,6 +73,18 @@ export interface CreateQuotationDto {
   enableTax: boolean;
   rejectedNotes?: string;
   termsAndConditions?: string;
+
+  // Client Fields
+  companyName?: string;
+  contactPerson?: string;
+  mobile?: string;
+  email?: string;
+  gstNo?: string;
+  billingAddress?: string;
+  clientType?: number;
+  stateID?: number;
+  cityID?: number;
+
   items: QuotationItem[];
 }
 

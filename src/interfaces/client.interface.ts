@@ -3,6 +3,12 @@ export interface ClientDropdown{
     contactPerson: string;
     email: string;
     companyName: string;
+    mobileNumber?: string;
+    gstNo?: string;
+    billAddress?: string;
+    stateID?: number;
+    cityID?: number;
+    clientType?: number;
 }
 export interface Client {
   clientID: string;

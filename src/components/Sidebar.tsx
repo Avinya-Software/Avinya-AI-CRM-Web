@@ -11,14 +11,20 @@ import {
   LayoutDashboard,
   Users,
   User,
+  UserPlus,
   FileText,
-  ShoppingCart,
+  FileSignature,
+  ShoppingBag,
   Package,
   Briefcase,
   CheckSquare,
-  DollarSign,
+  IndianRupee,
+  Receipt,
+  Wallet,
+  Building2,
   Folder,
   BarChart3,
+  Target,
 } from "lucide-react";
 
 import { useState, useEffect } from "react";
@@ -62,23 +68,23 @@ const connectQuickBooks = () => {
 
 const MODULE_ICONS: Record<string, any> = {
   client: User,
-  lead: Users,
-  quotation: FileText,
-  order: ShoppingCart,
+  lead: Target,
+  quotation: FileSignature,
+  order: ShoppingBag,
   product: Package,
   project: Briefcase,
   task: CheckSquare,
-  expense: DollarSign,
-  invoice: FileText,
+  expense: IndianRupee,
+  invoice: Receipt,
 };
 
 
 /* ================= GROUP ICONS ================= */
 
 const GROUP_ICONS: Record<string, any> = {
-  CRM: Users,
+  CRM: Building2,
   "Work Management": Briefcase,
-  Finance: DollarSign,
+  Finance: Wallet,
   Other: Folder,
 };
 
@@ -106,7 +112,7 @@ const ADMIN_MENU = [
   {
     key: "user",
     label: "Users",
-    icon: Users,
+    icon: User,
     path: "/users",
   },
   {
@@ -425,7 +431,9 @@ const NavItem = ({ to, icon, label, isCollapsed, isSubItem = false }: any) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
-      `relative flex items-center gap-3 py-2.5 rounded-lg text-sm transition-all duration-300 ${
+      `relative flex items-center gap-3 rounded-lg transition-all duration-300 ${
+        isSubItem ? "py-1.5 my-0.5" : "py-2.5 my-1"
+      } ${
         isCollapsed ? "justify-center px-4" : (isSubItem ? "pl-11 pr-4" : "px-4")
       } ${isActive
         ? "bg-slate-800/60 text-emerald-400 font-semibold shadow-sm"
@@ -436,12 +444,16 @@ const NavItem = ({ to, icon, label, isCollapsed, isSubItem = false }: any) => (
     {({ isActive }) => (
       <>
         {isActive && (
-          <div className="absolute left-0 top-2 bottom-2 w-1 bg-emerald-500 rounded-r-lg" />
+          <div className={`absolute left-0 w-1 bg-emerald-500 rounded-r-lg ${isSubItem ? "top-1.5 bottom-1.5" : "top-2 bottom-2"}`} />
         )}
-        <div className={`transition-colors duration-300 ${isActive ? "text-emerald-400" : ""}`}>
+        <div className={`transition-colors duration-300 ${isActive ? "text-emerald-400" : ""} ${isSubItem ? "opacity-70 scale-90" : ""}`}>
           {icon}
         </div>
-        {!isCollapsed && <span className={isSubItem ? "text-[13px]" : ""}>{label}</span>}
+        {!isCollapsed && (
+          <span className={`${isSubItem ? "text-[12px] opacity-80" : "text-sm"} ${isActive ? "opacity-100" : ""}`}>
+            {label}
+          </span>
+        )}
       </>
     )}
   </NavLink>

@@ -153,3 +153,23 @@
 .custom-scrollbar-light::-webkit-scrollbar-thumb:hover {
   background: #cbd5e1;
 }
+
+/* Ant Design Select Customization */
+.custom-select .ant-select-selector {
+  border-radius: 0.5rem !important;
+  border-color: #e2e8f0 !important;
+  height: 2.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  box-shadow: none !important;
+}
+
+.custom-select.ant-select-focused .ant-select-selector {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.1) !important;
+}
+
+.custom-select .ant-select-selection-placeholder {
+  color: #94a3b8 !important;
+  font-size: 0.875rem !important;
+}
