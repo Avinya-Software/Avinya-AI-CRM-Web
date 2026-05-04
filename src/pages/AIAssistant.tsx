@@ -530,9 +530,21 @@ const ActionConfirmationCard = ({ action, parameters }: { action: string; parame
         {isLead && (
           <>
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Company</span>
-              <span className="text-sm font-black text-slate-900">{parameters.CompanyName}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Contact Person</span>
+              <span className="text-sm font-black text-slate-900">{parameters.ContactPerson}</span>
             </div>
+            {parameters.CompanyName && parameters.CompanyName !== parameters.ContactPerson && (
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Company</span>
+                <span className="text-xs font-bold text-slate-600">{parameters.CompanyName}</span>
+              </div>
+            )}
+            {parameters.ClientType && (
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Client Type</span>
+                <span className="text-xs font-bold text-slate-600">{parameters.ClientType}</span>
+              </div>
+            )}
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Requirement</span>
               <span className="text-xs text-slate-600">{parameters.RequirementDetails}</span>

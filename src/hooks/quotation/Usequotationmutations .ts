@@ -7,7 +7,7 @@ import {
   CreateQuotationDto,
   UpdateQuotationDto,
 } from "../../interfaces/quotation.interface";
-import { createQuotation, deleteQuotation, updateQuotation } from "../../api/Quotation.api";
+import { createQuotation, deleteQuotation, updateQuotation, sendQuotationEmail } from "../../api/Quotation.api";
 
 // ── Create Quotation ───────────────────────────────────────────────
 export const useCreateQuotation = () => {
@@ -70,6 +70,19 @@ export const useDeleteQuotation = () => {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.statusMessage || error?.response?.data?.message || "Failed to delete quotation");
+    },
+  });
+};
+
+// ── Send Quotation Email ───────────────────────────────────────────
+export const useSendQuotationEmail = () => {
+  return useMutation({
+    mutationFn: (id: string) => sendQuotationEmail(id),
+    onSuccess: () => {
+      toast.success("Quotation email sent successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || error?.response?.data?.statusMessage || "Failed to send email");
     },
   });
 };

@@ -86,4 +86,10 @@ export const downloadQuotationPdf = async (id: string): Promise<Blob> => {
     responseType: "blob",
   });
   return response.data;
-};
+};
+
+// ── POST: Send Quotation Email ─────────────────────────────────────
+export const sendQuotationEmail = async (id: string) => {
+  const response = await api.post(`/Quotation/send-email/${id}`);
+  return response.data;
+};

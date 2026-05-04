@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
-import { Filter, X, Eye, Loader2, WalletIcon , FileText, PackageOpen } from "lucide-react";
+import { Filter, X, Eye, Loader2, WalletIcon , FileText, PackageOpen, Mail } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { Invoice, InvoiceFilters } from "../interfaces/invoice.interface";
-import { useInvoices, useDeleteInvoice, useInvoiceStatusDropdown } from "../hooks/invoice/useInvoices";
+import { useInvoices, useDeleteInvoice, useInvoiceStatusDropdown, useSendInvoiceEmail } from "../hooks/invoice/useInvoices";
 import { usePermissions } from "../context/PermissionContext";
 import { useDebounce } from "../components/common/CommonHelper";
 import Pagination from "../components/leads/Pagination";
@@ -45,6 +45,7 @@ const Invoices = () => {
     const invoicesMutation = useInvoices();
     const statusDropdownMutation = useInvoiceStatusDropdown();
     const deleteMutation = useDeleteInvoice();
+    const sendEmailMutation = useSendInvoiceEmail();
 
     useEffect(() => {
         invoicesMutation.mutate(filters);
@@ -115,6 +116,10 @@ const Invoices = () => {
     const handleRecordPayment = (invoice: Invoice) => {
         setPaymentInvoice(invoice);
         setOpenPaymentSheet(true);
+    };
+
+    const handleSendEmail = (invoice: Invoice) => {
+        sendEmailMutation.mutate(invoice.invoiceID);
     };
 
     const handleDeleteConfirmed = () => {
@@ -320,6 +325,20 @@ const Invoices = () => {
                                                     title="Payment"
                                                 >
                                                     <WalletIcon size={16} />
+                                                </button>
+
+                                                {/* Send Email */}
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleSendEmail(invoice); }}
+                                                    disabled={sendEmailMutation.isPending}
+                                                    className="p-1.5 rounded-full hover:bg-blue-100 text-slate-600 hover:text-blue-600 transition-colors disabled:opacity-50"
+                                                    title="Send Email"
+                                                >
+                                                    {sendEmailMutation.isPending ? (
+                                                        <Loader2 size={16} className="animate-spin" />
+                                                    ) : (
+                                                        <Mail size={16} />
+                                                    )}
                                                 </button>
 
                                             </div>

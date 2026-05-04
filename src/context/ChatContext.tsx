@@ -72,15 +72,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const normalizedPayload = (dashboardData || universalDashboard)
       ? undefined
       : normalizeChatData(
-          (data.suggestedClients && data.suggestedClients.length > 0)
-            ? data.suggestedClients
-            : data.data
-        );
+        (data.suggestedClients && data.suggestedClients.length > 0)
+          ? data.suggestedClients
+          : data.data
+      );
 
     return {
       id: (Date.now() + 1).toString(),
       role: "ai",
-      content: generatedContent 
+      content: generatedContent
         || data.clarificationMessage
         || data.summary
         || data.message
@@ -118,9 +118,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
       const result = await mutateFeedback(feedback);
 
-      setMessages(prev => prev.map(m => 
-        m.id === messageId 
-          ? { ...m, feedbackGiven: isGood ? "good" : "bad" } 
+      setMessages(prev => prev.map(m =>
+        m.id === messageId
+          ? { ...m, feedbackGiven: isGood ? "good" : "bad" }
           : m
       ));
 
@@ -128,11 +128,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         const correctedMessage = parseAIResponse(result as AIResponse, msg.originalMessage);
         correctedMessage.isCorrection = true;
         correctedMessage.content = `[Correction] ${correctedMessage.content}`;
-        
+
         if (result.remainingCredits !== undefined) {
           setRemainingCredits(result.remainingCredits);
         }
-        
+
         setMessages(prev => [...prev, correctedMessage]);
       }
     } catch (err) {
