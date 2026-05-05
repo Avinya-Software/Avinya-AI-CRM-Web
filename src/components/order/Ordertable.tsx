@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import dayjs from "dayjs";
-import { MoreVertical, Eye, Pencil, Trash2, PackageOpen, X, FileText, Loader2 } from "lucide-react";
+import { MoreVertical, Eye, Pencil, Trash2, PackageOpen, X, FileText, Loader2, Mail } from "lucide-react";
 import type { Order } from "../../interfaces/order.interface";
 import { usePermissions } from "../../context/PermissionContext";
 import { downloadOrderPdf } from "../../api/order.api";
@@ -17,6 +17,7 @@ interface Props {
     onAdd: () => void;
     onCreateInvoice: (order: Order) => void;
     onUpdateInvoice: (order: Order) => void;
+    onSendEmail: (order: Order) => void;
 }
 
 
@@ -43,12 +44,14 @@ const ActionMenu = ({
     onDeleteClick,
     onCreateInvoice,
     onUpdateInvoice,
+    onSendEmail,
     isInvoiceCreated,
 }: {
     onEdit: () => void;
     onDeleteClick: () => void;
     onCreateInvoice: () => void;
     onUpdateInvoice: () => void;
+    onSendEmail: () => void;
     isInvoiceCreated?: boolean;
 }) => {
 
@@ -129,6 +132,13 @@ const ActionMenu = ({
                             <Trash2 size={14} /> Delete
                         </button>
 
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setOpen(false); onSendEmail(); }}
+                            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-blue-50 text-blue-600 border-t"
+                        >
+                            <Mail size={14} /> Send Email
+                        </button>
+
 
                     </div>
                 </>
@@ -139,7 +149,7 @@ const ActionMenu = ({
 
 /* ================= MAIN TABLE ================= */
 
-const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateInvoice, onUpdateInvoice }: Props) => {
+const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateInvoice, onUpdateInvoice, onSendEmail }: Props) => {
 
 
     /* ✅ PERMISSIONS ADDED */
@@ -305,6 +315,7 @@ const OrderTable = ({ data, loading, onView, onEdit, onDelete, onAdd, onCreateIn
                                             }
                                             onCreateInvoice={() => onCreateInvoice(order)}
                                             onUpdateInvoice={() => onUpdateInvoice(order)}
+                                            onSendEmail={() => onSendEmail(order)}
                                             isInvoiceCreated={order.isInvoiceCreated}
                                         />
 

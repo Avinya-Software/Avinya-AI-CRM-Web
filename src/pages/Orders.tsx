@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Filter, X } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { Order, OrderFilters } from "../interfaces/order.interface";
-import { useDeleteOrder, useOrders } from "../hooks/order/useOrders";
+import { useDeleteOrder, useOrders, useSendOrderEmail } from "../hooks/order/useOrders";
 import OrderTable from "../components/order/Ordertable";
 import Pagination from "../components/leads/Pagination";
 import OrderFilterSheet from "../components/order/OrderFilterSheet";
@@ -49,6 +49,7 @@ const Orders = () => {
 
 
   const deleteMutation = useDeleteOrder();
+  const sendEmailMutation = useSendOrderEmail();
   const debouncedSearchTerm = useDebounce(searchInput, 500);
 
   useEffect(() => {
@@ -131,6 +132,10 @@ const Orders = () => {
     } finally {
       setIsLoadingInvoice(false);
     }
+  };
+
+  const handleSendEmail = (order: Order) => {
+    sendEmailMutation.mutate(order.orderID);
   };
 
 
@@ -237,6 +242,7 @@ const Orders = () => {
           onAdd={handleAddOrder}
           onCreateInvoice={handleCreateInvoice}
           onUpdateInvoice={handleUpdateInvoice}
+          onSendEmail={handleSendEmail}
         />
 
         {/* PAGINATION */}

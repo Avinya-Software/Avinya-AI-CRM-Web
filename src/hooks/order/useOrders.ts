@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { OrderFilters } from "../../interfaces/order.interface";
-import { createOrder, deleteOrder, getDesignStatusDropdown, getOrderById, getOrderDropdown, getOrders, getOrderStatusDropdown, updateOrder } from "../../api/order.api";
+import { createOrder, deleteOrder, getDesignStatusDropdown, getOrderById, getOrderDropdown, getOrders, getOrderStatusDropdown, updateOrder, sendOrderEmail } from "../../api/order.api";
 
 
 // ── Fetch orders with filters ──────────────────────────────────────
@@ -84,5 +84,18 @@ export const useOrderStatusDropdown = () => {
 export const useDesignStatusDropdown = () => {
   return useMutation({
     mutationFn: () => getDesignStatusDropdown(),
+  });
+};
+
+// ── Send Order Email ───────────────────────────────────────────────
+export const useSendOrderEmail = () => {
+  return useMutation({
+    mutationFn: (id: string) => sendOrderEmail(id),
+    onSuccess: () => {
+      toast.success("Order email sent successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to send email");
+    },
   });
 };

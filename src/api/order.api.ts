@@ -79,4 +79,10 @@ export const downloadOrderPdf = async (id: string): Promise<Blob> => {
     responseType: "blob",
   });
   return response.data;
-};
+};
+
+// ── POST: Send Order Email ─────────────────────────────────────────
+export const sendOrderEmail = async (id: string) => {
+  const response = await api.post(`/Order/send-email/${id}`);
+  return response.data;
+};

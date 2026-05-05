@@ -1,7 +1,7 @@
 // src/components/quotations/QuotationTable.tsx
 import { useState, useRef } from "react";
 import dayjs from "dayjs";
-import { MoreVertical, X, Eye, FileText, Loader2, Plus, CheckCircle2, XCircle } from "lucide-react";
+import { MoreVertical, X, Eye, FileText, Loader2, Plus, CheckCircle2, XCircle, Mail } from "lucide-react";
 import { Edit2, Trash2 } from "lucide-react";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import TableSkeleton from "../common/TableSkeleton";
@@ -10,7 +10,7 @@ import { useDeleteQuotation } from "../../hooks/quotation/Usequotationmutations 
 import { usePermissions } from "../../context/PermissionContext";
 import { downloadQuotationPdf } from "../../api/Quotation.api";
 import { toast } from "react-hot-toast";
-import { useUpdateQuotation } from "../../hooks/quotation/Usequotationmutations ";
+import { useUpdateQuotation, useSendQuotationEmail } from "../../hooks/quotation/Usequotationmutations ";
 import { useQuotationStatusDropdown } from "../../hooks/quotation/useQuotations";
 import { QuotationStatusDropdownItem } from "../../interfaces/quotation.interface";
 
@@ -58,6 +58,7 @@ const QuotationTable = ({
 
   const { mutate: deleteQuotation, isPending: isDeleting } = useDeleteQuotation();
   const { mutate: updateQuotation } = useUpdateQuotation();
+  const { mutate: sendEmail, isPending: isSendingEmail } = useSendQuotationEmail();
   const { data: statusData = [] } = useQuotationStatusDropdown();
 
   const openDropdown = (e: React.MouseEvent<HTMLButtonElement>, quotation: Quotation) => {
@@ -278,6 +279,12 @@ const QuotationTable = ({
             onClick={() => handleAction(() => onView(openQuotation))}
           />
 
+          <MenuItem
+            label={isSendingEmail ? "Sending..." : "Send Email"}
+            icon={<Mail size={14} className="text-blue-500" />}
+            onClick={() => handleAction(() => sendEmail(openQuotation.quotationID))}
+          />
+
           {canDelete && (
             <>
               <div className="border-t my-1" />
@@ -367,6 +374,7 @@ const MenuItem = ({
     else if (label.toLowerCase().includes("edit")) displayIcon = <Edit2 size={14} className="text-slate-400" />;
     else if (label.toLowerCase().includes("view")) displayIcon = <Eye size={14} className="text-slate-400" />;
     else if (label.toLowerCase().includes("add") || label.toLowerCase().includes("create")) displayIcon = <Plus size={14} className="text-slate-400" />;
+    else if (label.toLowerCase().includes("mail") || label.toLowerCase().includes("send")) displayIcon = <Mail size={14} className="text-slate-400" />;
   }
 
   return (

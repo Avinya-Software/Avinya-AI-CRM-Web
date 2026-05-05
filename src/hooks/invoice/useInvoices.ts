@@ -9,7 +9,8 @@ import {
   getInvoiceById,
   getInvoices,
   updateInvoice,
-  getInvoiceStatusDropdown
+  getInvoiceStatusDropdown,
+  sendInvoiceEmail
 } from "../../api/invoice.api";
 
 
@@ -79,5 +80,18 @@ export const useDeleteInvoice = () => {
 export const useInvoiceStatusDropdown = () => {
   return useMutation({
     mutationFn: () => getInvoiceStatusDropdown(),
+  });
+};
+
+// ── Send Invoice Email ───────────────────────────────────────────────
+export const useSendInvoiceEmail = () => {
+  return useMutation({
+    mutationFn: (id: string) => sendInvoiceEmail(id),
+    onSuccess: () => {
+      toast.success("Invoice email sent successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to send email");
+    },
   });
 };
