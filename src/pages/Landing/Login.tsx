@@ -144,7 +144,6 @@ const Login = () => {
                 <label className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
                   <Lock className="w-4 h-4" /> Password
                 </label>
-                <Link to="#" className={`text-xs font-semibold hover:underline ${isDark ? "text-emerald-400" : "text-emerald-500"}`}>Forgot password?</Link>
               </div>
               <div className="relative group">
                 <input

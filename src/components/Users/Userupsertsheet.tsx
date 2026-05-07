@@ -45,7 +45,7 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
         role: "",
         tenantId: isSuperAdmin ? "" : (currentUser?.tenantId || ""),
         isActive: true,
-        password: "Default@123",
+        password: "",
         permissionIds: selectedPermissions,
     });
 
@@ -84,18 +84,27 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
                 permissionIds: user.permissionIds ?? [],
             });
         } else if (open && !user) {
-            setSelectedPermissions([]);
+            // When creating a new user, if Super Admin, pre-select all permissions
+            if (isSuperAdmin && permissionModules.length > 0) {
+                const allPermissionIds = permissionModules
+                    .filter(module => module.moduleKey !== "followup")
+                    .flatMap(module => module.permissions.map(p => p.permissionId));
+                setSelectedPermissions(allPermissionIds);
+            } else {
+                setSelectedPermissions([]);
+            }
+            
             setFormData({
                 fullName: "",
                 email: "",
                 role: "",
                 tenantId: isSuperAdmin ? "" : (currentUser?.tenantId || ""),
                 isActive: true,
-                password: "Default@123",
+                password: "",
                 permissionIds: [],
             });
         }
-    }, [open, user]);
+    }, [open, user, permissionModules, isSuperAdmin]);
 
     const mutation = useMutation({
         mutationFn: upsertUserApi,
@@ -155,7 +164,7 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
             role: "",
             tenantId: isSuperAdmin ? "" : (currentUser?.tenantId || ""),
             isActive: true,
-            password: "Default@123",
+            password: "",
             permissionIds: [],
         });
         onClose();

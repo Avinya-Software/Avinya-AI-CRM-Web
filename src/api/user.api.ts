@@ -38,7 +38,7 @@ export const upsertUserApi = async (data: UserUpsertRequest) => {
     role: data.role,
     tenantId: data.tenantId,
     isActive: data.isActive,
-    password: data.password || "Default@123",
+    password: data.password || "",
     permissionIds: data.permissionIds || [],
   }
   const res = await api.post("/users/create", payload);
@@ -89,4 +89,11 @@ export const getCompaniesApi = async () => {
 export const getUsersDropdownApi = async () => {
   const res = await api.get("/users/users-dropdown");
   return res.data.data; 
+};
+
+/*   RESEND INVITATION   */
+
+export const resendInvitationApi = async (userId: string) => {
+  const res = await api.post(`/users/resend-invitation/${userId}`);
+  return res.data;
 };

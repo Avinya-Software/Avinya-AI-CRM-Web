@@ -41,6 +41,7 @@ import Loginai from "./pages/Landing/Login";
 import Signup from "./pages/Landing/Signup";
 import PublicLayout from "./pages/Publiclayouts/Publiclayout";
 import SuperAdminLogin from "./pages/SuperAdminLogin";
+import ResetPassword from "./pages/Landing/ResetPassword";
 import UserCredits from "./pages/UserCredits";
 import CreditTransactions from "./pages/CreditTransactions";
 import ScrollToTop from "./components/common/ScrollToTop";
@@ -63,6 +64,7 @@ function App() {
             <Route path="/login" element={<Loginai />} />
           </Route>
 
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route path="/login/admin" element={<Admin />} />
           <Route path="/login/superadmin" element={<SuperAdminLogin />} />

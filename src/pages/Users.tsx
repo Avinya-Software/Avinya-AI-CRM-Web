@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { Filter, X } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
-import { useUsers } from "../hooks/users/Useusers";
+import { useUsers, useResendInvitation } from "../hooks/users/Useusers";
 import UserTable from "../components/Users/Usertable";
 import Pagination from "../components/Users/Pagination";
 import UserFilterSheet from "../components/Users/Userfiltersheet ";
 import UserUpsertSheet from "../components/Users/Userupsertsheet";
 import { useApproveUser } from "../hooks/admin/useApproveAdmin";
 import { usePermissions } from "../context/PermissionContext"; // ✅ added
+import toast from "react-hot-toast";
 
 const DEFAULT_FILTERS = {
     pageNumber: 1,
@@ -38,6 +39,7 @@ const Users = () => {
 
     /* API */
     const usersMutation = useUsers();
+    const resendInvitation = useResendInvitation();
 
     useEffect(() => {
         usersMutation.mutate(filters);
@@ -78,6 +80,17 @@ const Users = () => {
                 usersMutation.mutate(filters);
             }
         });
+    };
+
+    const handleResendInvitation = (userId: string) => {
+        toast.promise(
+            resendInvitation.mutateAsync(userId),
+            {
+                loading: 'Resending invitation...',
+                success: 'Invitation email sent successfully!',
+                error: (err) => `Failed to send email: ${err.message}`,
+            }
+        );
     };
 
     // 🔐 If no view permission → block page
@@ -171,6 +184,7 @@ const Users = () => {
                     onAdd={canCreate ? handleAddUser : undefined}
                     onEdit={canUpdate ? handleEditUser : undefined}
                     onApprove={canApprove ? handleApprove : undefined}
+                    onResendInvitation={handleResendInvitation}
                 />
 
                 {/* PAGINATION */}

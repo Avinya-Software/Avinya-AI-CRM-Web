@@ -1,5 +1,4 @@
-// src/components/users/UserTable.tsx
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2, Mail } from "lucide-react";
 import type { User } from "../../interfaces/user.interface";
 import { usePermissions } from "../../context/PermissionContext"; // ✅ added
 
@@ -10,6 +9,7 @@ interface UserTableProps {
     onEdit: (user: User) => void;
     onDelete?: (userId: string) => void;
     onApprove?: (tenantId: string) => void;
+    onResendInvitation?: (userId: string) => void;
 }
 
 const UserTable = ({
@@ -18,6 +18,7 @@ const UserTable = ({
     onEdit,
     onDelete,
     onApprove,
+    onResendInvitation,
 }: UserTableProps) => {
 
     /* 🔐 PERMISSIONS */
@@ -26,6 +27,7 @@ const UserTable = ({
     const canUpdate = hasPermission("user", "edit");
     const canDelete = hasPermission("user", "delete");
     const canApprove = hasPermission("user", "approve");
+    const canResend = hasPermission("user", "edit"); // Reusing edit permission for resend
 
     if (loading) {
         return (
@@ -117,6 +119,18 @@ const UserTable = ({
                             {/* ACTIONS */}
                             <td className="px-4 py-3 text-sm text-right">
                                 <div className="flex items-center justify-end gap-2">
+
+                                    {/* RESEND INVITATION */}
+                                    {canResend && onResendInvitation && (
+                                        <button
+                                            onClick={() => onResendInvitation(user.userId)}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-md transition-colors"
+                                            title="Resend Invitation/Reset Password Email"
+                                        >
+                                            <Mail size={14} />
+                                            Resend
+                                        </button>
+                                    )}
 
                                     {/* EDIT */}
                                     {canUpdate && (
