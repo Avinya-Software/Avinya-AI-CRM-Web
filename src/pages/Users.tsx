@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Filter, X } from "lucide-react";
 import { Toaster } from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { useUsers, useResendInvitation } from "../hooks/users/Useusers";
+import { useUsersQuery, useResendInvitation } from "../hooks/users/Useusers";
 import UserTable from "../components/Users/Usertable";
 import Pagination from "../components/Users/Pagination";
 import UserFilterSheet from "../components/Users/Userfiltersheet ";
@@ -23,6 +24,7 @@ const DEFAULT_FILTERS = {
 };
 
 const Users = () => {
+    const queryClient = useQueryClient();
 
     /* 🔐 PERMISSIONS */
     const { hasPermission } = usePermissions();
@@ -38,14 +40,8 @@ const Users = () => {
     const [openFilterSheet, setOpenFilterSheet] = useState(false);
 
     /* API */
-    const usersMutation = useUsers();
+    const { data, isPending: isLoading } = useUsersQuery(filters);
     const resendInvitation = useResendInvitation();
-
-    useEffect(() => {
-        usersMutation.mutate(filters);
-    }, [filters]);
-
-    const { data, isPending: isLoading } = usersMutation;
     const approveAdmin = useApproveUser();
 
     /* HELPERS */
@@ -75,10 +71,15 @@ const Users = () => {
 
     const handleApprove = (tenantId: string) => {
         if (!canApprove) return;
-        approveAdmin.mutate(tenantId, {
-            onSuccess: () => {
-                usersMutation.mutate(filters);
+        toast.promise(
+            approveAdmin.mutateAsync(tenantId),
+            {
+                loading: 'Approving admin...',
+                success: 'Admin approved successfully!',
+                error: (err) => `Failed to approve: ${err.message}`,
             }
+        ).then(() => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
         });
     };
 
@@ -216,7 +217,7 @@ const Users = () => {
                         setOpenUserSheet(false);
                         setSelectedUser(null);
                     }}
-                    onSuccess={() => usersMutation.mutate(filters)}
+                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ["users"] })}
                     user={selectedUser}
                 />
             ) : null}

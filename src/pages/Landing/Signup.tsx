@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, Mail, Lock, User, Building, Phone, AlertCircle, CheckCircle, Loader, Eye, EyeOff } from 'lucide-react';
@@ -12,6 +12,10 @@ export default function Signup() {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const isDark = theme === "dark";
+
+  useEffect(() => {
+    storage.clearAll();
+  }, []);
 
   // Form state
   const [formData, setFormData] = useState({

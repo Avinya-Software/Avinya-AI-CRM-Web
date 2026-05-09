@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { usePendingCompanies } from "../hooks/admin/usePendingCompanies";
 import { useApproveAdvisor } from "../hooks/admin/useApproveAdvisor";
 import { useDeleteAdvisor } from "../hooks/admin/useDeleteAdvisor";
@@ -9,14 +9,36 @@ import TableSkeleton from "../components/common/TableSkeleton";
 type ActionType = "approve" | "reject" | null;
 
 const AdminDashboard = () => {
-  const pendingCompaniesMutation = usePendingCompanies();
+  const { data, isLoading } = usePendingCompanies();
   const approveMutation = useApproveAdvisor();
+  const [prevCount, setPrevCount] = useState<number | null>(null);
 
   useEffect(() => {
-    pendingCompaniesMutation.mutate(undefined);
+    // Request notification permission on mount
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
   }, []);
 
-  const { data, isPending: isLoading } = pendingCompaniesMutation;
+  useEffect(() => {
+    if (data?.data) {
+      const currentCount = data.data.length;
+      // If count increases, show a notification
+      if (prevCount !== null && currentCount > prevCount) {
+        toast.success("New registration received!", { 
+          icon: "🚀",
+          duration: 5000 
+        });
+        
+        if (Notification.permission === "granted") {
+          new Notification("New Registration", {
+            body: "A new company is waiting for your approval in the dashboard.",
+          });
+        }
+      }
+      setPrevCount(currentCount);
+    }
+  }, [data?.data?.length]);
   const deleteMutation = useDeleteAdvisor();
 
   const [selectedUserId, setSelectedUserId] =
@@ -29,15 +51,18 @@ const AdminDashboard = () => {
   const confirmAction = () => {
     if (!selectedUserId || !actionType) return;
 
-    if (actionType === "approve") {
-      approveMutation.mutate(selectedUserId, {
-        onSuccess: closeDialog,
-      });
-    } else {
-      deleteMutation.mutate(selectedUserId, {
-        onSuccess: closeDialog,
-      });
-    }
+    const promise =
+      actionType === "approve"
+        ? approveMutation.mutateAsync(selectedUserId)
+        : deleteMutation.mutateAsync(selectedUserId);
+
+    toast.promise(promise, {
+      loading: actionType === "approve" ? "Approving company..." : "Rejecting company...",
+      success: actionType === "approve" ? "Company approved!" : "Company rejected.",
+      error: (err) => `Action failed: ${err.message}`,
+    }).then(() => {
+      closeDialog();
+    });
   };
 
   const closeDialog = () => {

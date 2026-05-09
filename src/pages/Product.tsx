@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Select as AntSelect } from "antd";
 import { Toaster } from "react-hot-toast";
 
-import { useProducts } from "../hooks/product/useProducts";
+import { useProductsQuery } from "../hooks/product/useProducts";
 import ProductTable from "../components/product/ProductTable";
 import ProductUpsertSheet from "../components/product/ProductUpsertSheet";
 import Pagination from "../components/leads/Pagination";
@@ -27,13 +27,7 @@ const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const debouncedSearchTerm = useDebounce(search, 500);
 
-  const productsMutation = useProducts();
-
-  useEffect(() => {
-    productsMutation.mutate({ pageNumber, pageSize, status, search: debouncedSearchTerm });
-  }, [pageNumber, pageSize, status, debouncedSearchTerm]);
-
-  const { data, isPending: isLoading } = productsMutation;
+  const { data, isPending: isLoading } = useProductsQuery({ pageNumber, pageSize, status, search: debouncedSearchTerm });
 
   const products: Product[] = data?.data?.data ?? [];
   const totalRecords: number = data?.data?.totalRecords ?? 0;
@@ -54,7 +48,6 @@ const Products = () => {
   };
 
   const handleSuccess = () => {
-    productsMutation.mutate({ pageNumber, pageSize, status, search: debouncedSearchTerm });
     setOpenSheet(false);
     setSelectedProduct(null);
   };

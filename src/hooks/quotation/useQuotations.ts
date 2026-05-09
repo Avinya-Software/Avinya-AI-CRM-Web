@@ -32,9 +32,10 @@ export const useQuotationDropdown = () => {
 };
 
 // ── Fetch quotation status dropdown list ───────────────────────────
-export const useQuotationStatusDropdown = () => {
+export const useQuotationStatusDropdown = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ["quotation-status-dropdown"],
     queryFn: () => getQuotationStatusDropdown(),
+    enabled,
   });
 };

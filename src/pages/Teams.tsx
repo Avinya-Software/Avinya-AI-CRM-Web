@@ -9,7 +9,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Toaster } from "react-hot-toast";
-import { useTeams } from "../hooks/team/useTeams";
+import { useTeamsQuery } from "../hooks/team/useTeams";
 
 import { Team } from "../interfaces/team.interface";
 import { SelectOption } from "../components/team/Teammultiselect";
@@ -17,7 +17,7 @@ import TeamCard from "../components/team/TeamCard";
 import TeamUpsertModal from "../components/team/Teamupsertmodal";
 import TeamDeleteModal from "../components/team/Teamdeletemodal";
 import TeamMembersDrawer from "../components/team/Teammembersdrawer";
-import { useUsersDropdown } from "../hooks/users/Useusers";
+import { useUsersDropdownQuery } from "../hooks/users/Useusers";
 import { usePermissions } from "../context/PermissionContext"; // ✅ ADDED
 
 const Teams = () => {
@@ -36,16 +36,8 @@ const Teams = () => {
   const [membersOpen, setMembersOpen] = useState(false);
   const [membersTeam, setMembersTeam] = useState<Team | null>(null);
 
-  const teamsMutation = useTeams();
-  const usersDropdownMutation = useUsersDropdown();
-
-  useEffect(() => {
-    teamsMutation.mutate(undefined);
-    usersDropdownMutation.mutate(undefined);
-  }, []);
-
-  const { data: teamsData, isPending: isLoading } = teamsMutation;
-  const { data: usersData } = usersDropdownMutation;
+  const { data: teamsData, isPending: isLoading } = useTeamsQuery();
+  const { data: usersData = [] } = useUsersDropdownQuery();
 
   const teams = teamsData?.data ?? [];
 

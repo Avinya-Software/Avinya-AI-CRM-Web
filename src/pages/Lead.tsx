@@ -1,9 +1,11 @@
 // src/pages/Leads.tsx
 import { useEffect, useState } from "react";
-import { Filter, X } from "lucide-react";
+import { Filter, X, RefreshCw } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
 import { useLeads } from "../hooks/lead/useLeads";
+import { useLeadStatusesQuery } from "../hooks/lead/useLeadStatuses";
+import { useLeadSourcesQuery } from "../hooks/lead/useLeadSources";
 import LeadTable from "../components/leads/LeadTable";
 import Pagination from "../components/leads/Pagination";
 import LeadFilterSheet from "../components/leads/LeadFilterSheet";
@@ -63,7 +65,12 @@ const Leads = () => {
 
   const debouncedSearchTerm = useDebounce(search, 500);
 
-  const { data, isLoading } = useLeads(filters);
+  // 1. Call main API immediately (priority)
+  const { data, isLoading, refetch, isFetching } = useLeads(filters);
+
+  // 2. Call dropdown APIs after main data is loaded (to not block main thread)
+  useLeadStatusesQuery(!!data);
+  useLeadSourcesQuery(!!data);
 
   useEffect(() => {
     setFilters(prev => {
@@ -174,7 +181,7 @@ const Leads = () => {
 
               {/* SEARCH */}
               <div>
-                <div className="relative w-[360px]">
+                <div className="relative w-full max-w-[360px]">
                   <input
                     type="text"
                     placeholder="Search leads by name, email, or phone..."
@@ -212,11 +219,20 @@ const Leads = () => {
                 )}
 
                 <button
+                  onClick={() => refetch()}
+                  className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50"
+                  disabled={isFetching}
+                >
+                  <RefreshCw size={16} className={`${isFetching ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">Refresh</span>
+                </button>
+
+                <button
                   onClick={() => setOpenFilterSheet(true)}
                   className="inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 relative"
                 >
                   <Filter size={16} />
-                  Filters
+                  <span className="hidden sm:inline">Filters</span>
                   {hasActiveFilters && (
                     <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-600 rounded-full" />
                   )}

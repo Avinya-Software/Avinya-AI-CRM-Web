@@ -1,14 +1,15 @@
 // src/components/quotations/QuotationUpsertSheet.tsx
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { DatePicker, Select as AntSelect, Divider } from "antd";
 import dayjs from "dayjs";
 import { X, Save, Loader2, Plus, Trash2, User, Briefcase, Calendar, MapPin, FileText } from "lucide-react";
 import { Quotation, TaxCategory, QuotationStatusDropdownItem } from "../../interfaces/quotation.interface";
 import { ProductDropdown } from "../../interfaces/product.interface";
-import { useClientsDropdown } from "../../hooks/client/useClients";
-import { useSettings } from "../../hooks/setting/useSettings";
-import { useProductDropdown } from "../../hooks/product/useProductDropdown";
-import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
+import { useClientsDropdownQuery } from "../../hooks/client/useClients";
+import { useSettingsQuery } from "../../hooks/setting/useSettings";
+import { useProductDropdownQuery } from "../../hooks/product/useProductDropdown";
+import { useTaxCategoriesQuery } from "../../hooks/taxCategory/taxCategory";
 import { useCreateQuotation, useUpdateQuotation } from "../../hooks/quotation/Usequotationmutations ";
 import { usePermissions } from "../../context/PermissionContext";
 import { useQuotationStatusDropdown } from "../../hooks/quotation/useQuotations";
@@ -16,8 +17,8 @@ import { useLeadDetails } from "../../hooks/lead/useLeadDetails";
 import { useAuth } from "../../auth/useAuth";
 import ProductQuickAddModal from "../product/ProductQuickAddModal";
 import SearchableComboBox from "../common/SearchableComboBox";
-import { useStates } from "../../hooks/state/useStates";
-import { useCities } from "../../hooks/city/useCities";
+import { useStatesQuery } from "../../hooks/state/useStates";
+import { useCitiesQuery } from "../../hooks/city/useCities";
 import Spinner from "../common/Spinner";
 import { toast } from "react-hot-toast";
 
@@ -56,7 +57,7 @@ const QuotationUpsertSheet = ({
     clientID,
 }: QuotationUpsertSheetProps) => {
     const { hasPermission } = usePermissions();
-
+    const queryClient = useQueryClient();
     const canAddQuotation = hasPermission("quotation", "add");
     const canEditQuotation = hasPermission("quotation", "edit");
     const { data: statusData = [] } = useQuotationStatusDropdown();
@@ -112,35 +113,19 @@ const QuotationUpsertSheet = ({
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
-    const clientsDropdownMutation = useClientsDropdown();
-    const settingsMutation = useSettings();
-    const productDropdownMutation = useProductDropdown();
-    const taxCategoriesMutation = useTaxCategories();
-    const statesMutation = useStates();
-    const citiesMutation = useCities();
+    const clientsDropdownQuery = useClientsDropdownQuery(open);
+    const settingsQuery = useSettingsQuery(undefined, open);
+    const productDropdownQuery = useProductDropdownQuery(open);
+    const taxCategoriesQuery = useTaxCategoriesQuery(open);
+    const statesQuery = useStatesQuery(open);
+    const citiesQuery = useCitiesQuery(Number(formData.stateID), open && !!formData.stateID);
 
-    useEffect(() => {
-        if (open) {
-            clientsDropdownMutation.mutate(undefined);
-            settingsMutation.mutate(undefined);
-            productDropdownMutation.mutate(undefined);
-            taxCategoriesMutation.mutate(undefined);
-            statesMutation.mutate(undefined);
-        }
-    }, [open]);
-
-    useEffect(() => {
-        if (formData.stateID) {
-            citiesMutation.mutate(Number(formData.stateID));
-        }
-    }, [formData.stateID]);
-
-    const clients: any[] = clientsDropdownMutation.data ?? [];
-    const settings: any[] = settingsMutation.data ?? [];
-    const products: any[] = productDropdownMutation.data ?? [];
-    const taxCategories: any[] = taxCategoriesMutation.data ?? [];
-    const states: any[] = statesMutation.data ?? [];
-    const cities: any[] = citiesMutation.data ?? [];
+    const clients: any[] = clientsDropdownQuery.data ?? [];
+    const settings: any[] = settingsQuery.data ?? [];
+    const products: any[] = productDropdownQuery.data ?? [];
+    const taxCategories: any[] = taxCategoriesQuery.data ?? [];
+    const states: any[] = statesQuery.data ?? [];
+    const cities: any[] = citiesQuery.data ?? [];
 
     const createQuotation = useCreateQuotation();
     const updateQuotation = useUpdateQuotation();
@@ -443,7 +428,7 @@ const QuotationUpsertSheet = ({
     };
 
     const handleProductQuickAddSuccess = (newProduct?: any) => {
-        productDropdownMutation.mutate(undefined);
+        queryClient.invalidateQueries({ queryKey: ["product-dropdown"] });
         if (newProduct && activeRowId) {
             setProductItems(prev =>
                 prev.map(item =>

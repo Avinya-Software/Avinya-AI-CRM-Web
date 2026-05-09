@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import toast, { Toaster } from "react-hot-toast";
 
-import { useClients } from "../hooks/client/useClients";
+import { useClientsQuery, useClientsDropdownQuery } from "../hooks/client/useClients";
 import { usePermissions } from "../context/PermissionContext";
 
 import Pagination from "../components/leads/Pagination";
@@ -25,13 +26,18 @@ const Clients = () => {
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const debouncedSearchTerm = useDebounce(search, 500);
 
-    const clientsMutation = useClients();
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        clientsMutation.mutate({ page: pageNumber, pageSize, search: debouncedSearchTerm });
-    }, [pageNumber, pageSize, debouncedSearchTerm]);
+    // 1. Call filter API first
+    const { data: dropdownData, isLoading: isLoadingDropdown } = useClientsDropdownQuery();
 
-    const { data, isPending: isLoading } = clientsMutation;
+    // 2. Call main API only after filter API is successful
+    const { data, isLoading: isLoadingClients } = useClientsQuery(
+        { page: pageNumber, pageSize, search: debouncedSearchTerm },
+        !!dropdownData // Enabled only if dropdownData exists
+    );
+
+    const isLoading = isLoadingDropdown || isLoadingClients;
 
     // Block entire page if no view permission
     if (!canViewClient) {
@@ -56,7 +62,7 @@ const Clients = () => {
 
     const handleClientSuccess = (message?: string) => {
         setOpenClientSheet(false);
-        clientsMutation.mutate({ page: pageNumber, pageSize, search: debouncedSearchTerm });
+        queryClient.invalidateQueries({ queryKey: ["clients"] });
         toast.success(message || "Customer saved successfully!");
     };
 
@@ -115,7 +121,7 @@ const Clients = () => {
                     data={data?.data ?? []}
                     loading={isLoading}
                     onEdit={canEditClient ? handleEditClient : undefined}
-                    onDeleteSuccess={() => clientsMutation.mutate({ page: pageNumber, pageSize, search: debouncedSearchTerm })}
+                    onDeleteSuccess={() => queryClient.invalidateQueries({ queryKey: ["clients"] })}
                 />
 
                 {/* PAGINATION */}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { useLeadStatuses } from "../../hooks/lead/useLeadStatuses";
-import { useLeadSources } from "../../hooks/lead/useLeadSources";
+import { useLeadStatusesQuery } from "../../hooks/lead/useLeadStatuses";
+import { useLeadSourcesQuery } from "../../hooks/lead/useLeadSources";
 import Spinner from "../common/Spinner";
 import type { LeadFilters } from "../../interfaces/lead.interface";
 import { DatePicker, Select as AntSelect } from "antd";
@@ -22,18 +22,8 @@ const LeadFilterSheet = ({
     onApply,
     onClear,
 }: Props) => {
-    const leadStatusesMutation = useLeadStatuses();
-    const leadSourcesMutation = useLeadSources();
-
-    useEffect(() => {
-        if (open) {
-            leadStatusesMutation.mutate(undefined);
-            leadSourcesMutation.mutate(undefined);
-        }
-    }, [open]);
-
-    const { data: statuses, isPending: statusLoading } = leadStatusesMutation;
-    const { data: sources, isPending: sourceLoading } = leadSourcesMutation;
+    const { data: statuses, isLoading: statusLoading } = useLeadStatusesQuery();
+    const { data: sources, isLoading: sourceLoading } = useLeadSourcesQuery();
     const loading = statusLoading || sourceLoading;
 
     // Local state — changes don't hit API until "Apply" is clicked

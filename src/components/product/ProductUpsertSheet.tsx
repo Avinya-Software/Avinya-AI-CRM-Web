@@ -7,9 +7,9 @@ import toast from "react-hot-toast";
 import { useUpsertProduct } from "../../hooks/product/useUpsertProduct";
 import Spinner from "../common/Spinner";
 import type { Product } from "../../interfaces/product.interface";
-import { useUnitTypeDropdown } from "../../hooks/product/useUnitTypeDropdown";
-import { usePermissions } from "../../context/PermissionContext"; // ✅ ADDED
-import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
+import { useUnitTypeDropdownQuery } from "../../hooks/product/useUnitTypeDropdown";
+import { usePermissions } from "../../context/PermissionContext";
+import { useTaxCategoriesQuery } from "../../hooks/taxCategory/taxCategory";
 
 interface Props {
   open: boolean;
@@ -20,18 +20,11 @@ interface Props {
 
 const ProductUpsertSheet = ({ open, onClose, product, onSuccess }: Props) => {
   const { mutateAsync, isPending } = useUpsertProduct();
-  const unitTypeDropdownMutation = useUnitTypeDropdown();
-  const taxCategoriesMutation = useTaxCategories();
+  const unitTypeDropdownQuery = useUnitTypeDropdownQuery(open);
+  const taxCategoriesQuery = useTaxCategoriesQuery(open);
 
-  useEffect(() => {
-    if (open) {
-      unitTypeDropdownMutation.mutate(undefined);
-      taxCategoriesMutation.mutate(undefined);
-    }
-  }, [open]);
-
-  const { data: unitTypes, isPending: unitLoading } = unitTypeDropdownMutation;
-  const { data: taxCategoriesData, isPending: taxLoading } = taxCategoriesMutation;
+  const { data: unitTypes, isPending: unitLoading } = unitTypeDropdownQuery;
+  const { data: taxCategoriesData, isPending: taxLoading } = taxCategoriesQuery;
   const taxCategories = taxCategoriesData ?? [];
   // ✅ permissions
   const { hasPermission } = usePermissions();

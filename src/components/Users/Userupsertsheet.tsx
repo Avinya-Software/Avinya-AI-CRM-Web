@@ -6,8 +6,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { updateUserApi, upsertUserApi } from "../../api/user.api";
 import type { User, UserUpsertRequest } from "../../interfaces/user.interface";
-import { useCompanies, useRoles } from "../../hooks/users/Useusers";
-import { usePermissions as useUserPermissions } from "../../hooks/users/usePermissions";
+import { useCompaniesQuery, useRolesQuery } from "../../hooks/users/Useusers";
+import { usePermissionsQuery } from "../../hooks/users/usePermissions";
 import { usePermissions } from "../../context/PermissionContext";
 import { useAuth } from "../../auth/useAuth";
 import { decodeUserToken } from "../../lib/auth.utils";
@@ -34,8 +34,7 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
     const isSuperAdmin = currentUser?.role === "ROLE_SUPERADMIN" || currentUser?.role === "SuperAdmin";
     const isAdmin = currentUser?.role === "ROLE_ADMIN" || currentUser?.role === "Admin";
 
-    const permissionModulesMutation = useUserPermissions();
-    const permissionModules = permissionModulesMutation.data ?? [];
+    const { data: permissionModules = [] } = usePermissionsQuery(open);
 
     const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
 
@@ -49,11 +48,8 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
         permissionIds: selectedPermissions,
     });
 
-    const companiesMutation = useCompanies();
-    const companies = companiesMutation.data ?? [];
-
-    const rolesMutation = useRoles();
-    const allRoles = rolesMutation.data ?? [];
+    const { data: companies = [] } = useCompaniesQuery(open);
+    const { data: allRoles = [] } = useRolesQuery(open);
 
     const availableRoles = allRoles.filter(role => {
         if (isAdmin && !isSuperAdmin) {
@@ -62,13 +58,7 @@ const UserUpsertSheet = ({ open, onClose, onSuccess, user }: UserUpsertSheetProp
         return true;
     });
 
-    useEffect(() => {
-        if (open) {
-            permissionModulesMutation.mutate();
-            companiesMutation.mutate();
-            rolesMutation.mutate();
-        }
-    }, [open]);
+
 
     useEffect(() => {
         if (open && user) {

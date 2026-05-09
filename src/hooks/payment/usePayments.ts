@@ -1,6 +1,6 @@
 // src/hooks/payment/usePayments.ts
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   createPayment,
@@ -14,6 +14,14 @@ import { CreatePaymentDto, UpdatePaymentDto } from "../../interfaces/payment.int
 export const usePayments = () => {
   return useMutation({
     mutationFn: (invoiceId: string) => getPaymentsByInvoiceId(invoiceId),
+  });
+};
+
+export const usePaymentsQuery = (invoiceId: string, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ["payments", invoiceId],
+    queryFn: () => getPaymentsByInvoiceId(invoiceId),
+    enabled: enabled && !!invoiceId,
   });
 };
 

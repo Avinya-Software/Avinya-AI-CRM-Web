@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Select as AntSelect } from "antd";
-import { X ,Users} from "lucide-react";
+import { X, Users } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { createClientApi, updateClientApi } from "../../api/client.api";

@@ -4,14 +4,16 @@ import {
   getProjectStatusDropdownApi,
 } from "../../api/project.api";
 
-export const useProjectStatusDropdown = () =>
+export const useProjectStatusDropdown = (enabled: boolean = true) =>
   useQuery({
     queryKey: ["project-status-dropdown"],
     queryFn: getProjectStatusDropdownApi,
+    enabled,
   });
 
-export const useProjectPriorityDropdown = () =>
+export const useProjectPriorityDropdown = (enabled: boolean = true) =>
   useQuery({
     queryKey: ["project-priority-dropdown"],
     queryFn: getProjectPriorityDropdownApi,
+    enabled,
   });

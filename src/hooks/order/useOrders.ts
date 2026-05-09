@@ -1,6 +1,4 @@
-// src/hooks/order/useOrders.ts
-
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { OrderFilters } from "../../interfaces/order.interface";
 import { createOrder, deleteOrder, getDesignStatusDropdown, getOrderById, getOrderDropdown, getOrders, getOrderStatusDropdown, updateOrder, sendOrderEmail } from "../../api/order.api";
@@ -10,6 +8,13 @@ import { createOrder, deleteOrder, getDesignStatusDropdown, getOrderById, getOrd
 export const useOrders = () => {
   return useMutation({
     mutationFn: (filters: OrderFilters) => getOrders(filters),
+  });
+};
+
+export const useOrdersQuery = (filters: OrderFilters) => {
+  return useQuery({
+    queryKey: ["orders", filters],
+    queryFn: () => getOrders(filters),
   });
 };
 
@@ -80,10 +85,26 @@ export const useOrderStatusDropdown = () => {
   });
 };
 
+export const useOrderStatusDropdownQuery = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ["order-status-dropdown"],
+    queryFn: () => getOrderStatusDropdown(),
+    enabled,
+  });
+};
+
 // ── Fetch design status dropdown list ──────────────────────────────────────
 export const useDesignStatusDropdown = () => {
   return useMutation({
     mutationFn: () => getDesignStatusDropdown(),
+  });
+};
+
+export const useDesignStatusDropdownQuery = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ["design-status-dropdown"],
+    queryFn: () => getDesignStatusDropdown(),
+    enabled,
   });
 };
 

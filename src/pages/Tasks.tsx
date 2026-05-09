@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Filter, X, Plus, Mic, User, Users } from "lucide-react";
 import { Toaster } from "react-hot-toast";
-import { useTasks } from "../hooks/task/useTasks";
+import { useTasksQuery } from "../hooks/task/useTasks";
 import { useAddTaskUsingVoice } from "../hooks/task/useTaskMutations";
 import TaskList from "../components/tasks/TaskList";
 import TaskUpsertSheet from "../components/tasks/TaskUpsertSheet";
@@ -38,10 +38,7 @@ const Tasks = () => {
 
   const handleVoiceSend = async (text: string) => {
     if (text.trim()) {
-      voiceTaskMutation.mutate(
-        { text },
-        { onSuccess: refreshTasks }
-      );
+      voiceTaskMutation.mutate({ text });
     }
     setOpenVoice(false);
   };
@@ -67,25 +64,9 @@ const Tasks = () => {
 
   const { from, to } = getDateRange();
 
-  const tasksMutation = useTasks();
-  const personalTasksMutation = useTasks();
-  const teamTasksMutation = useTasks();
-
-  useEffect(() => {
-    tasksMutation.mutate({ from, to, scope });
-  }, [from, to, scope]);
-
-  useEffect(() => {
-    personalTasksMutation.mutate({ from, to, scope: "Personal" });
-  }, [from, to]);
-
-  useEffect(() => {
-    teamTasksMutation.mutate({ from, to, scope: "Team" });
-  }, [from, to]);
-
-  const { data, isPending: isLoading } = tasksMutation;
-  const { data: personalData } = personalTasksMutation;
-  const { data: teamData } = teamTasksMutation;
+  const { data, isPending: isLoading } = useTasksQuery({ from, to, scope });
+  const { data: personalData } = useTasksQuery({ from, to, scope: "Personal" });
+  const { data: teamData } = useTasksQuery({ from, to, scope: "Team" });
 
   const filteredTasks = (data?.data || []).filter((task) => {
     if (filters.status && task.status !== filters.status) return false;
@@ -130,11 +111,7 @@ const Tasks = () => {
     completed: filteredTasks.filter((t) => t.status === TaskStatus.Completed),
   };
 
-  const refreshTasks = () => {
-    tasksMutation.mutate({ from, to, scope });
-    personalTasksMutation.mutate({ from, to, scope: "Personal" });
-    teamTasksMutation.mutate({ from, to, scope: "Team" });
-  };
+
 
   return (
     <>
@@ -345,7 +322,6 @@ const Tasks = () => {
           setOpenTaskSheet(false);
           setSelectedTask(null);
         }}
-        onSuccess={refreshTasks}
         task={selectedTask}
         scope={scope}
       />

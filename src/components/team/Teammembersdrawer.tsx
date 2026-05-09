@@ -10,7 +10,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { useTeamMembers } from "../../hooks/team/useTeams";
+import { useTeamMembersQuery } from "../../hooks/team/useTeams";
 import { TeamMembersDrawerProps } from "../../interfaces/team.interface";
 import {
   useAddTeamMember,
@@ -31,13 +31,7 @@ const TeamMembersDrawer = ({
   const [addIds, setAddIds] = useState<string[]>([]);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
-  const teamMembersMutation = useTeamMembers();
-
-  useEffect(() => {
-    if (team?.id) teamMembersMutation.mutate(team.id);
-  }, [team?.id]);
-
-  const { data: membersData, isPending: membersLoading } = teamMembersMutation;
+  const { data: membersData, isPending: membersLoading } = useTeamMembersQuery(team?.id || 0, open);
 
   const members = membersData?.data ?? [];
 

@@ -77,13 +77,17 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           : data.data
       );
 
+    const resolvedMessage = data.message
+      ? data.message.replace(/\{count\}/gi, String(data.count ?? 0))
+      : undefined;
+
     return {
       id: (Date.now() + 1).toString(),
       role: "ai",
       content: generatedContent
         || data.clarificationMessage
         || data.summary
-        || data.message
+        || resolvedMessage
         || (dashboardData
           ? `Here's your CRM overview across ${Object.keys(dashboardData).length} modules:`
           : data.count !== undefined && data.count > 0

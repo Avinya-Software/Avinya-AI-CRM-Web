@@ -67,9 +67,11 @@ const TaskUpsertSheet = ({
   const usersDropdownMutation = useUsersDropdown();
 
   useEffect(() => {
-    teamsDropdownMutation.mutate(undefined);
-    usersDropdownMutation.mutate(undefined);
-  }, []);
+    if (open) {
+      teamsDropdownMutation.mutate(undefined);
+      usersDropdownMutation.mutate(undefined);
+    }
+  }, [open]);
 
   const { data: teamResponse } = teamsDropdownMutation;
   const { data: usersResponse } = usersDropdownMutation;

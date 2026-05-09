@@ -1,17 +1,18 @@
 // src/components/order/OrderUpsertSheet.tsx
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { DatePicker, Select as AntSelect, Divider } from "antd";
 import dayjs from "dayjs";
 import { X, Save, Loader2, Plus, Trash2 } from "lucide-react";
 import type { Order, CreateOrderDto, OrderItemDto } from "../../interfaces/order.interface";
 import { ProductDropdown } from "../../interfaces/product.interface";
-import { useClientsDropdown } from "../../hooks/client/useClients";
-import { useProductDropdown } from "../../hooks/product/useProductDropdown";
-import { useCreateOrder, useDesignStatusDropdown, useOrderStatusDropdown, useUpdateOrder } from "../../hooks/order/useOrders";
-import { useCities } from "../../hooks/city/useCities";
-import { useStates } from "../../hooks/state/useStates";
+import { useClientsDropdownQuery } from "../../hooks/client/useClients";
+import { useProductDropdownQuery } from "../../hooks/product/useProductDropdown";
+import { useCreateOrder, useDesignStatusDropdownQuery, useOrderStatusDropdownQuery, useUpdateOrder } from "../../hooks/order/useOrders";
+import { useCitiesQuery } from "../../hooks/city/useCities";
+import { useStatesQuery } from "../../hooks/state/useStates";
 import { usePermissions } from "../../context/PermissionContext";
-import { useTaxCategories } from "../../hooks/taxCategory/taxCategory";
+import { useTaxCategoriesQuery } from "../../hooks/taxCategory/taxCategory";
 import { TaxCategory } from "../../interfaces/quotation.interface";
 import ProductQuickAddModal from "../product/ProductQuickAddModal";
 
@@ -46,6 +47,7 @@ const OrderUpsertSheet = ({
     const isEdit = !!order;
 
     const { hasPermission } = usePermissions();
+    const queryClient = useQueryClient();
     const canAdd = hasPermission("order", "add");
     const canEdit = hasPermission("order", "edit");
 
@@ -81,38 +83,21 @@ const OrderUpsertSheet = ({
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
-    const clientsDropdownMutation = useClientsDropdown();
-    const productDropdownMutation = useProductDropdown();
-    const statesMutation = useStates();
-    const citiesMutation = useCities();
-    const orderStatusDropdownMutation = useOrderStatusDropdown();
-    const designStatusDropdownMutation = useDesignStatusDropdown();
-    const taxCategoriesMutation = useTaxCategories();
+    const clientsDropdownQuery = useClientsDropdownQuery(open);
+    const productDropdownQuery = useProductDropdownQuery(open);
+    const statesQuery = useStatesQuery(open);
+    const citiesQuery = useCitiesQuery(Number(formData.stateID), open && !!formData.stateID);
+    const orderStatusDropdownQuery = useOrderStatusDropdownQuery(open);
+    const designStatusDropdownQuery = useDesignStatusDropdownQuery(open);
+    const taxCategoriesQuery = useTaxCategoriesQuery(open);
 
-    useEffect(() => {
-        if (open) {
-            clientsDropdownMutation.mutate(undefined);
-            productDropdownMutation.mutate(undefined);
-            statesMutation.mutate(undefined);
-            orderStatusDropdownMutation.mutate(undefined);
-            designStatusDropdownMutation.mutate(undefined);
-            taxCategoriesMutation.mutate(undefined);
-        }
-    }, [open]);
-
-    useEffect(() => {
-        if (formData.stateID) {
-            citiesMutation.mutate(Number(formData.stateID));
-        }
-    }, [formData.stateID]);
-
-    const clients: any[] = clientsDropdownMutation.data ?? [];
-    const products: any[] = productDropdownMutation.data ?? [];
-    const states: any[] = statesMutation.data ?? [];
-    const cities: any[] = citiesMutation.data ?? [];
-    const orderStatusData: any[] = orderStatusDropdownMutation.data ?? [];
-    const designStatusData: any[] = designStatusDropdownMutation.data ?? [];
-    const taxCategories: any[] = taxCategoriesMutation.data ?? [];
+    const clients: any[] = clientsDropdownQuery.data ?? [];
+    const products: any[] = productDropdownQuery.data ?? [];
+    const states: any[] = statesQuery.data ?? [];
+    const cities: any[] = citiesQuery.data ?? [];
+    const orderStatusData: any[] = orderStatusDropdownQuery.data ?? [];
+    const designStatusData: any[] = designStatusDropdownQuery.data ?? [];
+    const taxCategories: any[] = taxCategoriesQuery.data ?? [];
     const createOrder = useCreateOrder();
     const updateOrder = useUpdateOrder();
 
@@ -357,7 +342,7 @@ const OrderUpsertSheet = ({
     };
 
     const handleProductQuickAddSuccess = (newProduct?: any) => {
-        productDropdownMutation.mutate(undefined);
+        queryClient.invalidateQueries({ queryKey: ["product-dropdown"] });
         if (newProduct && activeRowId) {
             setProductItems(prev =>
                 prev.map(item =>

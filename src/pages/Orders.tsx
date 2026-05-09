@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Filter, X } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { Order, OrderFilters } from "../interfaces/order.interface";
-import { useDeleteOrder, useOrders, useSendOrderEmail } from "../hooks/order/useOrders";
+import { useDeleteOrder, useOrdersQuery, useSendOrderEmail } from "../hooks/order/useOrders";
 import OrderTable from "../components/order/Ordertable";
 import Pagination from "../components/leads/Pagination";
 import OrderFilterSheet from "../components/order/OrderFilterSheet";
@@ -64,13 +64,7 @@ const Orders = () => {
     });
   }, [debouncedSearchTerm]);
 
-  const ordersMutation = useOrders();
-
-  useEffect(() => {
-    ordersMutation.mutate(filters);
-  }, [filters]);
-
-  const { data, isPending: isLoading } = ordersMutation;
+  const { data, isPending: isLoading } = useOrdersQuery(filters);
   const hasActiveFilters =
     filters.status || filters.startDate || filters.endDate;
 
@@ -99,11 +93,7 @@ const Orders = () => {
 
   const handleDeleteOrder = (order: Order) => {
     if (!canDeleteOrder) return; // ✅ protection
-    deleteMutation.mutate(order.orderID, {
-      onSuccess: () => {
-        ordersMutation.mutate(filters);
-      }
-    });
+    deleteMutation.mutate(order.orderID);
   };
 
   const handleCreateInvoice = (order: Order) => {
@@ -297,7 +287,7 @@ const Orders = () => {
           setSelectedOrder(null);
         }}
         order={selectedOrder}
-        onSuccess={() => ordersMutation.mutate(filters)}
+        onSuccess={() => {}}
       />
 
       {/* INVOICE UPSERT SHEET */}

@@ -1,5 +1,5 @@
 // src/hooks/expense/useExpenses.ts
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getExpensesApi } from "../../api/expense.api";
 
 interface UseExpensesParams {
@@ -14,5 +14,12 @@ interface UseExpensesParams {
 export const useExpenses = () => {
   return useMutation({
     mutationFn: (params: UseExpensesParams) => getExpensesApi(params),
+  });
+};
+
+export const useExpensesQuery = (filters: UseExpensesParams) => {
+  return useQuery({
+    queryKey: ["expenses", filters],
+    queryFn: () => getExpensesApi(filters),
   });
 };

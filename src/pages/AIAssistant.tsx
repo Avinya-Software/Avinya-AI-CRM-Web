@@ -768,6 +768,7 @@ const AIAssistant = () => {
           <h1 className="text-2xl font-serif font-semibold text-slate-900 flex items-center gap-2">
             <Bot className="h-7 w-7 text-emerald-600" />
             AI Assistant
+            <span className="ml-2 bg-amber-100 text-amber-800 text-xs font-semibold px-2 py-0.5 rounded-full">Beta</span>
           </h1>
           <p className="mt-0.5 text-sm text-slate-600">
             Intelligent CRM help and data insights

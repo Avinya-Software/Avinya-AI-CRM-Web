@@ -4,7 +4,7 @@ import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X, Save, Loader2, IndianRupee, Calendar, CreditCard, FileText, CheckCircle2, History } from "lucide-react";
 import { CreatePaymentDto, Payment } from "../../interfaces/payment.interface";
-import { useCreatePayment, usePayments } from "../../hooks/payment";
+import { useCreatePayment, usePaymentsQuery } from "../../hooks/payment";
 import { Invoice } from "../../interfaces/invoice.interface";
 
 interface Props {
@@ -26,13 +26,7 @@ const PAYMENT_METHODS = [
 
 const PaymentCreateSheet = ({ open, onClose, invoice, onSuccess }: Props) => {
   const createPayment = useCreatePayment();
-  const paymentsMutation = usePayments();
-
-  useEffect(() => {
-    if (invoice?.invoiceID) paymentsMutation.mutate(invoice.invoiceID);
-  }, [invoice?.invoiceID]);
-
-  const { data: previousPayments = [], isPending: loadingPayments } = paymentsMutation;
+  const { data: previousPayments = [], isPending: loadingPayments } = usePaymentsQuery(invoice?.invoiceID || "", open);
 
   const [formData, setFormData] = useState<CreatePaymentDto>({
     invoiceID: invoice?.invoiceID || "",

@@ -8,7 +8,7 @@ import Pagination from "../components/leads/Pagination";
 
 import { usePermissions } from "../context/PermissionContext";
 import { Expense } from "../interfaces/expense.interface";
-import { useExpenses } from "../hooks/expense/useExpenses";
+import { useExpensesQuery } from "../hooks/expense/useExpenses";
 import ExpenseTable from "../components/expense/ExpenseTable";
 import ExpenseUpsertSheet from "../components/expense/ExpenseUpsertSheet";
 
@@ -28,13 +28,7 @@ const Expenses = () => {
     const [openSheet, setOpenSheet] = useState(false);
     const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
-    const expensesMutation = useExpenses();
-
-    useEffect(() => {
-        expensesMutation.mutate({ page, pageSize, status, search, from, to });
-    }, [page, pageSize, status, search, from, to]);
-
-    const { data, isPending: isLoading } = expensesMutation;
+    const { data, isPending: isLoading } = useExpensesQuery({ page, pageSize, status, search, from, to });
 
     const expenses: Expense[] = data?.data?.data ?? [];
     const totalRecords: number = data?.data?.totalRecords ?? 0;
@@ -53,7 +47,6 @@ const Expenses = () => {
     };
 
     const handleSuccess = () => {
-        expensesMutation.mutate({ page, pageSize, status, search, from, to });
         setOpenSheet(false);
         setSelectedExpense(null);
     };

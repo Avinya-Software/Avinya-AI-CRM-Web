@@ -384,7 +384,10 @@ export const ChatPanel = () => {
             <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
               <Bot className="h-5 w-5" />
             </div>
-            <span className="font-semibold">Avinya AI Assistant</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold">Avinya AI Assistant</span>
+              <span className="bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">Beta</span>
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <Button

@@ -21,7 +21,7 @@ const QuotationFilterSheet = ({
     onApply,
     onClear,
 }: QuotationFilterSheetProps) => {
-    const { data: statusData = [] } = useQuotationStatusDropdown();
+    const { data: statusData = [] } = useQuotationStatusDropdown(open);
     // Local state — changes don't hit API until "Apply" is clicked
     const [localFilters, setLocalFilters] = useState<QuotationFilters>(filters);
 

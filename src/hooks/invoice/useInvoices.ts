@@ -1,6 +1,6 @@
 // src/hooks/invoice/useInvoices.ts
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { InvoiceFilters, CreateInvoiceDto, UpdateInvoiceDto } from "../../interfaces/invoice.interface";
 import {
@@ -18,6 +18,13 @@ import {
 export const useInvoices = () => {
   return useMutation({
     mutationFn: (filters: InvoiceFilters) => getInvoices(filters),
+  });
+};
+
+export const useInvoicesQuery = (filters: InvoiceFilters) => {
+  return useQuery({
+    queryKey: ["invoices", filters],
+    queryFn: () => getInvoices(filters),
   });
 };
 
@@ -80,6 +87,14 @@ export const useDeleteInvoice = () => {
 export const useInvoiceStatusDropdown = () => {
   return useMutation({
     mutationFn: () => getInvoiceStatusDropdown(),
+  });
+};
+
+export const useInvoiceStatusDropdownQuery = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ["invoice-status-dropdown"],
+    queryFn: () => getInvoiceStatusDropdown(),
+    enabled,
   });
 };
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { LayoutGrid, List } from "lucide-react";
-import { useProjects } from "../hooks/project/useProjects";
+import { useProjectsQuery } from "../hooks/project/useProjects";
 import {
   useProjectPriorityDropdown,
   useProjectStatusDropdown,
@@ -159,20 +159,15 @@ const Projects = () => {
   }, [canView]);
 
   const debouncedSearchTerm = useDebounce(search, 500);
-  const projectsMutation = useProjects();
-  const { data: projectStatusData = [] } = useProjectStatusDropdown();
-  const { data: projectPriorityData = [] } = useProjectPriorityDropdown();
+  const { data, isPending: isLoading } = useProjectsQuery({
+    pageNumber,
+    pageSize,
+    search: debouncedSearchTerm,
+    statusFilter,
+  });
 
-  useEffect(() => {
-    projectsMutation.mutate({
-      pageNumber,
-      pageSize,
-      search: debouncedSearchTerm,
-      statusFilter,
-    });
-  }, [pageNumber, pageSize, debouncedSearchTerm, statusFilter]);
-
-  const { data, isPending: isLoading } = projectsMutation;
+  const { data: projectStatusData = [] } = useProjectStatusDropdown(!!data);
+  const { data: projectPriorityData = [] } = useProjectPriorityDropdown(!!data);
 
   const statusOptions = normalizeProjectStatusOptions(projectStatusData);
   const priorityOptions = normalizeProjectPriorityOptions(projectPriorityData);
@@ -210,12 +205,6 @@ const Projects = () => {
   };
 
   const handleSuccess = () => {
-    projectsMutation.mutate({
-      pageNumber,
-      pageSize,
-      search: debouncedSearchTerm,
-      statusFilter,
-    });
     setOpenSheet(false);
     setSelectedProject(null);
   };

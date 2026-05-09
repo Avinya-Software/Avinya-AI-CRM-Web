@@ -37,7 +37,6 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
     const { hasPermission } = usePermissions();
     const canAdd = hasPermission("project", "add");
     const canEdit = hasPermission("project", "edit");
-
     // Derive a single read-only flag used throughout the form
     const isReadOnly = isEdit ? !canEdit : !canAdd;
 
@@ -47,22 +46,21 @@ const ProjectUpsertSheet = ({ open, onClose, project, onSuccess }: Props) => {
         return () => { document.body.style.overflow = "unset"; };
     }, [open]);
 
-    /* ── DROPDOWN DATA ── */
     const [customers, setCustomers] = useState<any[]>([]);
     const [selectedCustomerId, setSelectedCustomerId] = useState("");
-    useEffect(() => {
-        getCustomerDropdownApi().then(setCustomers);
-    }, []);
 
     const usersDropdownMutation = useUsersDropdown();
     const teamsDropdownMutation = useGetTeamsDropdown();
-    const { data: projectStatusData = [] } = useProjectStatusDropdown();
-    const { data: projectPriorityData = [] } = useProjectPriorityDropdown();
+    const { data: projectStatusData = [] } = useProjectStatusDropdown(open);
+    const { data: projectPriorityData = [] } = useProjectPriorityDropdown(open);
 
     useEffect(() => {
-        usersDropdownMutation.mutate(undefined);
-        teamsDropdownMutation.mutate(undefined);
-    }, []);
+        if (open) {
+            getCustomerDropdownApi().then(setCustomers);
+            usersDropdownMutation.mutate(undefined);
+            teamsDropdownMutation.mutate(undefined);
+        }
+    }, [open]);
 
     const usersResponse = usersDropdownMutation.data;
     const userOptions: ComboboxOption[] = (usersResponse ?? []).map(

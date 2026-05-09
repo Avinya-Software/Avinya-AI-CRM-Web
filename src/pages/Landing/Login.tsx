@@ -10,6 +10,7 @@ import { toast } from "react-hot-toast";
 // import { motion, AnimatePresence } from "motion/react";
 import { motion, AnimatePresence } from "framer-motion";
 import SEO from '../../components/common/SEO.tsx';
+import { storage } from "../../utils/storage";
 
 type LoginErrors = { email?: string; password?: string };
 
@@ -66,6 +67,10 @@ const Login = () => {
       }
     );
   };
+
+  useEffect(() => {
+    storage.clearAll();
+  }, []);
 
   useEffect(() => {
     if (loginDone && isReady) {

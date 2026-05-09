@@ -5,7 +5,7 @@ import { DatePicker, Select as AntSelect } from "antd";
 import dayjs from "dayjs";
 import { X } from "lucide-react";
 import { OrderFilters } from "../../interfaces/order.interface";
-import { useOrderStatusDropdown } from "../../hooks/order/useOrders";
+import { useOrderStatusDropdownQuery } from "../../hooks/order/useOrders";
 
 interface Props {
     open: boolean;
@@ -19,13 +19,7 @@ const ORDER_STATUSES = ["Pending", "Processing", "Completed", "Cancelled"];
 
 const OrderFilterSheet = ({ open, onClose, filters, onApply, onClear }: Props) => {
     const [local, setLocal] = useState<OrderFilters>(filters);
-    const orderStatusDropdownMutation = useOrderStatusDropdown();
-
-    useEffect(() => {
-        if (open) orderStatusDropdownMutation.mutate(undefined);
-    }, [open]);
-
-    const orderStatusData: any[] = orderStatusDropdownMutation.data ?? [];
+    const { data: orderStatusData = [] } = useOrderStatusDropdownQuery(open);
 
     // Sync when parent filters change (e.g. external clear)
     useEffect(() => {

@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { Filter, X, Eye, Loader2, WalletIcon , FileText, PackageOpen, Mail } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { Invoice, InvoiceFilters } from "../interfaces/invoice.interface";
-import { useInvoices, useDeleteInvoice, useInvoiceStatusDropdown, useSendInvoiceEmail } from "../hooks/invoice/useInvoices";
+import { useInvoicesQuery, useDeleteInvoice, useInvoiceStatusDropdownQuery, useSendInvoiceEmail } from "../hooks/invoice/useInvoices";
 import { usePermissions } from "../context/PermissionContext";
 import { useDebounce } from "../components/common/CommonHelper";
 import Pagination from "../components/leads/Pagination";
@@ -42,21 +42,12 @@ const Invoices = () => {
 
     const debouncedSearchTerm = useDebounce(searchInput, 500);
 
-    const invoicesMutation = useInvoices();
-    const statusDropdownMutation = useInvoiceStatusDropdown();
+    const { data, isPending: isLoading } = useInvoicesQuery(filters);
+    const { data: statusDropdownData = [] } = useInvoiceStatusDropdownQuery();
     const deleteMutation = useDeleteInvoice();
     const sendEmailMutation = useSendInvoiceEmail();
 
-    useEffect(() => {
-        invoicesMutation.mutate(filters);
-    }, [filters]);
-
-    useEffect(() => {
-        statusDropdownMutation.mutate(undefined);
-    }, []);
-
-    const { data, isPending: isLoading } = invoicesMutation;
-    const statusDropdown: any[] = statusDropdownMutation.data ?? [];
+    const statusDropdown: any[] = statusDropdownData;
     const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
     useEffect(() => {
