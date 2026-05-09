@@ -225,8 +225,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
     const mobileRegex = /^[6-9]\d{9}$/;
 
     if (!form.fullName.trim()) e.fullName = "Full name required";
-    if (!mobileRegex.test(form.mobile)) e.mobile = "Invalid mobile number";
-    if (!form.email.trim()) e.email = "Email required";
+    if (form.mobile && !mobileRegex.test(form.mobile)) e.mobile = "Invalid mobile number";
     if (!form.leadStatusId) e.leadStatusId = "Status required";
     if (!form.requirementDetails.trim()) e.requirementDetails = "Requirement details required";
     if (!isEdit && !form.nextFollowupDate) e.nextFollowupDate = "Next follow-up date required";
@@ -354,7 +353,6 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
 
             <Input
               label="Mobile"
-              required
               value={form.mobile}
               error={errors.mobile}
               onChange={(v: any) => setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })}
@@ -363,7 +361,6 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
 
             <Input
               label="Email"
-              required
               value={form.email}
               error={errors.email}
               onChange={(v: any) => setForm({ ...form, email: v })}
