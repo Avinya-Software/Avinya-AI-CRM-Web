@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { ChatMessage, AIRequest, AIResponse, DashboardPayload, AIFeedback } from "../interfaces/ai.interface";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { ChatMessage, ChatResponse, DashboardPayload, AIFeedback } from "../interfaces/ai.interface";
 import { useAIChat, useAIFeedback } from "../hooks/ai/useAIChat";
-import { robustParseJson, parseDashboardPayload, generateMarkdownReport, normalizeChatData, getErrorMessage } from "../lib/chat-utils";
+import { robustParseJson, parseDashboardPayload, normalizeChatData, getErrorMessage } from "../lib/chat-utils";
 
 interface ChatContextType {
   messages: ChatMessage[];
@@ -25,7 +25,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     {
       id: "1",
       role: "ai",
-      content: "Hello! I'm your Avinya AI CRM assistant. I can provide you with information and insights across all your data. You get 30 credits as free daily, for more please purchase. How can I help you today?\n\nYou can create Leads, Tasks, and Expenses using AI. You can also give feedback if the AI gives a wrong response.",
+      content: "Hello! I'm your Avinya AI CRM assistant. I can provide you with information and insights across all your data. You get 30 credits free daily — for more please purchase. How can I help you today?",
       suggestions: [
         "Show my leads",
         "How is my business doing?",
@@ -43,13 +43,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const { mutate: mutateChat, isPending } = useAIChat();
   const { mutateAsync: mutateFeedback } = useAIFeedback();
 
-  const parseAIResponse = (data: AIResponse, originalContent: string): ChatMessage => {
-    // Attempt to detect a multi-module dashboard response
+  const parseAIResponse = (data: ChatResponse, originalContent: string): ChatMessage => {
     let dashboardData: DashboardPayload | undefined = undefined;
     let universalDashboard: any = undefined;
-    let generatedContent: string | undefined = undefined;
 
-    const dataArray = Array.isArray(data.data) ? data.data : [];
+    const dataArray = Array.isArray(data.data) ? [...data.data] : [];
 
     if (dataArray.length === 1) {
       const row = dataArray[0];
@@ -60,7 +58,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
             data.data = parsed;
           } else {
             universalDashboard = parsed;
-            generatedContent = generateMarkdownReport(universalDashboard);
           }
         }
       } else {
@@ -71,37 +68,21 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
     const normalizedPayload = (dashboardData || universalDashboard)
       ? undefined
-      : normalizeChatData(
-        (data.suggestedClients && data.suggestedClients.length > 0)
-          ? data.suggestedClients
-          : data.data
-      );
+      : normalizeChatData(data.data);
 
-    const resolvedMessage = data.message
-      ? data.message.replace(/\{count\}/gi, String(data.count ?? 0))
-      : undefined;
+    const content = data.errorMessage || data.message || "I couldn't process your request.";
 
     return {
       id: (Date.now() + 1).toString(),
       role: "ai",
-      content: generatedContent
-        || data.clarificationMessage
-        || data.summary
-        || resolvedMessage
-        || (dashboardData
-          ? `Here's your CRM overview across ${Object.keys(dashboardData).length} modules:`
-          : data.count !== undefined && data.count > 0
-            ? `I found ${data.count} results:`
-            : "No records found."),
+      content,
       data: normalizedPayload,
-      summary: data.summary,
-      insights: data.insights,
       suggestions: data.suggestions,
       dashboardData,
       universalDashboard,
       creditsUsed: data.creditsUsed,
       timestamp: new Date(),
-      query: data.query || data.sql,
+      query: data.sql,
       originalMessage: originalContent,
       action: data.action,
       parameters: data.parameters,
@@ -112,35 +93,34 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const msg = messages.find(m => m.id === messageId);
     if (!msg || !msg.query || !msg.originalMessage) return;
 
+    // Mark feedback immediately in UI
+    setMessages(prev => prev.map(m =>
+      m.id === messageId ? { ...m, feedbackGiven: isGood ? "good" : "bad" } : m
+    ));
+
+    if (isGood) return; // Good feedback — nothing more to do
+
+    // Bad feedback with correction → ask AI to heal the query
     try {
       const feedback: AIFeedback = {
         originalMessage: msg.originalMessage,
         generatedSql: msg.query,
-        isGood,
-        userCorrection: correction
+        isGood: false,
+        userCorrection: correction,
       };
 
       const result = await mutateFeedback(feedback);
 
-      setMessages(prev => prev.map(m =>
-        m.id === messageId
-          ? { ...m, feedbackGiven: isGood ? "good" : "bad" }
-          : m
-      ));
-
-      if (!isGood && result.success && result.sql && result.data) {
-        const correctedMessage = parseAIResponse(result as AIResponse, msg.originalMessage);
-        correctedMessage.isCorrection = true;
-        correctedMessage.content = `[Correction] ${correctedMessage.content}`;
-
+      if (result.sql && result.data) {
+        const correctedMessage = parseAIResponse(result, msg.originalMessage);
+        correctedMessage.content = `Here's the corrected result: ${correctedMessage.content}`;
         if (result.remainingCredits !== undefined) {
           setRemainingCredits(result.remainingCredits);
         }
-
         setMessages(prev => [...prev, correctedMessage]);
       }
     } catch (err) {
-      console.error("Failed to send feedback", err);
+      console.error("Feedback heal failed", err);
     }
   };
 
@@ -168,7 +148,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     mutateChat(
       { message: content, history, receiptFile: fileToUpload || undefined },
       {
-        onSuccess: (data: AIResponse) => {
+        onSuccess: (data: ChatResponse) => {
           const aiMessage = parseAIResponse(data, content);
           if (data.remainingCredits !== undefined) {
             setRemainingCredits(data.remainingCredits);

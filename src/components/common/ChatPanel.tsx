@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Bot, Send, ExternalLink, X, TrendingUp, ChevronDown, ChevronUp, BarChart2, Clock, Hash, Coins, Zap, ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Mic, MicOff, Users, Mail, Phone, Activity, Paperclip, FileImage } from "lucide-react";
+import { Bot, Send, ExternalLink, X, TrendingUp, ChevronDown, ChevronUp, BarChart2, Hash, Coins, Zap, ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Users, Mail, Phone, Paperclip, FileImage } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useNavigate, useLocation } from "react-router-dom";
@@ -299,6 +299,20 @@ export const ChatPanel = () => {
   const [correctionText, setCorrectionText] = useState("");
   const [isListening, setIsListening] = useState(false);
 
+  const handleFeedback = (msgId: string, isGood: boolean) => {
+    if (isGood) {
+      sendFeedback(msgId, true);
+    } else {
+      setCorrectionMode(msgId);
+      setCorrectionText("");
+    }
+  };
+
+  const submitCorrection = (msgId: string) => {
+    sendFeedback(msgId, false, correctionText);
+    setCorrectionMode(null);
+  };
+
   // Speech Recognition setup
   const recognitionRef = useRef<any>(null);
 
@@ -346,20 +360,6 @@ export const ChatPanel = () => {
     if (file) {
       setSelectedFile(file);
     }
-  };
-
-  const handleFeedback = (msgId: string, isGood: boolean) => {
-    if (isGood) {
-      sendFeedback(msgId, true);
-    } else {
-      setCorrectionMode(msgId);
-      setCorrectionText("");
-    }
-  };
-
-  const submitCorrection = (msgId: string) => {
-    sendFeedback(msgId, false, correctionText);
-    setCorrectionMode(null);
   };
 
   const handleExpand = () => {
@@ -517,7 +517,6 @@ export const ChatPanel = () => {
                   <span className="text-[10px] text-slate-400 font-medium opacity-70">
                     {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
-                  
                   {msg.role === "ai" && msg.query && (
                     <div className="flex items-center gap-1">
                       {msg.feedbackGiven === "good" ? (
@@ -526,16 +525,10 @@ export const ChatPanel = () => {
                         <XCircle className="h-3 w-3 text-rose-500" />
                       ) : (
                         <>
-                          <button 
-                            onClick={() => handleFeedback(msg.id, true)}
-                            className="p-0.5 hover:bg-slate-200 rounded text-slate-400 hover:text-emerald-600 transition-colors"
-                          >
+                          <button onClick={() => handleFeedback(msg.id, true)} className="p-0.5 hover:bg-slate-200 rounded text-slate-400 hover:text-emerald-600 transition-colors">
                             <ThumbsUp className="h-2.5 w-2.5" />
                           </button>
-                          <button 
-                            onClick={() => handleFeedback(msg.id, false)}
-                            className="p-0.5 hover:bg-slate-200 rounded text-slate-400 hover:text-rose-600 transition-colors"
-                          >
+                          <button onClick={() => handleFeedback(msg.id, false)} className="p-0.5 hover:bg-slate-200 rounded text-slate-400 hover:text-rose-600 transition-colors">
                             <ThumbsDown className="h-2.5 w-2.5" />
                           </button>
                         </>
@@ -543,7 +536,6 @@ export const ChatPanel = () => {
                     </div>
                   )}
                 </div>
-
                 {msg.role === "ai" && msg.creditsUsed !== undefined && (
                   <div className="flex items-center gap-1.5 bg-slate-100/50 px-2 py-0.5 rounded-full border border-slate-100">
                     <Zap className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
@@ -554,33 +546,22 @@ export const ChatPanel = () => {
                 )}
               </div>
 
-              {/* CORRECTION INPUT */}
+              {/* Correction input — shown when user clicks thumbs down */}
               {correctionMode === msg.id && (
-                <div className="mt-2 w-full animate-scaleIn">
+                <div className="mt-2 w-full">
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 shadow-sm">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">What was wrong?</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">What was wrong? Tell AI to fix it</p>
                     <div className="flex gap-1.5">
-                      <Input 
+                      <Input
                         value={correctionText}
                         onChange={(e) => setCorrectionText(e.target.value)}
-                        placeholder="Explain or fix..."
+                        placeholder="e.g. Show only this month's leads"
                         maxLength={800}
                         className="h-8 text-xs bg-white border-slate-200 focus-visible:ring-emerald-500"
                         onKeyDown={(e) => e.key === "Enter" && submitCorrection(msg.id)}
                       />
-                      <Button 
-                        onClick={() => submitCorrection(msg.id)}
-                        className="h-8 px-2.5 bg-slate-800 hover:bg-slate-700 text-white text-[10px]"
-                      >
-                        Send
-                      </Button>
-                      <Button 
-                        onClick={() => setCorrectionMode(null)}
-                        variant="outline"
-                        className="h-8 px-2 text-[10px]"
-                      >
-                        X
-                      </Button>
+                      <Button onClick={() => submitCorrection(msg.id)} className="h-8 px-2.5 bg-slate-800 hover:bg-slate-700 text-white text-[10px]">Fix</Button>
+                      <Button onClick={() => setCorrectionMode(null)} variant="outline" className="h-8 px-2 text-[10px]">×</Button>
                     </div>
                   </div>
                 </div>

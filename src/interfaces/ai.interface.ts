@@ -9,32 +9,28 @@ export interface AIRequest {
   receiptFile?: File;
 }
 
-export interface AIResponse {
-  success?: boolean;
-  action?: string;
-  intent?: string;
-  query?: string;
-  sql?: string; // Added to match backend Sql field
-  data?: any;
+/** Clean response from POST /api/ai/chat */
+export interface ChatResponse {
+  /** Human-written AI response message */
+  message: string;
+  /** Rows returned from the query */
+  data?: any[];
+  /** Total number of records returned */
   count?: number;
-  message?: string;
-  errorMessage?: string;
-  successMessage?: string;
+  /** query | create_lead | create_task | create_expense | message */
+  action?: string;
+  /** Populated only for create actions */
   parameters?: Record<string, any>;
-  
-  // Optional Fields for enhanced UI
-  summary?: string;
-  insights?: string;
+  /** Follow-up question suggestions */
   suggestions?: string[];
-  
-  // Token Credit System
+  /** Credits consumed by this request */
   creditsUsed?: number;
+  /** Remaining credits for the user */
   remainingCredits?: number;
-
-  // Clarification logic
-  isClarificationRequired?: boolean;
-  clarificationMessage?: string;
-  suggestedClients?: any[];
+  /** Set only when something goes wrong */
+  errorMessage?: string;
+  /** SQL executed — returned for query actions, used by feedback/heal flow */
+  sql?: string;
 }
 
 export interface AIFeedback {
@@ -43,6 +39,10 @@ export interface AIFeedback {
   isGood: boolean;
   userCorrection?: string;
 }
+
+/** @deprecated Use ChatResponse instead */
+export type AIResponse = ChatResponse;
+
 
 // ─── Dashboard / Module-card types ────────────────────────────────────────────
 
@@ -70,23 +70,19 @@ export interface ChatMessage {
   role: "user" | "ai";
   content: string;
   data?: any;
-  summary?: string;
   breakdown?: Record<string, Record<string, any>>;
   insights?: string;
   suggestions?: string[];
-  /** Populated when the backend returns a multi-module dashboard payload */
   dashboardData?: DashboardPayload;
-  /** Populated when the backend returns a single-string universal summary */
   universalDashboard?: any;
-  creditsUsed?: number; // How many tokens THIS message used
+  creditsUsed?: number;
   timestamp: Date;
   action?: string;
   parameters?: Record<string, any>;
-  
-  // Feedback related fields
-  query?: string; // The SQL query that was executed
-  originalMessage?: string; // The user message that triggered this AI response
+  /** SQL executed — needed for feedback/heal flow */
+  query?: string;
+  /** Original user message — needed for feedback/heal flow */
+  originalMessage?: string;
   feedbackGiven?: "good" | "bad" | null;
-  isCorrection?: boolean;
 }
 
