@@ -109,7 +109,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
     const validate = () => {
         const e: Record<string, string> = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const mobileRegex = /^[6-9]\d{9}$/;
+        const mobileRegex = /^(\+91)?[6-9]\d{9}$/;
 
         if (form.clientType === 1 && !form.companyName.trim()) e.companyName = "Company name is required";
         if (!form.contactPerson.trim()) e.contactPerson = "Contact person is required";
@@ -237,7 +237,7 @@ const ClientUpsertSheet = ({ open, onClose, client, onSuccess }: Props) => {
                             value={form.mobile}
                             error={errors.mobile}
                             onChange={(v: string) =>
-                                setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })
+                                setForm({ ...form, mobile: v.replace(/[^0-9+]/g, "").slice(0, 15) })
                             }
                             disabled={isReadOnly}
                         />

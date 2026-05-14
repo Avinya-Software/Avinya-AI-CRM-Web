@@ -8,17 +8,7 @@ import Spinner from "../common/Spinner";
 import { usePermissions } from "../../context/PermissionContext";
 import { Expense } from "../../interfaces/expense.interface";
 import { useUpsertExpense } from "../../hooks/expense/useUpsertExpense";
-
-const EXPENSE_TYPES = [
-    "Travel",
-    "Food & Beverage",
-    "Accommodation",
-    "Office Supplies",
-    "Utilities",
-    "Marketing",
-    "Maintenance",
-    "Other",
-];
+import { useExpenseTypesQuery } from "../../hooks/expense/useExpenses";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
 const MAX_SIZE_MB = 5;
@@ -32,6 +22,7 @@ interface Props {
 
 const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
     const { mutateAsync, isPending } = useUpsertExpense();
+    const { data: expenseTypes } = useExpenseTypesQuery();
     const { hasPermission } = usePermissions();
 
     const isEdit = !!expense;
@@ -75,7 +66,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                 expenseDate: expense.expenseDate
                     ? dayjs(expense.expenseDate).format("YYYY-MM-DD")
                     : today,
-                expenseType: expense.expenseCategory?.categoryName ?? "",
+                expenseType: expense.expenseCategory?.categoryId ? String(expense.expenseCategory.categoryId) : "",
                 amount: expense.amount ?? "",
                 description: expense.description ?? "",
                 status: expense.status || "Unpaid",
@@ -145,7 +136,7 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
         const payload = {
             expenseID: form.expenseID,
             expenseDate: dayjs(form.expenseDate).format("YYYY-MM-DDTHH:mm:ss"),
-            expenseType: form.expenseType,
+            categoryId: form.expenseType,
             amount: Number(form.amount),
             description: form.description.trim(),
             status: form.status,
@@ -216,8 +207,8 @@ const ExpenseUpsertSheet = ({ open, onClose, expense, onSuccess }: Props) => {
                                 placeholder="Select Type"
                                 optionFilterProp="children"
                             >
-                                {EXPENSE_TYPES.map((t) => (
-                                    <AntSelect.Option key={t} value={t}>{t}</AntSelect.Option>
+                                {expenseTypes?.map((t) => (
+                                    <AntSelect.Option key={t.id} value={t.id}>{t.name}</AntSelect.Option>
                                 ))}
                             </AntSelect>
                         </Field>

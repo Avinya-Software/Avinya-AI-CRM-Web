@@ -253,7 +253,7 @@ export default function Signup() {
                   name="companyPhone"
                   value={formData.companyPhone}
                   onChange={(e) => {
-                    e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                    e.target.value = e.target.value.replace(/[^0-9+]/g, '').slice(0, 15);
                     handleInputChange(e);
                   }}
                   placeholder="9876543210"

@@ -1,6 +1,6 @@
 // src/hooks/expense/useExpenses.ts
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getExpensesApi } from "../../api/expense.api";
+import { getExpensesApi, getExpenseTypeDropdownApi } from "../../api/expense.api";
 
 interface UseExpensesParams {
   page: number;
@@ -21,5 +21,12 @@ export const useExpensesQuery = (filters: UseExpensesParams) => {
   return useQuery({
     queryKey: ["expenses", filters],
     queryFn: () => getExpensesApi(filters),
+  });
+};
+
+export const useExpenseTypesQuery = () => {
+  return useQuery({
+    queryKey: ["expense-types"],
+    queryFn: () => getExpenseTypeDropdownApi(),
   });
 };

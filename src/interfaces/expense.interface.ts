@@ -23,6 +23,7 @@ export interface ExpenseUpsertPayload {
   expenseID?: string | null;
   expenseDate: string;
   expenseType: string;
+  categoryId?: string | number;
   amount: number;
   description?: string | null;
   receiptUrl?: string | null;

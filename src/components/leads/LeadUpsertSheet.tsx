@@ -222,7 +222,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
   /* ── VALIDATION ── */
   const validate = () => {
     const e: any = {};
-    const mobileRegex = /^[6-9]\d{9}$/;
+    const mobileRegex = /^(\+91)?[6-9]\d{9}$/;
 
     if (!form.fullName.trim()) e.fullName = "Full name required";
     if (form.mobile && !mobileRegex.test(form.mobile)) e.mobile = "Invalid mobile number";
@@ -355,7 +355,7 @@ const LeadUpsertSheet = ({ open, onClose, lead, advisorId }: Props) => {
               label="Mobile"
               value={form.mobile}
               error={errors.mobile}
-              onChange={(v: any) => setForm({ ...form, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })}
+              onChange={(v: any) => setForm({ ...form, mobile: v.replace(/[^0-9+]/g, "").slice(0, 15) })}
               disabled={isReadOnly}
             />
 

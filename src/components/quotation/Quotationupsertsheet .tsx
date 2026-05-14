@@ -557,7 +557,7 @@ const QuotationUpsertSheet = ({
                             required
                             value={formData.mobile}
                             error={errors.mobile}
-                            onChange={(v: any) => setFormData({ ...formData, mobile: v.replace(/[^0-9]/g, "").slice(0, 10) })}
+                            onChange={(v: any) => setFormData({ ...formData, mobile: v.replace(/[^0-9+]/g, "").slice(0, 15) })}
                             disabled={isClientReadOnly}
                         />
                         <Input

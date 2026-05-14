@@ -9,7 +9,7 @@ export const createExpenseApi = async (payload: ExpenseUpsertPayload) => {
 
   formData.append("ExpenseDate", payload.expenseDate);
   // C# DTO Expects CategoryId and PaymentMode instead of ExpenseType
-  formData.append("CategoryId", "1");
+  formData.append("CategoryId", String(payload.categoryId));
   formData.append("PaymentMode", "UPI");
   formData.append("Amount", String(payload.amount));
   formData.append("Description", payload.description || "");
@@ -32,7 +32,7 @@ export const updateExpenseApi = async (id: string, payload: ExpenseUpsertPayload
   formData.append("ExpenseDate", payload.expenseDate);
 
   // C# DTO Expects CategoryId and PaymentMode instead of ExpenseType
-  formData.append("CategoryId", "1");
+  formData.append("CategoryId", String(payload.categoryId));
   formData.append("PaymentMode", "Online");
 
   formData.append("Amount", String(payload.amount));
